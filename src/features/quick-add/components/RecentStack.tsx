@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { CloudOff, Loader2, PackagePlus, RefreshCw, Undo2 } from 'lucide-react'
+import { LuCloudOff as CloudOff, LuLoaderCircle as Loader2, LuPackagePlus as PackagePlus, LuRefreshCw as RefreshCw, LuUndo2 as Undo2 } from 'react-icons/lu'
 import clsx from 'clsx'
 import { StockPips } from '@/components/ui/Board'
 import { BOARD } from '@/lib/colors'

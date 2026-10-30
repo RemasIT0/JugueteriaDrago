@@ -57,6 +57,15 @@ const rows: Row[] = [
   ['Baldecito de arena con moldes', 'cat_aire', 'sup_andina', 18, 21, 'Sol y Mar'],
 ]
 
+/** Temporadas de ejemplo por categoría. */
+const SEASON_OF: Record<string, string[]> = {
+  cat_munecas: ['temp_navidad', 'temp_infancias'],
+  cat_bloques: ['temp_navidad', 'temp_reyes'],
+  cat_peluches: ['temp_navidad'],
+  cat_mesa: ['temp_reyes', 'temp_infancias'],
+  cat_vehiculos: ['temp_infancias'],
+}
+
 const DAY = 86_400_000
 const now = Date.now()
 
@@ -69,7 +78,10 @@ export const seedProducts: Product[] = rows.map(([name, categoryId, supplierId, 
     name,
     categoryId,
     supplierId,
-    price,
+    // Precios en pesos argentinos (de ejemplo): costo ≈ 55 % del precio de venta.
+    price: Math.round((price * 1000) / 100) * 100,
+    cost: Math.round((price * 550) / 100) * 100,
+    seasons: SEASON_OF[categoryId] ?? [],
     stock,
     minStock: cat.defaults.minStock ?? 5,
     ageMin: cat.defaults.ageMin ?? 3,

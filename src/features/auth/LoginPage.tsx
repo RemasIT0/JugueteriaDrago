@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Loader2, LogIn } from 'lucide-react'
+import { LuCircleAlert as AlertCircle, LuLoaderCircle as Loader2, LuLogIn as LogIn } from 'react-icons/lu'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'

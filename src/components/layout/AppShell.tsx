@@ -1,5 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { BarChart3, Boxes, History, KeyRound, LogOut, Menu, Moon, Shapes, Sun, Truck, Users, Zap } from 'lucide-react'
+import { LuBadgePercent, LuCalendarHeart, LuChartColumn, LuBoxes, LuExternalLink, LuHistory, LuKeyRound as KeyRound, LuLogOut as LogOut, LuMenu as Menu, LuMoon as Moon, LuReceiptText, LuShapes, LuSun as Sun, LuTruck, LuUsers, LuZap } from 'react-icons/lu'
+import { SiDragonframe } from 'react-icons/si'
+import type { IconType } from 'react-icons'
 import { Fragment, useState } from 'react'
 import { NavLink, useLocation, useNavigate, useOutlet } from 'react-router-dom'
 import clsx from 'clsx'
@@ -17,27 +19,33 @@ import { useLoteSpaces } from '@/features/quick-add/useLoteSpaces'
 import { BOARD } from '@/lib/colors'
 import { STORE } from '@/lib/config'
 import { useTheme } from '@/stores/theme'
+import type { BoardColor } from '@/types'
+import { AlertsBell } from '@/features/alerts/AlertsCenter'
+import { AssistantWidget } from '@/features/assistant/AssistantWidget'
+import { AnimatedBackdrop } from './AnimatedBackdrop'
 
-type NavItem = { to: string; label: string; icon: typeof Boxes; perm: Permission; admin?: boolean }
+type NavItem = { to: string; label: string; icon: IconType; perm: Permission; color: BoardColor; group: string; admin?: boolean }
 
+/** El menú es un tablero: cada sección es una casilla de su color, unidas por un camino. */
 const NAV: NavItem[] = [
-  { to: '/', label: 'Inventario', icon: Boxes, perm: 'inventario.ver' },
-  { to: '/carga', label: 'Carga Rápida', icon: Zap, perm: 'productos.crear' },
-  { to: '/proveedores', label: 'Proveedores', icon: Truck, perm: 'proveedores.ver' },
-  { to: '/categorias', label: 'Categorías', icon: Shapes, perm: 'categorias.ver' },
-  { to: '/reportes', label: 'Reportes', icon: BarChart3, perm: 'reportes.ver' },
-  { to: '/usuarios', label: 'Usuarios', icon: Users, perm: 'usuarios.gestionar', admin: true },
-  { to: '/actividad', label: 'Actividad', icon: History, perm: 'actividad.ver', admin: true },
+  { to: '/', label: 'Inventario', icon: LuBoxes, perm: 'inventario.ver', color: 'turquesa', group: 'Tienda' },
+  { to: '/carga', label: 'Carga Rápida', icon: LuZap, perm: 'productos.crear', color: 'sol', group: 'Tienda' },
+  { to: '/temporadas', label: 'Temporadas', icon: LuCalendarHeart, perm: 'temporadas.ver', color: 'coral', group: 'Tienda' },
+  { to: '/reportes', label: 'Reportes', icon: LuChartColumn, perm: 'reportes.ver', color: 'cielo', group: 'Negocio' },
+  { to: '/facturacion', label: 'Facturación', icon: LuReceiptText, perm: 'facturacion.ver', color: 'hoja', group: 'Negocio' },
+  { to: '/descuentos', label: 'Descuentos', icon: LuBadgePercent, perm: 'descuentos.gestionar', color: 'coral', group: 'Negocio' },
+  { to: '/categorias', label: 'Categorías', icon: LuShapes, perm: 'categorias.ver', color: 'lila', group: 'Catálogo' },
+  { to: '/proveedores', label: 'Proveedores', icon: LuTruck, perm: 'proveedores.ver', color: 'cielo', group: 'Catálogo' },
+  { to: '/usuarios', label: 'Usuarios', icon: LuUsers, perm: 'usuarios.gestionar', color: 'lila', group: 'Administración', admin: true },
+  { to: '/actividad', label: 'Actividad', icon: LuHistory, perm: 'actividad.ver', color: 'turquesa', group: 'Administración', admin: true },
 ]
 
 function Logo() {
   return (
     <span className="flex items-center gap-2.5 text-xl font-black tracking-tight">
-      <svg viewBox="0 0 32 32" className="size-8" aria-hidden>
-        <circle cx="16" cy="16" r="14" fill="rgb(var(--sol))" />
-        <path d="M16 2a14 14 0 0 1 14 14H16z" fill="rgb(var(--coral))" />
-        <circle cx="16" cy="16" r="4.5" fill="rgb(var(--rail))" />
-      </svg>
+      <span className="grid size-9 place-items-center rounded-xl bg-sol text-on-fill shadow-[0_3px_0_rgb(0_0_0/0.18)]" aria-hidden>
+        <SiDragonframe className="size-6" />
+      </span>
       {STORE.name}
     </span>
   )
@@ -96,38 +104,26 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-dvh">
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-1 overflow-y-auto bg-rail px-3 py-6 text-rail-ink lg:flex">
-        <div className="mb-7 px-3 text-white">
+      <aside className="sticky top-0 z-20 hidden h-dvh w-64 shrink-0 flex-col gap-1 overflow-y-auto bg-rail px-3 py-6 text-rail-ink lg:flex">
+        <div className="mb-6 flex items-center justify-between pl-3 text-white">
           <Logo />
+          <AlertsBell variant="rail" />
         </div>
-        <nav aria-label="Principal" className="flex flex-col gap-1">
-          {items.map(({ to, label, icon: Icon, admin }, i) => (
-            <Fragment key={to}>
-            {admin && !items[i - 1]?.admin && <p className="mx-3 mb-1 mt-4 text-2xs font-black text-rail-ink/70">Administración</p>}
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/'}
-              className={({ isActive }) =>
-                clsx(
-                  'relative flex h-11 items-center gap-3 rounded-xl px-3 font-extrabold transition-colors',
-                  isActive ? 'text-on-fill' : 'hover:bg-rail-hover hover:text-white',
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <motion.span layoutId="nav-active" className="absolute inset-0 rounded-xl bg-sol" transition={{ type: 'spring', stiffness: 500, damping: 38 }} />
-                  )}
-                  <Icon className="relative size-5" strokeWidth={2.4} aria-hidden />
-                  <span className="relative">{label}</span>
-                  {to === '/carga' && !isActive && <Kbd className="relative ml-auto text-rail-ink">Alt N</Kbd>}
-                </>
-              )}
-            </NavLink>
+        <nav aria-label="Principal" className="relative flex flex-col">
+          {items.map((item, i) => (
+            <Fragment key={item.to}>
+              {item.group !== items[i - 1]?.group && <p className="mb-1.5 ml-3 mt-4 text-xs font-black text-rail-ink/70 first:mt-0">{item.group}</p>}
+              <BoardLink item={item} pathConnect={item.group === items[i + 1]?.group} />
             </Fragment>
           ))}
+          <a
+            href="/tienda"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-extrabold text-rail-ink transition-colors hover:bg-rail-hover hover:text-white"
+          >
+            <LuExternalLink className="size-4" aria-hidden /> Ver tienda online
+          </a>
         </nav>
         <div className="mt-auto flex flex-col gap-3 pt-6">
           {can(user?.role, 'productos.crear') && <LoteMini />}
@@ -149,6 +145,8 @@ export function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-rail px-4 text-white lg:hidden">
           <Logo />
+          <span className="flex items-center gap-1">
+          <AlertsBell variant="header" />
           <button
             onClick={() => setAccount(true)}
             className="grid size-10 place-items-center rounded-full bg-sol text-sm font-black text-on-fill"
@@ -156,9 +154,11 @@ export function AppShell() {
           >
             {user?.name.slice(0, 1).toUpperCase()}
           </button>
+          </span>
         </header>
 
-        <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10 lg:pt-8">
+        <AnimatedBackdrop />
+        <main className="relative z-10 mx-auto w-full max-w-[1400px] flex-1 px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10 lg:pt-8">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.pathname}
@@ -213,8 +213,43 @@ export function AppShell() {
         theme={theme}
         toggleTheme={toggle}
       />
+      <AssistantWidget />
       <Toaster />
     </div>
+  )
+}
+
+/** Casilla del menú: cuadro de color con el ícono, unida a la siguiente por un camino punteado. La ficha salta a la activa. */
+function BoardLink({ item, pathConnect }: { item: NavItem; pathConnect: boolean }) {
+  const { to, label, icon: Icon, color } = item
+  return (
+    <NavLink to={to} end={to === '/'} className="group relative flex items-center gap-3 rounded-2xl py-1.5 pl-2 pr-2 font-extrabold">
+      {({ isActive }) => (
+        <>
+          {pathConnect && <span className="absolute left-[1.55rem] top-[2.6rem] h-[1.2rem] border-l-[3px] border-dotted border-rail-ink/30" aria-hidden />}
+          {isActive && <motion.span layoutId="nav-row" className="absolute inset-0 rounded-2xl bg-rail-hover" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+          <span
+            className={clsx(
+              'relative grid size-9 shrink-0 place-items-center rounded-xl text-on-fill transition-[transform,filter,opacity] duration-200',
+              BOARD[color].fill,
+              isActive ? 'scale-105' : 'opacity-75 saturate-[.7] group-hover:-translate-y-0.5 group-hover:opacity-100 group-hover:saturate-100',
+            )}
+          >
+            <Icon className="size-[1.15rem]" aria-hidden />
+            {isActive && (
+              <motion.span
+                layoutId="nav-pawn"
+                className="absolute -right-1.5 -top-1.5 size-4 rounded-full bg-white shadow-[0_2px_0_rgb(0_0_0/0.35)] ring-2 ring-rail"
+                transition={{ type: 'spring', stiffness: 420, damping: 18 }}
+                aria-hidden
+              />
+            )}
+          </span>
+          <span className={clsx('relative transition-colors', isActive ? 'text-white' : 'group-hover:text-white')}>{label}</span>
+          {to === '/carga' && !isActive && <Kbd className="relative ml-auto text-rail-ink">Alt N</Kbd>}
+        </>
+      )}
+    </NavLink>
   )
 }
 

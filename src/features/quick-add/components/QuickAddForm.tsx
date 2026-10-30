@@ -1,15 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, motion, useAnimate } from 'framer-motion'
-import { Camera, Check, PackageCheck, RotateCcw, Sparkles } from 'lucide-react'
+import { LuCamera as Camera, LuCheck as Check, LuPackageCheck as PackageCheck, LuRotateCcw as RotateCcw, LuSparkles as Sparkles } from 'react-icons/lu'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Button, Kbd } from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Field'
 import { StockPips } from '@/components/ui/Board'
 import { toast } from '@/components/ui/Toaster'
-import { formatAge, uid } from '@/lib/format'
+import { formatAge, formatPrice, uid } from '@/lib/format'
+import { marginFor, realMargin, recommendedPrice } from '@/lib/pricing'
+import { BOARD } from '@/lib/colors'
+import clsx from 'clsx'
+import { parseAmount } from '../importFile'
 import { useInventory } from '@/stores/inventory'
 import { useLote } from '@/stores/lote'
+import { useCan } from '@/stores/auth'
+import { nextBoardColor } from '@/services/commerce'
 import type { Category, Product } from '@/types'
 import { quickAddSchema, type QuickAddInput, type QuickAddValues } from '../schema'
 import { MOD, useHotkeys } from '@/hooks/useHotkeys'
@@ -26,6 +32,8 @@ const EMPTY: QuickAddInput = {
   batteries: false,
   minStock: '5',
   brand: '',
+  cost: '',
+  seasons: [],
 }
 
 /** Campos de plantilla: se pre-llenan desde la categoría salvo que el usuario los toque. */
@@ -50,6 +58,10 @@ interface Props {
 
 export function QuickAddForm({ onSaved, onOpenCamera, undoRef, scanRef }: Props) {
   const categories = useInventory((s) => s.categories)
+  const seasonsList = useInventory((s) => s.seasons)
+  const addCategory = useInventory((s) => s.addCategory)
+  const canCreateCategory = useCan('categorias.crear')
+  const settings = useInventory((s) => s.settings)
   const products = useInventory((s) => s.products)
   const addOptimistic = useInventory((s) => s.addOptimistic)
   const restock = useInventory((s) => s.restock)
@@ -94,6 +106,8 @@ export function QuickAddForm({ onSaved, onOpenCamera, undoRef, scanRef }: Props)
     setValue('name', existing.name, { shouldValidate: true })
     setValue('categoryId', existing.categoryId, { shouldValidate: true })
     setValue('price', String(existing.price), { shouldValidate: true })
+    setValue('cost', existing.cost === null ? '' : String(existing.cost))
+    setValue('seasons', existing.seasons)
     setValue('ageMin', String(existing.ageMin))
     setValue('batteries', existing.batteries)
     setValue('minStock', String(existing.minStock))
@@ -102,6 +116,12 @@ export function QuickAddForm({ onSaved, onOpenCamera, undoRef, scanRef }: Props)
 
   // ── Plantillas inteligentes ────────────────────────────────────────────────────
   const category = categories.find((c) => c.id === categoryId)
+  // Precio recomendado y margen real, en vivo mientras se escribe.
+  const margin = marginFor(category, settings)
+  const costNum = parseAmount(watch('cost') as string)
+  const priceNum = parseAmount(watch('price') as string)
+  const recommended = Number.isFinite(costNum) ? recommendedPrice(costNum, margin) : null
+  const priceMargin = Number.isFinite(costNum) && Number.isFinite(priceNum) ? realMargin(priceNum, costNum) : null
   const chooseCategory = useCallback(
     (id: string) => {
       setValue('categoryId', id, { shouldValidate: true, shouldDirty: true })
@@ -110,6 +130,18 @@ export function QuickAddForm({ onSaved, onOpenCamera, undoRef, scanRef }: Props)
     },
     [categories, setValue],
   )
+
+  const createCategory = async () => {
+    const name = prompt('Nombre de la nueva categoría')?.trim()
+    if (!name) return
+    try {
+      const cat = await addCategory({ name, color: nextBoardColor(categories), defaults: { ageMin: 3, batteries: false, minStock: 5 } })
+      chooseCategory(cat.id)
+      toast({ tone: 'ok', text: `Categoría «${cat.name}» creada` })
+    } catch (e) {
+      toast({ tone: 'error', text: e instanceof Error ? e.message : 'No se pudo crear la categoría.' })
+    }
+  }
 
   // ── Guardar y siguiente ────────────────────────────────────────────────────────
   // El foco se mueve directo en el DOM: setFocus de RHF usa setTimeout y, con un lector
@@ -146,6 +178,8 @@ export function QuickAddForm({ onSaved, onOpenCamera, undoRef, scanRef }: Props)
         ageMin: v.ageMin,
         batteries: v.batteries,
         brand: v.brand,
+        cost: v.cost,
+        seasons: v.seasons,
         loteId: lote.id,
       })
       record({ id: uid('e'), kind: 'nuevo', productId: id, sku: v.sku, name: v.name, categoryId: v.categoryId, qty: v.stock, stock: v.stock, minStock: v.minStock, at })
@@ -157,7 +191,7 @@ export function QuickAddForm({ onSaved, onOpenCamera, undoRef, scanRef }: Props)
     manual.current.clear()
     const cat = categories.find((c) => c.id === v.categoryId)
     // keepFieldsRef: sin él, reset() vacía el registro de campos y lo que se teclee después se pierde.
-    reset({ ...EMPTY, categoryId: v.categoryId, brand: v.brand, ...templateValues(cat) }, { keepFieldsRef: true })
+    reset({ ...EMPTY, categoryId: v.categoryId, brand: v.brand, seasons: v.seasons, ...templateValues(cat) }, { keepFieldsRef: true })
     onSaved(performance.now() - t0)
 
     setSavedTick((n) => n + 1)
@@ -185,8 +219,8 @@ export function QuickAddForm({ onSaved, onOpenCamera, undoRef, scanRef }: Props)
   const clearCurrent = useCallback(() => {
     focusSku()
     manual.current.clear()
-    const { categoryId: cid, brand } = getValues()
-    reset({ ...EMPTY, categoryId: cid, brand, ...templateValues(categories.find((c) => c.id === cid)) }, { keepFieldsRef: true })
+    const { categoryId: cid, brand, seasons } = getValues()
+    reset({ ...EMPTY, categoryId: cid, brand, seasons, ...templateValues(categories.find((c) => c.id === cid)) }, { keepFieldsRef: true })
   }, [categories, focusSku, getValues, reset])
 
   // ── Deshacer el último ─────────────────────────────────────────────────────────
@@ -332,13 +366,43 @@ export function QuickAddForm({ onSaved, onOpenCamera, undoRef, scanRef }: Props)
                 onChange={chooseCategory}
                 invalid={!!errors.categoryId}
                 describedBy={errors.categoryId ? 'qa-category-error' : undefined}
+                onCreate={canCreateCategory ? createCategory : undefined}
               />
             )}
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Precio de venta" htmlFor="qa-price" error={errors.price?.message}>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+          <Field label="Precio de compra" htmlFor="qa-cost" error={errors.cost?.message} hint={existing ? undefined : 'Lo que te cobra el proveedor'}>
+            <Input
+              id="qa-cost"
+              inputMode="decimal"
+              autoComplete="off"
+              placeholder="Opcional"
+              className="num"
+              readOnly={!!existing}
+              aria-invalid={!!errors.cost}
+              {...register('cost')}
+            />
+          </Field>
+          <Field
+            label="Precio de venta"
+            htmlFor="qa-price"
+            error={errors.price?.message}
+            hint={
+              !existing && recommended !== null ? (
+                <button
+                  type="button"
+                  onClick={() => setValue('price', String(recommended), { shouldValidate: true })}
+                  className="num rounded-md font-extrabold text-turquesa-ink underline decoration-dotted underline-offset-2 hover:decoration-solid"
+                >
+                  Usar recomendado {formatPrice(recommended)} (+{margin}%)
+                </button>
+              ) : priceMargin !== null ? (
+                <span className={priceMargin < 15 ? 'font-extrabold text-peligro' : undefined}>Margen {priceMargin.toFixed(0)}%</span>
+              ) : undefined
+            }
+          >
             <Input
               id="qa-price"
               inputMode="decimal"
@@ -399,6 +463,35 @@ export function QuickAddForm({ onSaved, onOpenCamera, undoRef, scanRef }: Props)
             ? `Plantilla «${category.name}»: ${formatAge(Number(watch('ageMin')))}, ${watch('batteries') ? 'con baterías' : 'sin baterías'}. Cambia solo si este producto es distinto.`
             : 'Elige una categoría y estos datos se completan solos.'}
         </p>
+        {seasonsList.length > 0 && (
+          <Controller
+            control={control}
+            name="seasons"
+            render={({ field }) => (
+              <div role="group" aria-label="Temporadas" className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="mr-1 text-xs font-extrabold text-ink-soft">Temporadas</span>
+                {seasonsList.map((s) => {
+                  const on = field.value.includes(s.id)
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => field.onChange(on ? field.value.filter((x) => x !== s.id) : [...field.value, s.id])}
+                      className={clsx(
+                        'flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-extrabold transition-colors',
+                        on ? clsx(BOARD[s.color].fill, 'text-on-fill') : 'bg-surface text-ink-soft hover:text-ink',
+                      )}
+                    >
+                      {on && <Check className="size-3.5" strokeWidth={3} aria-hidden />}
+                      {s.name}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          />
+        )}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Field label="Edad mínima" htmlFor="qa-age" error={errors.ageMin?.message}>
             <Input

@@ -1,4 +1,4 @@
-import { History, Search } from 'lucide-react'
+import { LuHistory as History, LuSearch as Search } from 'react-icons/lu'
 import { useEffect, useMemo, useState } from 'react'
 import clsx from 'clsx'
 import { Shimmer } from '@/components/ui/Skeleton'

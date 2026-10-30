@@ -184,6 +184,14 @@ export const productsApi = {
     return structuredClone(p)
   },
 
+  // GET /movements?days=N — movimientos recientes de todo el inventario (para el asistente).
+  async recentMovements(days: number): Promise<StockMovement[]> {
+    if (useRealApi()) return http(`/movements?days=${days}`)
+    requirePermission('inventario.ver')
+    const from = Date.now() - days * 86_400_000
+    return structuredClone((await loadDb()).movements.filter((m) => new Date(m.date).getTime() >= from))
+  },
+
   // GET /products/:id/movements — historial real, el más reciente primero.
   async movements(product: Product): Promise<StockMovement[]> {
     if (useRealApi()) return http(`/products/${product.id}/movements`)

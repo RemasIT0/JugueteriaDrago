@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
-import { ShieldOff } from 'lucide-react'
+import { LuShieldOff as ShieldOff } from 'react-icons/lu'
 import { AppShell } from '@/components/layout/AppShell'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import LoginPage from '@/features/auth/LoginPage'
@@ -10,6 +10,7 @@ import QuickAddPage from '@/features/quick-add/QuickAddPage'
 import type { Permission } from '@/lib/permissions'
 import { useAuth, useCan } from '@/stores/auth'
 import { useInventory } from '@/stores/inventory'
+import { useSales } from '@/stores/sales'
 
 // Las secciones de consulta se cargan bajo demanda; Inventario y Carga Rápida van en el paquete inicial.
 const SuppliersPage = lazy(() => import('@/features/suppliers/SuppliersPage'))
@@ -17,6 +18,11 @@ const CategoriesPage = lazy(() => import('@/features/categories/CategoriesPage')
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'))
 const UsersPage = lazy(() => import('@/features/admin/UsersPage'))
 const ActivityPage = lazy(() => import('@/features/admin/ActivityPage'))
+const SeasonsPage = lazy(() => import('@/features/seasons/SeasonsPage'))
+const DiscountsPage = lazy(() => import('@/features/discounts/DiscountsPage'))
+const BillingPage = lazy(() => import('@/features/billing/BillingPage'))
+// La tienda para clientes es un paquete aparte: no carga nada del panel interno.
+const StorePage = lazy(() => import('@/features/store/StorePage'))
 
 /** Muestra la sección solo si el rol tiene el permiso; si no, explica por qué. */
 function Guard({ p, children }: { p: Permission; children: React.ReactNode }) {
@@ -43,6 +49,9 @@ const router = createBrowserRouter([
       { path: '/reportes', element: <Guard p="reportes.ver"><ReportsPage /></Guard> },
       { path: '/usuarios', element: <Guard p="usuarios.gestionar"><UsersPage /></Guard> },
       { path: '/actividad', element: <Guard p="actividad.ver"><ActivityPage /></Guard> },
+      { path: '/temporadas', element: <Guard p="temporadas.ver"><SeasonsPage /></Guard> },
+      { path: '/descuentos', element: <Guard p="descuentos.gestionar"><DiscountsPage /></Guard> },
+      { path: '/facturacion', element: <Guard p="facturacion.ver"><BillingPage /></Guard> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
@@ -56,9 +65,24 @@ function Splash() {
   )
 }
 
+const isStore = () => window.location.pathname.startsWith('/tienda')
+
 export default function App() {
+  if (isStore())
+    return (
+      <Suspense fallback={<Splash />}>
+        <StorePage />
+      </Suspense>
+    )
+  return <Panel />
+}
+
+/** Panel interno: pide ingreso y carga los datos según el rol. */
+function Panel() {
   const { phase, boot } = useAuth()
   const load = useInventory((s) => s.load)
+  const loadSales = useSales((s) => s.load)
+  const canSales = useCan('ventas.ver')
 
   useEffect(() => {
     void boot()
@@ -67,6 +91,11 @@ export default function App() {
   useEffect(() => {
     if (phase === 'in') void load()
   }, [phase, load])
+
+  // Las ventas alimentan avisos de temporada, reportes y el asistente (solo si el rol las puede ver).
+  useEffect(() => {
+    if (phase === 'in' && canSales) void loadSales()
+  }, [phase, canSales, loadSales])
 
   if (phase === 'checking') return <Splash />
   if (phase === 'setup') return <SetupPage />

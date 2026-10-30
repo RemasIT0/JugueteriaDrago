@@ -7,7 +7,8 @@
  * equipos y alguien con acceso técnico al navegador puede leerla o modificarla.
  */
 import { createStore, get, set } from 'idb-keyval'
-import type { AuditEntry, Category, Product, StockMovement, Supplier, User } from '@/types'
+import { defaultSeasons, defaultSettings } from '@/lib/defaults'
+import type { AuditEntry, Category, Discount, Product, Sale, Season, Settings, StockMovement, Supplier, User } from '@/types'
 
 export interface Tables {
   products: Product[]
@@ -16,16 +17,21 @@ export interface Tables {
   movements: StockMovement[]
   users: User[]
   audit: AuditEntry[]
+  sales: Sale[]
+  discounts: Discount[]
+  seasons: Season[]
+  /** Una sola fila: la configuración de la tienda. */
+  settings: Settings[]
 }
 
 /** Versión del esquema: si cambia la forma de los datos, aquí va la migración no destructiva. */
-const SCHEMA_VERSION = 1
+const SCHEMA_VERSION = 2
 
 const store = createStore('dragotoy', 'tablas')
 let cache: Tables | null = null
 let loading: Promise<Tables> | null = null
 
-const EMPTY: Tables = { products: [], categories: [], suppliers: [], movements: [], users: [], audit: [] }
+const EMPTY: Tables = { products: [], categories: [], suppliers: [], movements: [], users: [], audit: [], sales: [], discounts: [], seasons: [], settings: [] }
 
 export function loadDb(): Promise<Tables> {
   if (cache) return Promise.resolve(cache)
@@ -48,6 +54,20 @@ async function migrate(db: Tables) {
       return { ...rest, photos: rest.photos ?? (imageUrl ? [imageUrl] : []) }
     })
     await save('products')
+  }
+  if (v < 2) {
+    // v1 → v2: precio de compra (desconocido = null, no se inventa) y temporadas.
+    db.products = db.products.map((p) => ({ ...p, cost: p.cost ?? null, seasons: p.seasons ?? [] }))
+    await save('products')
+  }
+  // Siempre: que existan las temporadas y la configuración base (no pisa lo que ya hay).
+  if (!db.seasons.length) {
+    db.seasons = defaultSeasons()
+    await save('seasons')
+  }
+  if (!db.settings.length) {
+    db.settings = [defaultSettings()]
+    await save('settings')
   }
   if (v !== SCHEMA_VERSION) await set('schemaVersion', SCHEMA_VERSION, store)
 }

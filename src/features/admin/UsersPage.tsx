@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, motion } from 'framer-motion'
-import { DatabaseBackup, Download, KeyRound, Loader2, Upload, UserPlus, UserRoundCheck, UserRoundX } from 'lucide-react'
+import { LuDatabaseBackup as DatabaseBackup, LuDownload as Download, LuKeyRound as KeyRound, LuLoaderCircle as Loader2, LuUpload as Upload, LuUserPlus as UserPlus, LuUserRoundCheck as UserRoundCheck, LuUserRoundX as UserRoundX } from 'react-icons/lu'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'

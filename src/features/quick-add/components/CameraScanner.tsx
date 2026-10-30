@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { ScanLine, X } from 'lucide-react'
+import { LuScanLine as ScanLine, LuX as X } from 'react-icons/lu'
 import { useEffect, useRef, useState } from 'react'
 
 interface BarcodeDetectorLike {

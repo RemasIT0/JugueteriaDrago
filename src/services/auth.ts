@@ -176,6 +176,12 @@ export async function logout() {
   }
 }
 
+/** Solo id → nombre, para mostrar quién hizo cada movimiento (sin datos sensibles). */
+export async function userNames(): Promise<Record<string, string>> {
+  if (!currentUser()) return {}
+  return Object.fromEntries((await loadDb()).users.map((u) => [u.id, u.name]))
+}
+
 // ── Gestión de usuarios (dueño) ──────────────────────────────────────────────────
 export async function listUsers(): Promise<PublicUser[]> {
   requirePermission('usuarios.gestionar')

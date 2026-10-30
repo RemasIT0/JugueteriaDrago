@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { Flag, Gauge, RotateCw, Timer } from 'lucide-react'
+import { LuFlag as Flag, LuGauge as Gauge, LuRotateCw as RotateCw, LuTimer as Timer } from 'react-icons/lu'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { BOARD } from '@/lib/colors'
