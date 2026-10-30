@@ -1,0 +1,50 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}body{width:1440px;height:900px;overflow:hidden;font-family:Nunito,sans-serif;background:#FAF7F0;color:#24303A;display:flex}
+.side{width:232px;background:#1E4D57;color:#E6F1EF;padding:24px 16px;display:flex;flex-direction:column;gap:4px}
+.logo{font-weight:900;font-size:22px;color:#fff;margin:0 8px 28px;display:flex;gap:10px;align-items:center}.logo i{width:30px;height:30px;border-radius:50%;background:#F6C945;display:block;box-shadow:inset -6px -6px 0 #F07C6B}
+.nav{padding:11px 12px;border-radius:14px;font-weight:700;font-size:15px;color:#BFD8D4}.nav.on{background:#F6C945;color:#24303A}
+main{flex:1;padding:28px 32px;display:flex;flex-direction:column;gap:20px}
+h1{font-size:28px;font-weight:900}.sub{color:#6B7780;font-weight:600;font-size:14px;margin-top:2px}
+.track{background:#fff;border-radius:22px;padding:18px 22px;box-shadow:0 2px 0 #E9E3D6,0 10px 30px -18px #1E4D5733}
+.trackhead{display:flex;justify-content:space-between;font-weight:800;font-size:14px;margin-bottom:12px}.trackhead b{font-variant-numeric:tabular-nums}
+.spaces{display:grid;grid-template-columns:repeat(25,1fr);gap:5px}.sp{height:22px;border-radius:7px;background:#EFEAE0}
+.sp.y{background:#F6C945}.sp.c{background:#F07C6B}.sp.t{background:#3DB4A8}.sp.p{background:#9C8CE8}
+.sp.tok{position:relative;outline:3px solid #24303A;outline-offset:2px}
+.grid{display:grid;grid-template-columns:1fr 380px;gap:20px;flex:1}
+.form{background:#fff;border-radius:22px;padding:24px;box-shadow:0 2px 0 #E9E3D6,0 10px 30px -18px #1E4D5733;display:flex;flex-direction:column;gap:16px}
+.row{display:grid;gap:14px}.r2{grid-template-columns:1.4fr 1fr}.r4{grid-template-columns:repeat(4,1fr)}
+label{font-size:12px;font-weight:800;color:#6B7780;display:block;margin-bottom:6px;letter-spacing:.02em}
+.in{height:46px;border-radius:14px;border:2px solid #E9E3D6;padding:0 14px;display:flex;align-items:center;font-weight:700;font-size:15px}
+.in.focus{border-color:#3DB4A8;box-shadow:0 0 0 4px #3DB4A82a}.mono{font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:8px 14px;border-radius:999px;font-weight:800;font-size:13px;background:#F3EFE6}.chip.on{background:#F07C6B;color:#fff}
+.hint{background:#FFF6D6;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:700;color:#7A5B00}
+.actions{display:flex;gap:10px;margin-top:auto;align-items:center}.btn{height:48px;padding:0 22px;border-radius:14px;font-weight:900;display:flex;align-items:center}
+.pri{background:#24303A;color:#fff}.kbd{font-size:12px;background:#ffffff22;border-radius:6px;padding:2px 6px;margin-left:10px}.sec{background:#F3EFE6}
+.stack{display:flex;flex-direction:column;gap:12px}.stack h3{font-size:14px;font-weight:900;color:#6B7780}
+.card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 0 #E9E3D6}.band{height:10px}.cb{padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.cn{font-weight:800;font-size:15px}.cs{font-size:12px;color:#6B7780;font-weight:700}.pips{display:flex;gap:3px}.pips i{width:9px;height:9px;border-radius:50%;background:#E3DED3}.pips i.f{background:#3DB4A8}
+</style></head><body>
+<aside class="side"><div class="logo"><i></i>DragoToY</div>
+<div class="nav">Inventario</div><div class="nav on">Carga Rápida</div><div class="nav">Proveedores</div><div class="nav">Categorías</div><div class="nav">Reportes</div></aside>
+<main>
+<div><h1>Carga Rápida</h1><div class="sub">Lote #0142 · Proveedor: Distribuidora Andina (ejemplo)</div></div>
+<section class="track"><div class="trackhead"><span>Avance del lote</span><b>18 / 50 productos · faltan 32</b></div>
+<div class="spaces">
+<div class="sp y"></div><div class="sp y"></div><div class="sp c"></div><div class="sp t"></div><div class="sp t"></div><div class="sp y"></div><div class="sp p"></div><div class="sp c"></div><div class="sp c"></div><div class="sp t"></div><div class="sp y"></div><div class="sp y"></div><div class="sp p"></div><div class="sp t"></div><div class="sp c"></div><div class="sp y"></div><div class="sp t"></div><div class="sp c tok"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div>
+</div></section>
+<div class="grid">
+<section class="form">
+<div class="row r2"><div><label>CÓDIGO / SKU</label><div class="in focus mono">7 750123 004218</div></div><div><label>CATEGORÍA</label><div class="chips"><span class="chip">Muñecas</span><span class="chip on">Juegos de mesa</span><span class="chip">Bloques</span><span class="chip">Peluches</span></div></div></div>
+<div><label>NOMBRE</label><div class="in">Rompecabezas Selva 500 piezas</div></div>
+<div class="hint">Plantilla “Juegos de mesa” aplicada: Edad +5 · Sin baterías</div>
+<div class="row r4"><div><label>PRECIO</label><div class="in mono">$ 39.90</div></div><div><label>STOCK</label><div class="in mono">24</div></div><div><label>EDAD</label><div class="in">+5 años</div></div><div><label>BATERÍAS</label><div class="in">No</div></div></div>
+<div class="actions"><div class="btn pri">Guardar y siguiente <span class="kbd">Ctrl ↵</span></div><div class="btn sec">Importar CSV</div></div>
+</section>
+<aside class="stack"><h3>Recién guardados</h3>
+<div class="card"><div class="band" style="background:#3DB4A8"></div><div class="cb"><div><div class="cn">Bloques Ciudad 250 pzs</div><div class="cs mono">SKU 004217 · 12 u</div></div><div class="pips"><i class="f"></i><i class="f"></i><i></i></div></div></div>
+<div class="card"><div class="band" style="background:#F6C945"></div><div class="cb"><div><div class="cn">Muñeca Doctora</div><div class="cs mono">SKU 004216 · 30 u</div></div><div class="pips"><i class="f"></i><i class="f"></i><i class="f"></i></div></div></div>
+<div class="card"><div class="band" style="background:#9C8CE8"></div><div class="cb"><div><div class="cn">Peluche Dragón 30 cm</div><div class="cs mono">SKU 004215 · 4 u</div></div><div class="pips"><i class="f"></i><i></i><i></i></div></div></div>
+<div class="card"><div class="band" style="background:#F07C6B"></div><div class="cb"><div><div class="cn">Juego Memoria Animales</div><div class="cs mono">SKU 004214 · 18 u</div></div><div class="pips"><i class="f"></i><i class="f"></i><i></i></div></div></div>
+</aside></div></main></body></html>

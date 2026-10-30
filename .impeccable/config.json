@@ -1,0 +1,206 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-30T01:55:03.095Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-30T01:55:03.345Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "skipped-heading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-30T01:55:03.579Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-30T01:55:03.852Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-30T01:55:04.128Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-30T01:55:04.362Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "skipped-heading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-30T01:55:04.646Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-30T01:55:04.940Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-zoo.html"
+        ],
+        "createdAt": "2026-10-30T01:55:05.237Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-zoo.html"
+        ],
+        "createdAt": "2026-10-30T01:55:05.520Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "skipped-heading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-zoo.html"
+        ],
+        "createdAt": "2026-10-30T01:55:05.792Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-zoo.html"
+        ],
+        "createdAt": "2026-10-30T01:55:06.051Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-goods.html"
+        ],
+        "createdAt": "2026-10-30T01:55:06.333Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-goods.html"
+        ],
+        "createdAt": "2026-10-30T01:55:06.614Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "skipped-heading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-goods.html"
+        ],
+        "createdAt": "2026-10-30T01:55:06.895Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-goods.html"
+        ],
+        "createdAt": "2026-10-30T01:55:07.176Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-30T01:55:07.424Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-30T01:55:07.704Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "skipped-heading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-30T01:55:07.972Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-30T01:55:08.219Z",
+        "reason": "claude: throwaway decision-round sketch, not shipped; brief pins off-white ground"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-zoo.html"
+        ],
+        "createdAt": "2026-10-30T02:12:37.900Z",
+        "reason": "claude: throwaway decision-round sketch of an unchosen direction, not shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-goods.html"
+        ],
+        "createdAt": "2026-10-30T02:12:38.238Z",
+        "reason": "claude: throwaway decision-round sketch of an unchosen direction, not shipped"
+      }
+    ]
+  }
+}

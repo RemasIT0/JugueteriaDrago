@@ -1,0 +1,914 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-30T02:13:01.883Z",
+  "title": "Design System: DragoToY Inventario",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "canonical": "rgb(250 247 240)",
+        "cssVar": "--ground",
+        "dark": {
+          "canonical": "rgb(20 27 31)",
+          "hex": "#141B1F"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.001 85)",
+          "oklch(27% 0.005 85)",
+          "oklch(39% 0.008 85)",
+          "oklch(51% 0.010 85)",
+          "oklch(63% 0.010 85)",
+          "oklch(75% 0.007 85)",
+          "oklch(85% 0.004 85)",
+          "oklch(95% 0.001 85)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White Card",
+        "canonical": "rgb(255 255 255)",
+        "cssVar": "--surface",
+        "dark": {
+          "canonical": "rgb(29 38 43)",
+          "hex": "#1D262B"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.001 230)",
+          "oklch(27% 0.002 230)",
+          "oklch(39% 0.004 230)",
+          "oklch(51% 0.005 230)",
+          "oklch(63% 0.005 230)",
+          "oklch(75% 0.004 230)",
+          "oklch(85% 0.002 230)",
+          "oklch(95% 0.001 230)"
+        ]
+      },
+      "sunken": {
+        "role": "neutral",
+        "displayName": "Sunken Felt",
+        "canonical": "rgb(243 239 230)",
+        "cssVar": "--sunken",
+        "dark": {
+          "canonical": "rgb(37 47 53)",
+          "hex": "#252F35"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.002 85)",
+          "oklch(27% 0.006 85)",
+          "oklch(39% 0.010 85)",
+          "oklch(51% 0.012 85)",
+          "oklch(63% 0.012 85)",
+          "oklch(75% 0.009 85)",
+          "oklch(85% 0.005 85)",
+          "oklch(95% 0.002 85)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Board Line",
+        "canonical": "rgb(233 227 214)",
+        "cssVar": "--line",
+        "dark": {
+          "canonical": "rgb(48 60 67)",
+          "hex": "#303C43"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.003 85)",
+          "oklch(27% 0.010 85)",
+          "oklch(39% 0.017 85)",
+          "oklch(51% 0.020 85)",
+          "oklch(63% 0.020 85)",
+          "oklch(75% 0.014 85)",
+          "oklch(85% 0.009 85)",
+          "oklch(95% 0.003 85)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "rgb(36 48 58)",
+        "cssVar": "--ink",
+        "dark": {
+          "canonical": "rgb(236 241 240)",
+          "hex": "#ECF1F0"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.004 245)",
+          "oklch(27% 0.012 245)",
+          "oklch(39% 0.021 245)",
+          "oklch(51% 0.025 245)",
+          "oklch(63% 0.025 245)",
+          "oklch(75% 0.018 245)",
+          "oklch(85% 0.011 245)",
+          "oklch(95% 0.004 245)"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "rgb(90 102 111)",
+        "cssVar": "--ink-soft",
+        "dark": {
+          "canonical": "rgb(164 177 182)",
+          "hex": "#A4B1B6"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.003 240)",
+          "oklch(27% 0.010 240)",
+          "oklch(39% 0.017 240)",
+          "oklch(51% 0.020 240)",
+          "oklch(63% 0.020 240)",
+          "oklch(75% 0.014 240)",
+          "oklch(85% 0.009 240)",
+          "oklch(95% 0.003 240)"
+        ]
+      },
+      "on-fill": {
+        "role": "neutral",
+        "displayName": "On-fill Ink",
+        "canonical": "rgb(36 48 58)",
+        "cssVar": "--on-fill",
+        "dark": {
+          "canonical": "rgb(36 48 58)",
+          "hex": "#24303A",
+          "note": "Unchanged in dark mode."
+        },
+        "tonalRamp": [
+          "oklch(15% 0.004 245)",
+          "oklch(27% 0.012 245)",
+          "oklch(39% 0.021 245)",
+          "oklch(51% 0.025 245)",
+          "oklch(63% 0.025 245)",
+          "oklch(75% 0.018 245)",
+          "oklch(85% 0.011 245)",
+          "oklch(95% 0.004 245)"
+        ]
+      },
+      "rail": {
+        "role": "primary",
+        "displayName": "Deep Teal Rail",
+        "canonical": "rgb(30 77 87)",
+        "cssVar": "--rail",
+        "dark": {
+          "canonical": "rgb(14 44 51)",
+          "hex": "#0E2C33"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.008 215)",
+          "oklch(27% 0.027 215)",
+          "oklch(39% 0.046 215)",
+          "oklch(51% 0.055 215)",
+          "oklch(63% 0.055 215)",
+          "oklch(75% 0.039 215)",
+          "oklch(85% 0.024 215)",
+          "oklch(95% 0.008 215)"
+        ]
+      },
+      "rail-ink": {
+        "role": "primary",
+        "displayName": "Rail Ink",
+        "canonical": "rgb(213 231 228)",
+        "cssVar": "--rail-ink",
+        "dark": {
+          "canonical": "rgb(190 214 210)",
+          "hex": "#BED6D2"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.004 185)",
+          "oklch(27% 0.015 185)",
+          "oklch(39% 0.025 185)",
+          "oklch(51% 0.030 185)",
+          "oklch(63% 0.030 185)",
+          "oklch(75% 0.021 185)",
+          "oklch(85% 0.013 185)",
+          "oklch(95% 0.004 185)"
+        ]
+      },
+      "rail-hover": {
+        "role": "primary",
+        "displayName": "Rail Hover",
+        "canonical": "rgb(41 96 107)",
+        "cssVar": "--rail-hover",
+        "dark": {
+          "canonical": "rgb(25 64 72)",
+          "hex": "#194048"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.009 215)",
+          "oklch(27% 0.029 215)",
+          "oklch(39% 0.050 215)",
+          "oklch(51% 0.060 215)",
+          "oklch(63% 0.060 215)",
+          "oklch(75% 0.043 215)",
+          "oklch(85% 0.026 215)",
+          "oklch(95% 0.009 215)"
+        ]
+      },
+      "sol": {
+        "role": "primary",
+        "displayName": "Sol (Sun Yellow)",
+        "canonical": "rgb(246 201 69)",
+        "cssVar": "--sol",
+        "dark": {
+          "canonical": "rgb(246 201 69)",
+          "hex": "#F6C945",
+          "note": "Unchanged in dark mode."
+        },
+        "tonalRamp": [
+          "oklch(15% 0.021 88)",
+          "oklch(27% 0.073 88)",
+          "oklch(39% 0.124 88)",
+          "oklch(51% 0.150 88)",
+          "oklch(63% 0.150 88)",
+          "oklch(75% 0.107 88)",
+          "oklch(85% 0.064 88)",
+          "oklch(95% 0.021 88)"
+        ]
+      },
+      "sol-ink": {
+        "role": "primary",
+        "displayName": "Sol Ink",
+        "canonical": "rgb(122 87 0)",
+        "cssVar": "--sol-ink",
+        "dark": {
+          "canonical": "rgb(246 212 112)",
+          "hex": "#F6D470"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.017 80)",
+          "oklch(27% 0.058 80)",
+          "oklch(39% 0.099 80)",
+          "oklch(51% 0.120 80)",
+          "oklch(63% 0.120 80)",
+          "oklch(75% 0.086 80)",
+          "oklch(85% 0.051 80)",
+          "oklch(95% 0.017 80)"
+        ]
+      },
+      "sol-wash": {
+        "role": "primary",
+        "displayName": "Sol Wash",
+        "canonical": "rgb(255 244 207)",
+        "cssVar": "--sol-wash",
+        "dark": {
+          "canonical": "rgb(61 52 22)",
+          "hex": "#3D3416"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.009 92)",
+          "oklch(27% 0.029 92)",
+          "oklch(39% 0.050 92)",
+          "oklch(51% 0.060 92)",
+          "oklch(63% 0.060 92)",
+          "oklch(75% 0.043 92)",
+          "oklch(85% 0.026 92)",
+          "oklch(95% 0.009 92)"
+        ]
+      },
+      "coral": {
+        "role": "secondary",
+        "displayName": "Coral",
+        "canonical": "rgb(240 124 107)",
+        "cssVar": "--coral",
+        "dark": {
+          "canonical": "rgb(240 124 107)",
+          "hex": "#F07C6B",
+          "note": "Unchanged in dark mode."
+        },
+        "tonalRamp": [
+          "oklch(15% 0.020 30)",
+          "oklch(27% 0.068 30)",
+          "oklch(39% 0.116 30)",
+          "oklch(51% 0.140 30)",
+          "oklch(63% 0.140 30)",
+          "oklch(75% 0.100 30)",
+          "oklch(85% 0.060 30)",
+          "oklch(95% 0.020 30)"
+        ]
+      },
+      "coral-ink": {
+        "role": "secondary",
+        "displayName": "Coral Ink",
+        "canonical": "rgb(166 59 44)",
+        "cssVar": "--coral-ink",
+        "dark": {
+          "canonical": "rgb(248 160 146)",
+          "hex": "#F8A092"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.020 32)",
+          "oklch(27% 0.068 32)",
+          "oklch(39% 0.116 32)",
+          "oklch(51% 0.140 32)",
+          "oklch(63% 0.140 32)",
+          "oklch(75% 0.100 32)",
+          "oklch(85% 0.060 32)",
+          "oklch(95% 0.020 32)"
+        ]
+      },
+      "coral-wash": {
+        "role": "secondary",
+        "displayName": "Coral Wash",
+        "canonical": "rgb(253 229 224)",
+        "cssVar": "--coral-wash",
+        "dark": {
+          "canonical": "rgb(66 37 33)",
+          "hex": "#422521"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.004 30)",
+          "oklch(27% 0.015 30)",
+          "oklch(39% 0.025 30)",
+          "oklch(51% 0.030 30)",
+          "oklch(63% 0.030 30)",
+          "oklch(75% 0.021 30)",
+          "oklch(85% 0.013 30)",
+          "oklch(95% 0.004 30)"
+        ]
+      },
+      "turquesa": {
+        "role": "secondary",
+        "displayName": "Turquesa",
+        "canonical": "rgb(61 180 168)",
+        "cssVar": "--turquesa",
+        "dark": {
+          "canonical": "rgb(61 180 168)",
+          "hex": "#3DB4A8",
+          "note": "Unchanged in dark mode."
+        },
+        "tonalRamp": [
+          "oklch(15% 0.016 182)",
+          "oklch(27% 0.053 182)",
+          "oklch(39% 0.091 182)",
+          "oklch(51% 0.110 182)",
+          "oklch(63% 0.110 182)",
+          "oklch(75% 0.079 182)",
+          "oklch(85% 0.047 182)",
+          "oklch(95% 0.016 182)"
+        ]
+      },
+      "turquesa-ink": {
+        "role": "secondary",
+        "displayName": "Turquesa Ink",
+        "canonical": "rgb(20 110 101)",
+        "cssVar": "--turquesa-ink",
+        "dark": {
+          "canonical": "rgb(112 214 203)",
+          "hex": "#70D6CB"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.013 182)",
+          "oklch(27% 0.044 182)",
+          "oklch(39% 0.075 182)",
+          "oklch(51% 0.090 182)",
+          "oklch(63% 0.090 182)",
+          "oklch(75% 0.064 182)",
+          "oklch(85% 0.039 182)",
+          "oklch(95% 0.013 182)"
+        ]
+      },
+      "turquesa-wash": {
+        "role": "secondary",
+        "displayName": "Turquesa Wash",
+        "canonical": "rgb(218 243 239)",
+        "cssVar": "--turquesa-wash",
+        "dark": {
+          "canonical": "rgb(22 59 56)",
+          "hex": "#163B38"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.004 182)",
+          "oklch(27% 0.015 182)",
+          "oklch(39% 0.025 182)",
+          "oklch(51% 0.030 182)",
+          "oklch(63% 0.030 182)",
+          "oklch(75% 0.021 182)",
+          "oklch(85% 0.013 182)",
+          "oklch(95% 0.004 182)"
+        ]
+      },
+      "lila": {
+        "role": "tertiary",
+        "displayName": "Lila",
+        "canonical": "rgb(156 140 232)",
+        "cssVar": "--lila",
+        "dark": {
+          "canonical": "rgb(156 140 232)",
+          "hex": "#9C8CE8",
+          "note": "Unchanged in dark mode."
+        },
+        "tonalRamp": [
+          "oklch(15% 0.020 288)",
+          "oklch(27% 0.068 288)",
+          "oklch(39% 0.116 288)",
+          "oklch(51% 0.140 288)",
+          "oklch(63% 0.140 288)",
+          "oklch(75% 0.100 288)",
+          "oklch(85% 0.060 288)",
+          "oklch(95% 0.020 288)"
+        ]
+      },
+      "lila-ink": {
+        "role": "tertiary",
+        "displayName": "Lila Ink",
+        "canonical": "rgb(88 70 179)",
+        "cssVar": "--lila-ink",
+        "dark": {
+          "canonical": "rgb(190 180 245)",
+          "hex": "#BEB4F5"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.023 285)",
+          "oklch(27% 0.078 285)",
+          "oklch(39% 0.133 285)",
+          "oklch(51% 0.160 285)",
+          "oklch(63% 0.160 285)",
+          "oklch(75% 0.114 285)",
+          "oklch(85% 0.069 285)",
+          "oklch(95% 0.023 285)"
+        ]
+      },
+      "lila-wash": {
+        "role": "tertiary",
+        "displayName": "Lila Wash",
+        "canonical": "rgb(236 232 252)",
+        "cssVar": "--lila-wash",
+        "dark": {
+          "canonical": "rgb(48 43 77)",
+          "hex": "#302B4D"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.004 288)",
+          "oklch(27% 0.015 288)",
+          "oklch(39% 0.025 288)",
+          "oklch(51% 0.030 288)",
+          "oklch(63% 0.030 288)",
+          "oklch(75% 0.021 288)",
+          "oklch(85% 0.013 288)",
+          "oklch(95% 0.004 288)"
+        ]
+      },
+      "hoja": {
+        "role": "tertiary",
+        "displayName": "Hoja (Leaf)",
+        "canonical": "rgb(124 196 107)",
+        "cssVar": "--hoja",
+        "dark": {
+          "canonical": "rgb(124 196 107)",
+          "hex": "#7CC46B",
+          "note": "Unchanged in dark mode."
+        },
+        "tonalRamp": [
+          "oklch(15% 0.020 140)",
+          "oklch(27% 0.068 140)",
+          "oklch(39% 0.116 140)",
+          "oklch(51% 0.140 140)",
+          "oklch(63% 0.140 140)",
+          "oklch(75% 0.100 140)",
+          "oklch(85% 0.060 140)",
+          "oklch(95% 0.020 140)"
+        ]
+      },
+      "hoja-ink": {
+        "role": "tertiary",
+        "displayName": "Hoja Ink",
+        "canonical": "rgb(55 115 41)",
+        "cssVar": "--hoja-ink",
+        "dark": {
+          "canonical": "rgb(160 220 146)",
+          "hex": "#A0DC92"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.017 140)",
+          "oklch(27% 0.058 140)",
+          "oklch(39% 0.099 140)",
+          "oklch(51% 0.120 140)",
+          "oklch(63% 0.120 140)",
+          "oklch(75% 0.086 140)",
+          "oklch(85% 0.051 140)",
+          "oklch(95% 0.017 140)"
+        ]
+      },
+      "hoja-wash": {
+        "role": "tertiary",
+        "displayName": "Hoja Wash",
+        "canonical": "rgb(228 244 222)",
+        "cssVar": "--hoja-wash",
+        "dark": {
+          "canonical": "rgb(35 58 32)",
+          "hex": "#233A20"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.006 140)",
+          "oklch(27% 0.019 140)",
+          "oklch(39% 0.033 140)",
+          "oklch(51% 0.040 140)",
+          "oklch(63% 0.040 140)",
+          "oklch(75% 0.029 140)",
+          "oklch(85% 0.017 140)",
+          "oklch(95% 0.006 140)"
+        ]
+      },
+      "cielo": {
+        "role": "tertiary",
+        "displayName": "Cielo (Sky)",
+        "canonical": "rgb(90 169 230)",
+        "cssVar": "--cielo",
+        "dark": {
+          "canonical": "rgb(90 169 230)",
+          "hex": "#5AA9E6",
+          "note": "Unchanged in dark mode."
+        },
+        "tonalRamp": [
+          "oklch(15% 0.017 245)",
+          "oklch(27% 0.058 245)",
+          "oklch(39% 0.099 245)",
+          "oklch(51% 0.120 245)",
+          "oklch(63% 0.120 245)",
+          "oklch(75% 0.086 245)",
+          "oklch(85% 0.051 245)",
+          "oklch(95% 0.017 245)"
+        ]
+      },
+      "cielo-ink": {
+        "role": "tertiary",
+        "displayName": "Cielo Ink",
+        "canonical": "rgb(26 98 156)",
+        "cssVar": "--cielo-ink",
+        "dark": {
+          "canonical": "rgb(148 199 240)",
+          "hex": "#94C7F0"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.017 250)",
+          "oklch(27% 0.058 250)",
+          "oklch(39% 0.099 250)",
+          "oklch(51% 0.120 250)",
+          "oklch(63% 0.120 250)",
+          "oklch(75% 0.086 250)",
+          "oklch(85% 0.051 250)",
+          "oklch(95% 0.017 250)"
+        ]
+      },
+      "cielo-wash": {
+        "role": "tertiary",
+        "displayName": "Cielo Wash",
+        "canonical": "rgb(222 238 251)",
+        "cssVar": "--cielo-wash",
+        "dark": {
+          "canonical": "rgb(27 50 70)",
+          "hex": "#1B3246"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.004 245)",
+          "oklch(27% 0.015 245)",
+          "oklch(39% 0.025 245)",
+          "oklch(51% 0.030 245)",
+          "oklch(63% 0.030 245)",
+          "oklch(75% 0.021 245)",
+          "oklch(85% 0.013 245)",
+          "oklch(95% 0.004 245)"
+        ]
+      },
+      "peligro": {
+        "role": "error",
+        "displayName": "Peligro",
+        "canonical": "rgb(205 64 52)",
+        "cssVar": "--peligro",
+        "dark": {
+          "canonical": "rgb(240 110 98)",
+          "hex": "#F06E62"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.026 28)",
+          "oklch(27% 0.087 28)",
+          "oklch(39% 0.149 28)",
+          "oklch(51% 0.180 28)",
+          "oklch(63% 0.180 28)",
+          "oklch(75% 0.129 28)",
+          "oklch(85% 0.077 28)",
+          "oklch(95% 0.026 28)"
+        ]
+      },
+      "peligro-wash": {
+        "role": "error",
+        "displayName": "Peligro Wash",
+        "canonical": "rgb(252 228 224)",
+        "cssVar": "--peligro-wash",
+        "dark": {
+          "canonical": "rgb(70 32 30)",
+          "hex": "#46201E"
+        },
+        "tonalRamp": [
+          "oklch(15% 0.004 28)",
+          "oklch(27% 0.015 28)",
+          "oklch(39% 0.025 28)",
+          "oklch(51% 0.030 28)",
+          "oklch(63% 0.030 28)",
+          "oklch(75% 0.021 28)",
+          "oklch(85% 0.013 28)",
+          "oklch(95% 0.004 28)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page titles and the lote counter; 1.5rem on phones, 1.875rem from sm."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Product name at the top of the drawer."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Supplier and category card names."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Input text, button labels (800), product names (800)."
+      },
+      "body-small": {
+        "displayName": "Body small",
+        "purpose": "Meta lines, chip labels, secondary table columns (600-800)."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels and column headers; sentence case, ink-soft."
+      },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "Keycap hints, track milestone numbers, mobile nav labels."
+      },
+      "figures": {
+        "displayName": "Figures",
+        "purpose": "The .num utility: tabular numerals for every SKU, stock, price, goal, pace and time."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "0 1px 0 rgb(var(--line)), 0 14px 30px -20px rgb(var(--shadow) / 0.45)",
+        "purpose": "Every resting card, track panel, stack card, primary/accent buttons, selected segmented tab."
+      },
+      {
+        "name": "lift",
+        "value": "0 2px 0 rgb(var(--line)), 0 22px 40px -22px rgb(var(--shadow) / 0.55)",
+        "purpose": "Toasts and the camera-scanner dialog."
+      },
+      {
+        "name": "drawer",
+        "value": "-24px 0 60px -30px rgb(var(--shadow) / 0.6)",
+        "purpose": "Right-side product drawer."
+      },
+      {
+        "name": "focus",
+        "value": "0 0 0 4px rgb(var(--turquesa) / 0.28)",
+        "purpose": "Input focus halo with turquesa border."
+      },
+      {
+        "name": "focus-error",
+        "value": "0 0 0 4px rgb(var(--peligro) / 0.2)",
+        "purpose": "Focus halo on an invalid input."
+      },
+      {
+        "name": "token",
+        "value": "0 3px 0 rgb(var(--shadow) / 0.35), 0 8px 14px -4px rgb(var(--shadow) / 0.5)",
+        "purpose": "The lote token only, with a 3px surface ring."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Default easing: page fades, digit flips, space pop-in, shimmer."
+      },
+      {
+        "name": "page-transition",
+        "value": "opacity + y 10px, 180ms ease-out",
+        "purpose": "Route change."
+      },
+      {
+        "name": "flip-digit",
+        "value": "220ms ease-out, rotateX 80deg, y 70%",
+        "purpose": "FlipNumber digit change in place."
+      },
+      {
+        "name": "space-pop",
+        "value": "scale 0.6 -> 1.12 -> 1, 450ms ease-out",
+        "purpose": "A track space filling."
+      },
+      {
+        "name": "spring-token",
+        "value": "spring stiffness 460, damping 20",
+        "purpose": "Token hop between spaces (track and rail mini track)."
+      },
+      {
+        "name": "spring-button",
+        "value": "spring stiffness 600, damping 30; hover y -1px, tap scale 0.97",
+        "purpose": "Button press."
+      },
+      {
+        "name": "spring-slide",
+        "value": "spring stiffness 500-600, damping 34-38",
+        "purpose": "Shared-layout indicators: active nav pill, selected chip, segmented tab."
+      },
+      {
+        "name": "spring-card-drop",
+        "value": "spring stiffness 520, damping 30; from y -28px, scale 0.92, rotate -2deg",
+        "purpose": "Recién guardados card arrival."
+      },
+      {
+        "name": "spring-band-snap",
+        "value": "spring stiffness 700, damping 14; scaleY 3 -> 1",
+        "purpose": "Category band closing on a new stack card."
+      },
+      {
+        "name": "spring-drawer",
+        "value": "spring stiffness 380, damping 38; x 100% -> 0",
+        "purpose": "Product drawer."
+      },
+      {
+        "name": "shimmer",
+        "value": "1.4s ease-out infinite",
+        "purpose": "Skeleton loading."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation/transition durations 0.01ms; FlipNumber skips the flip",
+        "purpose": "prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      },
+      {
+        "name": "container-max",
+        "value": "1400px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main commit action (Guardar y siguiente); ink fill with inline keycap hint.",
+      "html": "<button class=\"ds-btn ds-btn-primary\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"rgb(var(--turquesa))\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg>Guardar y siguiente <kbd class=\"ds-kbd\">Ctrl Enter</kbd></button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:14px;font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;font-size:0.9375rem;font-weight:800;cursor:pointer;transition:background-color 150ms,border-color 150ms,filter 150ms,transform 150ms cubic-bezier(0.16,1,0.3,1)}.ds-btn:hover{transform:translateY(-1px)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-btn-primary{background:rgb(var(--ink));color:rgb(var(--ground));box-shadow:0 1px 0 rgb(var(--line)),0 14px 30px -20px rgb(var(--shadow) / 0.45)}.ds-btn-primary:hover{background:rgb(var(--ink) / 0.9)}.ds-kbd{display:inline-flex;align-items:center;justify-content:center;height:20px;min-width:20px;padding:0 6px;border-radius:6px;font:900 0.6875rem/1rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;font-variant-numeric:tabular-nums;background:color-mix(in srgb,currentColor 16%,transparent)}"
+    },
+    {
+      "name": "Accent Button",
+      "kind": "button",
+      "refersTo": "button-accent",
+      "description": "Sol-filled action for the single most important non-commit action.",
+      "html": "<button class=\"ds-btn ds-btn-accent\">Nuevo lote</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:14px;font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;font-size:0.9375rem;font-weight:800;cursor:pointer;transition:background-color 150ms,border-color 150ms,filter 150ms,transform 150ms cubic-bezier(0.16,1,0.3,1)}.ds-btn:hover{transform:translateY(-1px)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-btn-accent{background:rgb(var(--sol));color:rgb(var(--on-fill));box-shadow:0 1px 0 rgb(var(--line)),0 14px 30px -20px rgb(var(--shadow) / 0.45)}.ds-btn-accent:hover{filter:brightness(1.04)}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Default button: sunken felt fill.",
+      "html": "<button class=\"ds-btn ds-btn-secondary\">Exportar</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:14px;font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;font-size:0.9375rem;font-weight:800;cursor:pointer;transition:background-color 150ms,border-color 150ms,filter 150ms,transform 150ms cubic-bezier(0.16,1,0.3,1)}.ds-btn:hover{transform:translateY(-1px)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-btn-secondary{background:rgb(var(--sunken));color:rgb(var(--ink))}.ds-btn-secondary:hover{background:rgb(var(--line) / 0.7)}"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive action: outline only until hover or focus; kept apart from fields and confirmed.",
+      "html": "<button class=\"ds-btn ds-btn-danger\">Eliminar producto</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:14px;font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;font-size:0.9375rem;font-weight:800;cursor:pointer;transition:background-color 150ms,border-color 150ms,filter 150ms,transform 150ms cubic-bezier(0.16,1,0.3,1)}.ds-btn:hover{transform:translateY(-1px)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-btn-danger{background:transparent;color:rgb(var(--peligro));border:2px solid rgb(var(--peligro) / 0.4)}.ds-btn-danger:hover,.ds-btn-danger:focus-visible{background:rgb(var(--peligro-wash));border-color:rgb(var(--peligro))}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "48px field with 2px line border, coral caret, turquesa focus border and halo.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Código de barras / SKU</span><input class=\"ds-input\" placeholder=\"Escanea o escribe el código\"/><span class=\"ds-field-hint\">Escanea con el lector o escribe el código</span></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;width:320px;font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif}.ds-field-label{font-size:0.75rem;font-weight:800;color:rgb(var(--ink-soft))}.ds-field-hint{font-size:0.75rem;font-weight:600;color:rgb(var(--ink-soft))}.ds-input{height:48px;padding:0 14px;border:2px solid rgb(var(--line));border-radius:14px;background:rgb(var(--surface));color:rgb(var(--ink));font:700 0.9375rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;caret-color:rgb(var(--coral));transition:border-color 150ms,box-shadow 150ms}.ds-input::placeholder{font-weight:600;color:rgb(var(--ink-soft) / 0.8)}.ds-input:hover{border-color:rgb(var(--ink-soft) / 0.4)}.ds-input:focus{outline:none;border-color:rgb(var(--turquesa));box-shadow:0 0 0 4px rgb(var(--turquesa) / 0.28)}.ds-input[aria-invalid=true]{border-color:rgb(var(--peligro))}"
+    },
+    {
+      "name": "Category Chip",
+      "kind": "chip",
+      "refersTo": "category-chip",
+      "description": "Radio chip in the category picker; the selected chip takes the full category fill.",
+      "html": "<div class=\"ds-chips\" role=\"radiogroup\"><button class=\"ds-chip\" role=\"radio\" aria-checked=\"false\"><span class=\"ds-dot\" style=\"background:rgb(var(--coral))\"></span>Muñecas</button><button class=\"ds-chip ds-chip-on\" role=\"radio\" aria-checked=\"true\" style=\"background:rgb(var(--lila))\"><span class=\"ds-dot\"></span>Peluches</button></div>",
+      "css": ".ds-chips{display:flex;flex-wrap:wrap;gap:8px}.ds-chip{display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:0;border-radius:9999px;background:rgb(var(--sunken));color:rgb(var(--ink-soft));font:800 0.875rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;cursor:pointer;transition:color 150ms}.ds-chip:hover{color:rgb(var(--ink))}.ds-chip:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-dot{width:10px;height:10px;border-radius:9999px}.ds-chip-on{color:rgb(var(--on-fill))}.ds-chip-on .ds-dot{background:rgb(var(--on-fill) / 0.7)}"
+    },
+    {
+      "name": "Category Tag",
+      "kind": "chip",
+      "refersTo": "category-tag",
+      "description": "Read-only category label: wash pill, category ink text, fill dot.",
+      "html": "<span class=\"ds-tag\"><span class=\"ds-tag-dot\"></span>Bloques</span>",
+      "css": ".ds-tag{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:9999px;background:rgb(var(--turquesa-wash));color:rgb(var(--turquesa-ink));font:800 0.75rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif}.ds-tag-dot{width:8px;height:8px;border-radius:9999px;background:rgb(var(--turquesa))}"
+    },
+    {
+      "name": "Recién guardados Card",
+      "kind": "card",
+      "refersTo": "stack-card",
+      "description": "Stack card with category band, name, stock pips and tabular meta line.",
+      "html": "<div class=\"ds-stack-card\"><div class=\"ds-band\"></div><div class=\"ds-stack-body\"><p class=\"ds-stack-name\"><span>Peluche Dragón 30 cm</span><span class=\"ds-pips\"><i class=\"ds-pip on\"></i><i class=\"ds-pip on\"></i><i class=\"ds-pip\"></i></span></p><p class=\"ds-stack-meta\">7750123004111 · 15 u · 23:05</p></div></div>",
+      "css": ".ds-stack-card{width:320px;overflow:hidden;border-radius:20px;background:rgb(var(--surface));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;box-shadow:0 1px 0 rgb(var(--line)),0 14px 30px -20px rgb(var(--shadow) / 0.45)}.ds-band{height:8px;background:rgb(var(--lila))}.ds-stack-body{padding:10px 14px}.ds-stack-name{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0;font-size:0.9375rem;font-weight:800;color:rgb(var(--ink))}.ds-stack-meta{margin:0;font-size:0.75rem;font-weight:700;color:rgb(var(--ink-soft));font-variant-numeric:tabular-nums;letter-spacing:0.01em}.ds-pips{display:flex;gap:3px}.ds-pip{width:8px;height:8px;border-radius:9999px;background:rgb(var(--line))}.ds-pip.on{background:rgb(var(--sol))}"
+    },
+    {
+      "name": "Lote Track",
+      "kind": "custom",
+      "refersTo": "track-space",
+      "description": "Signature board: category-filled spaces, the ink token, milestone and sol goal spaces.",
+      "html": "<div class=\"ds-track-panel\"><p class=\"ds-count\">5 <span>/ 12</span></p><ol class=\"ds-track\"><li style=\"background:rgb(var(--sol))\"></li><li style=\"background:rgb(var(--coral))\"></li><li style=\"background:rgb(var(--turquesa))\"></li><li style=\"background:rgb(var(--lila))\"></li><li style=\"background:rgb(var(--hoja))\"></li><li><span class=\"ds-token\"></span></li><li></li><li></li><li></li><li class=\"ds-ms\">10</li><li></li><li class=\"ds-goal\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"rgb(var(--on-fill))\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\"/><line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\"/></svg></li></ol></div>",
+      "css": ".ds-track-panel{padding:20px;border-radius:28px;background:rgb(var(--surface));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;box-shadow:0 1px 0 rgb(var(--line)),0 14px 30px -20px rgb(var(--shadow) / 0.45)}.ds-count{margin:0 0 16px;font-size:1.875rem;font-weight:900;line-height:1;letter-spacing:-0.025em;color:rgb(var(--ink));font-variant-numeric:tabular-nums}.ds-count span{color:rgb(var(--ink-soft))}.ds-track{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.ds-track li{position:relative;display:grid;place-items:center;height:32px;border-radius:10px;background:rgb(var(--sunken));font:900 0.6875rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;color:rgb(var(--ink-soft));font-variant-numeric:tabular-nums}.ds-track li.ds-ms{background:rgb(var(--line))}.ds-track li.ds-goal{background:rgb(var(--sol))}.ds-token{width:18px;height:18px;border-radius:9999px;background:rgb(var(--ink));box-shadow:0 0 0 3px rgb(var(--surface)),0 3px 0 rgb(var(--shadow) / 0.35),0 8px 14px -4px rgb(var(--shadow) / 0.5);transition:transform 300ms cubic-bezier(0.16,1,0.3,1)}.ds-track li:hover .ds-token{transform:translateY(-3px)}"
+    },
+    {
+      "name": "Side Rail Navigation",
+      "kind": "nav",
+      "refersTo": "nav-rail",
+      "description": "Deep teal rail; the active item is a sliding sol pill.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-nav\" href=\"#\">Inventario</a><a class=\"ds-nav ds-nav-on\" href=\"#\" aria-current=\"page\">Carga Rápida</a><a class=\"ds-nav\" href=\"#\">Proveedores</a></nav>",
+      "css": ".ds-rail{display:flex;flex-direction:column;gap:4px;width:240px;padding:24px 12px;background:rgb(var(--rail));color:rgb(var(--rail-ink));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif}.ds-nav{display:flex;align-items:center;height:44px;padding:0 12px;border-radius:14px;font-weight:800;color:inherit;text-decoration:none;transition:background-color 150ms,color 150ms}.ds-nav:hover{background:rgb(var(--rail-hover));color:#fff}.ds-nav:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-nav-on,.ds-nav-on:hover{background:rgb(var(--sol));color:rgb(var(--on-fill))}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Tablero de juego",
+    "overview": "Every incoming shipment is a game in progress. The lote is a track of flat, category-coloured board spaces; each saved product fills the next space with its category's colour and the token hops forward toward the sun-yellow goal flag. The rest of the app is the same table seen from other angles: warm off-white card stock on which rounded surfaces rest, a deep teal rail along the edge like the side of the box, flat colour casillas that always mean a category, and figures that never jiggle.\n\nDensity is operational, not playful-loose: the employee is loading fifty products in five minutes with a scanner and the keyboard. Playfulness lives in material and motion (heavy rounded type, flat fills, spring hops, cards dropping onto a stack), never in extra steps or decorative chrome. Controls are standard web controls in board-game clothing.\n\nThe confirmed anti-reference is the category default: a grey data table with one blue accent and a generic progress bar.",
+    "keyCharacteristics": [
+      "Warm paper ground (ground) with white rounded surfaces resting on it; deep teal rail as the frame.",
+      "Six flat category colours used as board spaces, chips, tags and card bands, always with a dark ink and a pale wash partner.",
+      "Nunito at heavy weights only (600 to 900); tabular figures for every number.",
+      "Soft teal-tinted drop shadows with a 1px line lip; the token is the only piece with a solid base shadow.",
+      "Spring motion: the token hops, the selected chip and active nav slide, cards drop and their colour band snaps shut.",
+      "Fixed 3-pip stock ramp (Bajo / Medio / Alto) wherever stock appears."
+    ],
+    "rules": [
+      {
+        "name": "The Board Space Rule",
+        "body": "A category colour as a flat fill means exactly one thing: this product belongs to that category. Fills are never gradients, never decorative, never reused for status (status has peligro and the pip ramp).",
+        "section": "colors"
+      },
+      {
+        "name": "The Fixed Board Rule",
+        "body": "Category fills and sol are the same in light and dark mode; only their ink and wash partners shift. Anything sitting on a fill uses on-fill ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sol Marks Here Rule",
+        "body": "Sun yellow is reserved for current position and goal: active section, the goal flag, the one accent action. If two sol elements compete on screen, one is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Heavy Ink Rule",
+        "body": "No weight below 600 anywhere. Labels and controls are 800, headings and counts 900.",
+        "section": "typography"
+      },
+      {
+        "name": "The Still Figures Rule",
+        "body": "Every SKU, stock count, price, goal, pace and time uses tabular figures (`font-variant-numeric: tabular-nums`, letter-spacing 0.01em). Counters that change in place flip digit by digit (FlipNumber) rather than re-rendering.",
+        "section": "typography"
+      },
+      {
+        "name": "The Table-Top Rule",
+        "body": "Shadows fall down and are tinted by the teal shadow channel; nothing glows, nothing floats sideways except the drawer.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Piece Rule",
+        "body": "A solid zero-blur base shadow belongs to the token, because it is a physical piece standing on a space. Cards and buttons never get a hard offset slab.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do colour a track space, chip, card band or tag dot only with the product's category fill, and pair text on it with on-fill ink.",
+      "Do set every number (SKU, stock, price, goal, pace, time) in tabular figures, and flip digits in place when a counter changes.",
+      "Do show stock with the 3-pip ramp (peligro / sol / turquesa) everywhere stock appears: table, stack, drawer.",
+      "Do keep type at 600 or heavier: 800 for labels and controls, 900 for headings and counts.",
+      "Do rest surfaces on the Card shadow and use sunken felt for troughs and empty states inside them.",
+      "Do keep destructive actions outlined, separated from the data fields, and confirmed (Cerrar lote, Eliminar).",
+      "Do use spring motion for things that move between places (token, active nav, selected chip, stack cards) and honour reduced motion."
+    ],
+    "donts": [
+      "Don't build the category default: a grey table with one blue accent and a generic progress bar.",
+      "Don't put category colours in gradients or use them for status or decoration.",
+      "Don't give cards or buttons a hard zero-blur offset shadow; that base belongs to the token alone.",
+      "Don't set labels in uppercase with letter-spacing or add eyebrow labels above page titles; labels are sentence-case 800.",
+      "Don't use a second display face or weights below 600.",
+      "Don't let sol mark anything other than current position, goal, or the one accent action."
+    ]
+  }
+}
