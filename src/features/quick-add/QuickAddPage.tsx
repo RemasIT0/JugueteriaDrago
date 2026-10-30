@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ChevronDown, FileSpreadsheet, Keyboard, Target, Zap } from 'lucide-react'
+import { LuChevronDown as ChevronDown, LuFileSpreadsheet as FileSpreadsheet, LuKeyboard as Keyboard, LuTarget as Target, LuZap as Zap } from 'react-icons/lu'
 import { useCallback, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { Kbd } from '@/components/ui/Button'

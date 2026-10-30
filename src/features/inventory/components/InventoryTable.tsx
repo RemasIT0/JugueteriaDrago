@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion'
-import { ArrowDown, ArrowUp, ChevronsUpDown, CloudOff, Loader2 } from 'lucide-react'
+import { LuArrowDown as ArrowDown, LuArrowUp as ArrowUp, LuChevronsUpDown as ChevronsUpDown, LuCloudOff as CloudOff, LuLoaderCircle as Loader2 } from 'react-icons/lu'
 import clsx from 'clsx'
 import { CategoryTag, StockPips } from '@/components/ui/Board'
 import { formatDate, formatPrice } from '@/lib/format'
 import type { Category, ProductRow } from '@/types'
 import { ProductThumb } from './ProductThumb'
 
-export type SortKey = 'name' | 'stock' | 'price' | 'updatedAt'
+export type SortKey = 'name' | 'stock' | 'price' | 'updatedAt' | 'urgencia'
 export type Sort = { key: SortKey; dir: 'asc' | 'desc' }
 
 interface Props {

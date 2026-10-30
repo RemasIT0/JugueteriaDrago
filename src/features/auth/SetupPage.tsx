@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, Loader2, Rocket } from 'lucide-react'
+import { LuCircleAlert as AlertCircle, LuLoaderCircle as Loader2, LuRocket as Rocket } from 'react-icons/lu'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'

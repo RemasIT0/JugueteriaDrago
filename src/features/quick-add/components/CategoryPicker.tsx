@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { LuPlus as Plus } from 'react-icons/lu'
 import { forwardRef, useRef } from 'react'
 import clsx from 'clsx'
 import { BOARD } from '@/lib/colors'
@@ -10,6 +11,8 @@ interface Props {
   onChange: (id: string) => void
   invalid?: boolean
   describedBy?: string
+  /** Si existe, muestra «+ Nueva» para crear una categoría sin salir de la carga. */
+  onCreate?: () => void
 }
 
 /**
@@ -17,7 +20,7 @@ interface Props {
  * Alt+1…9 elige desde cualquier campo (ver QuickAddForm).
  */
 export const CategoryPicker = forwardRef<HTMLDivElement, Props>(function CategoryPicker(
-  { categories, value, onChange, invalid, describedBy },
+  { categories, value, onChange, invalid, describedBy, onCreate },
   ref,
 ) {
   const buttons = useRef<(HTMLButtonElement | null)[]>([])
@@ -76,6 +79,16 @@ export const CategoryPicker = forwardRef<HTMLDivElement, Props>(function Categor
           </button>
         )
       })}
+      {onCreate && (
+        <button
+          type="button"
+          tabIndex={-1}
+          onClick={onCreate}
+          className="flex h-10 items-center gap-1.5 rounded-full border-2 border-dashed border-line px-3.5 text-sm font-extrabold text-ink-soft transition-colors hover:border-ink-soft/50 hover:text-ink"
+        >
+          <Plus className="size-4" strokeWidth={2.6} aria-hidden /> Nueva
+        </button>
+      )}
     </div>
   )
 })

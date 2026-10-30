@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowDownRight, ArrowUpRight, ImagePlus, Loader2, SlidersHorizontal, Trash2 } from 'lucide-react'
+import { LuArrowDownRight as ArrowDownRight, LuArrowUpRight as ArrowUpRight, LuImagePlus as ImagePlus, LuLoaderCircle as Loader2, LuSlidersHorizontal as SlidersHorizontal, LuTrash2 as Trash2 } from 'react-icons/lu'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { CategoryTag, StockPips } from '@/components/ui/Board'

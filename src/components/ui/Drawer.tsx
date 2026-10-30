@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { X } from 'lucide-react'
+import { LuX as X } from 'react-icons/lu'
 import { useEffect, useRef, type ReactNode } from 'react'
 
 interface DrawerProps {

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
-import { PackageSearch, Search, Zap } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { LuPackageSearch as PackageSearch, LuSearch as Search, LuZap as Zap } from 'react-icons/lu'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import clsx from 'clsx'
 import { Button, Kbd } from '@/components/ui/Button'
 import { TableSkeleton } from '@/components/ui/Skeleton'
@@ -13,16 +13,31 @@ import { useHotkeys } from '@/hooks/useHotkeys'
 import { InventoryTable, type Sort, type SortKey } from './components/InventoryTable'
 import { ProductDrawer } from './components/ProductDrawer'
 
+/** Cuánto le queda respecto de su mínimo: 0 = agotado; menor = más urgente. */
+const urgency = (p: { stock: number; minStock: number }) => (p.stock <= 0 ? -1 : p.stock / Math.max(1, p.minStock))
+
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 export default function InventoryPage() {
-  const { status, error, products, categories } = useInventory()
+  const { status, error, products, categories, seasons } = useInventory()
   const [query, setQuery] = useState('')
   const [cat, setCat] = useState<string | null>(null)
   const [level, setLevel] = useState<StockLevel | null>(null)
-  const [sort, setSort] = useState<Sort>({ key: 'updatedAt', dir: 'desc' })
+  // Por defecto, lo más urgente arriba: primero el stock bajo, luego el que está más cerca de su mínimo.
+  const [sort, setSort] = useState<Sort>({ key: 'urgencia', dir: 'asc' })
+  const [season, setSeason] = useState<string | null>(null)
   const [open, setOpen] = useState<string | null>(null)
   const search = useRef<HTMLInputElement>(null)
+  const [params, setParams] = useSearchParams()
+
+  // Desde un aviso: /?producto=<id> abre su cajón.
+  useEffect(() => {
+    const id = params.get('producto')
+    if (id && products.some((p) => p.id === id)) {
+      setOpen(id)
+      setParams({}, { replace: true })
+    }
+  }, [params, products, setParams])
 
   useHotkeys({ '/': () => search.current?.focus() })
 
@@ -37,21 +52,24 @@ export default function InventoryPage() {
     const out = products.filter(
       (p) =>
         (!cat || p.categoryId === cat) &&
+        (!season || p.seasons.includes(season)) &&
         (!level || stockLevel(p) === level) &&
         (!q || norm(p.name).includes(q) || p.sku.includes(q) || norm(p.brand).includes(q)),
     )
     const dir = sort.dir === 'asc' ? 1 : -1
+    if (sort.key === 'urgencia') return out.sort((a, b) => urgency(a) - urgency(b) || a.name.localeCompare(b.name, 'es'))
     return out.sort((a, b) => {
-      const x = a[sort.key]
-      const y = b[sort.key]
+      const key = sort.key as Exclude<SortKey, 'urgencia'>
+      const x = a[key]
+      const y = b[key]
       return (typeof x === 'string' ? x.localeCompare(y as string, 'es') : (x as number) - (y as number)) * dir
     })
-  }, [products, query, cat, level, sort])
+  }, [products, query, cat, level, season, sort])
 
   const onSort = (key: SortKey) =>
     setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: key === 'name' ? 'asc' : 'desc' }))
 
-  const filtered = !!(query || cat || level)
+  const filtered = !!(query || cat || level || season)
 
   return (
     <div className="flex flex-col gap-5">
@@ -111,6 +129,16 @@ export default function InventoryPage() {
             </FilterChip>
           ))}
         </div>
+        {seasons.length > 0 && (
+          <div className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Filtrar por temporada">
+            <span className="shrink-0 text-xs font-extrabold text-ink-soft">Temporada</span>
+            {seasons.map((t) => (
+              <FilterChip key={t.id} on={season === t.id} onClick={() => setSeason(season === t.id ? null : t.id)} dot={BOARD[t.color].fill}>
+                {t.name}
+              </FilterChip>
+            ))}
+          </div>
+        )}
       </div>
 
       <section className="overflow-hidden rounded-3xl bg-surface pt-3 shadow-card">
@@ -126,7 +154,7 @@ export default function InventoryPage() {
               {filtered ? 'Prueba con otra categoría o borra la búsqueda.' : 'Carga el primer lote desde Carga Rápida.'}
             </p>
             {filtered && (
-              <Button variant="secondary" onClick={() => (setQuery(''), setCat(null), setLevel(null))}>
+              <Button variant="secondary" onClick={() => (setQuery(''), setCat(null), setLevel(null), setSeason(null))}>
                 Quitar filtros
               </Button>
             )}

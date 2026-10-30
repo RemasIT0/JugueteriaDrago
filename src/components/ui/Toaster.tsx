@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { LuTriangleAlert as AlertTriangle, LuCircleCheck as CheckCircle2 } from 'react-icons/lu'
 import { create } from 'zustand'
 import { uid } from '@/lib/format'
 

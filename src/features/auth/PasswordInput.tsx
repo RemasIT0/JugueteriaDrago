@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from 'lucide-react'
+import { LuEye as Eye, LuEyeOff as EyeOff } from 'react-icons/lu'
 import { forwardRef, useState, type InputHTMLAttributes } from 'react'
 import { Input } from '@/components/ui/Field'
 
