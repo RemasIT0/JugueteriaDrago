@@ -13,6 +13,7 @@ import { useCan } from '@/stores/auth'
 import { useInventory } from '@/stores/inventory'
 import type { StockMovement } from '@/types'
 import { ProductThumb } from './ProductThumb'
+import { PricingPanel } from './PricingPanel'
 
 export function ProductDrawer({ productId, onClose }: { productId: string | null; onClose: () => void }) {
   const product = useInventory((s) => s.products.find((p) => p.id === productId))
@@ -99,6 +100,8 @@ export function ProductDrawer({ productId, onClose }: { productId: string | null
                 />
               )}
             </AnimatePresence>
+
+            <PricingPanel product={product} />
 
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
               {[

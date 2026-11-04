@@ -1,4 +1,4 @@
-import { LuTriangleAlert as AlertTriangle, LuArrowDownRight as ArrowDownRight, LuArrowUpRight as ArrowUpRight, LuLoaderCircle as Loader2, LuPlus as Plus, LuTable2 as Table2, LuTarget as Target, LuTrash2 as Trash2, LuTrendingDown as TrendingDown, LuTrendingUp as TrendingUp } from 'react-icons/lu'
+import { LuTriangleAlert as AlertTriangle, LuArrowDownRight as ArrowDownRight, LuArrowUpRight as ArrowUpRight, LuCalendarRange as CalendarRange, LuWallet as Wallet, LuLoaderCircle as Loader2, LuPlus as Plus, LuTable2 as Table2, LuTarget as Target, LuTrash2 as Trash2, LuTrendingDown as TrendingDown, LuTrendingUp as TrendingUp } from 'react-icons/lu'
 import { useEffect, useMemo, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import clsx from 'clsx'
@@ -9,7 +9,7 @@ import { Shimmer } from '@/components/ui/Skeleton'
 import { toast } from '@/components/ui/Toaster'
 import { BOARD } from '@/lib/colors'
 import { formatPrice, stockLevel, uid } from '@/lib/format'
-import { balance, breakEven, buckets, completed, productRanking, type Granularity } from '@/lib/salesStats'
+import { balance, breakEven, bucketCount, buckets, bucketsInRange, completed, monthsIn, previousRange, productRanking, type Granularity } from '@/lib/salesStats'
 import { useInventory } from '@/stores/inventory'
 import { useSales } from '@/stores/sales'
 import { useChartColors } from './useChartColors'
@@ -21,6 +21,41 @@ const G: { id: Granularity; label: string; hint: string }[] = [
   { id: 'anio', label: 'Año', hint: 'últimos 5 años' },
 ]
 
+type Preset = 'recientes' | 'este-mes' | 'mes-pasado' | 'este-anio' | 'anio-pasado' | 'personalizado'
+const PRESETS: { id: Preset; label: string }[] = [
+  { id: 'recientes', label: 'Recientes' },
+  { id: 'este-mes', label: 'Este mes' },
+  { id: 'mes-pasado', label: 'Mes pasado' },
+  { id: 'este-anio', label: 'Este año' },
+  { id: 'anio-pasado', label: 'Año pasado' },
+  { id: 'personalizado', label: 'Elegir fechas' },
+]
+/** Más barras que esto no se leen: esa agrupación se desactiva para el rango. */
+const MAX_BARS = 120
+
+const toInput = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const fromInput = (v: string) => {
+  const [y, m, d] = v.split('-').map(Number)
+  return y && m && d ? new Date(y, m - 1, d) : null
+}
+const dayFmt = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+/** Texto del rango [from, to) mostrando el último día incluido. */
+const rangeText = (from: Date, to: Date) => {
+  const last = new Date(to.getFullYear(), to.getMonth(), to.getDate() - 1)
+  return from.getTime() === last.getTime() ? dayFmt.format(from) : `${dayFmt.format(from)} al ${dayFmt.format(last)}`
+}
+
+/** Rango [from, to) de un atajo; null en "recientes" (cada agrupación usa sus últimos N períodos). */
+function presetRange(p: Preset, now = new Date()): [Date, Date] | null {
+  const y = now.getFullYear()
+  const m = now.getMonth()
+  if (p === 'este-mes') return [new Date(y, m, 1), new Date(y, m + 1, 1)]
+  if (p === 'mes-pasado') return [new Date(y, m - 1, 1), new Date(y, m, 1)]
+  if (p === 'este-anio') return [new Date(y, 0, 1), new Date(y + 1, 0, 1)]
+  if (p === 'anio-pasado') return [new Date(y - 1, 0, 1), new Date(y, 0, 1)]
+  return null
+}
+
 const compact = new Intl.NumberFormat('es-AR', { notation: 'compact', maximumFractionDigits: 1 })
 const pct = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(0)}%`
 
@@ -28,6 +63,9 @@ export default function ReportsPage() {
   const { status, categories, products, settings } = useInventory()
   const { sales, load, status: salesStatus } = useSales()
   const [g, setG] = useState<Granularity>('dia')
+  const [preset, setPreset] = useState<Preset>('recientes')
+  const [customFrom, setCustomFrom] = useState(() => toInput(new Date(new Date().getFullYear(), new Date().getMonth(), 1)))
+  const [customTo, setCustomTo] = useState(() => toInput(new Date()))
   const [tests, setTests] = useState(true)
   const [table, setTable] = useState(false)
   const c = useChartColors()
@@ -36,12 +74,40 @@ export default function ReportsPage() {
     void load(true)
   }, [load])
 
+  // Rango elegido: un atajo o fechas a mano ("hasta" incluye ese día completo).
+  const range = useMemo<[Date, Date] | null>(() => {
+    if (preset !== 'personalizado') return presetRange(preset)
+    const from = fromInput(customFrom)
+    const toDay = fromInput(customTo)
+    if (!from || !toDay || from > toDay) return null
+    return [from, new Date(toDay.getFullYear(), toDay.getMonth(), toDay.getDate() + 1)]
+  }, [preset, customFrom, customTo])
+  const customError =
+    preset === 'personalizado' && !range ? (!fromInput(customFrom) || !fromInput(customTo) ? 'Completa las dos fechas' : '«Desde» es posterior a «Hasta»') : null
+  const allowed = (x: Granularity) => !range || bucketCount(x, range[0], range[1]) <= MAX_BARS
+  // Si la agrupación elegida daría demasiadas barras para el rango, se usa la siguiente que entre.
+  const gEff = allowed(g) ? g : (G.map((x) => x.id).find(allowed) ?? 'anio')
+
   const done = useMemo(() => completed(sales, tests), [sales, tests])
-  const series = useMemo(() => buckets(done, g), [done, g])
+  const series = useMemo(() => (range ? bucketsInRange(done, gEff, range[0], range[1]) : buckets(done, gEff)), [done, gEff, range])
   const current = series.at(-1)
   const rangeTotal = series.reduce((a, b) => a + b.total, 0)
-  const rangeFrom = new Date(series[0]?.key ?? Date.now()).getTime()
-  const ranking = useMemo(() => productRanking(done, products, rangeFrom), [done, products, rangeFrom])
+  const rangeFrom = range ? range[0].getTime() : new Date(series[0]?.key ?? Date.now()).getTime()
+  // El final no pasa de hoy: un mes en curso no carga gastos fijos de días que no pasaron.
+  const rangeTo = Math.min(range ? range[1].getTime() : Infinity, Date.now() + 1)
+  const ranking = useMemo(() => productRanking(done, products, rangeFrom, rangeTo), [done, products, rangeFrom, rangeTo])
+  const profit = useMemo(() => {
+    const from = new Date(rangeFrom)
+    const shownTo = range ? range[1] : new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 1)
+    const [pFrom, pTo] = previousRange(from, shownTo)
+    const cur = balance(done, settings, rangeFrom, rangeTo, monthsIn(rangeFrom, rangeTo))
+    // El anterior se compara con el mismo tramo transcurrido (ej.: 1 al 15 de este mes vs. 1 al 15 del mes pasado).
+    // Si el período ya terminó, se compara completo contra el anterior completo.
+    const finished = shownTo.getTime() <= rangeTo
+    const prevTo = finished ? pTo.getTime() : Math.min(pTo.getTime(), pFrom.getTime() + (rangeTo - rangeFrom))
+    const prev = balance(done, settings, pFrom.getTime(), prevTo, monthsIn(pFrom.getTime(), prevTo))
+    return { cur, prev, label: rangeText(from, shownTo), prevLabel: rangeText(pFrom, pTo) }
+  }, [done, settings, rangeFrom, rangeTo, range])
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime()
   const month = useMemo(() => balance(done, settings, monthStart, Date.now() + 1, 1), [done, settings, monthStart])
   const be = useMemo(() => breakEven(done, products, settings), [done, products, settings])
@@ -69,9 +135,14 @@ export default function ReportsPage() {
               <button
                 key={x.id}
                 role="tab"
-                aria-selected={g === x.id}
+                aria-selected={gEff === x.id}
+                disabled={!allowed(x.id)}
+                title={allowed(x.id) ? undefined : 'Demasiados períodos para este rango'}
                 onClick={() => setG(x.id)}
-                className={clsx('h-9 rounded-xl px-4 text-sm font-extrabold transition-colors', g === x.id ? 'bg-surface text-ink shadow-card' : 'text-ink-soft hover:text-ink')}
+                className={clsx(
+                  'h-9 rounded-xl px-4 text-sm font-extrabold transition-colors disabled:cursor-not-allowed disabled:opacity-40',
+                  gEff === x.id ? 'bg-surface text-ink shadow-card' : 'text-ink-soft enabled:hover:text-ink',
+                )}
               >
                 {x.label}
               </button>
@@ -86,10 +157,61 @@ export default function ReportsPage() {
         </div>
       </header>
 
-      {/* Indicadores del período actual */}
+      <section aria-label="Período" className="flex flex-col gap-3 rounded-3xl bg-surface p-4 shadow-card sm:flex-row sm:flex-wrap sm:items-center">
+        <span className="flex items-center gap-2 text-sm font-black">
+          <CalendarRange className="size-5 text-cielo-ink" aria-hidden /> Período
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {PRESETS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              aria-pressed={preset === p.id}
+              onClick={() => setPreset(p.id)}
+              className={clsx('h-9 rounded-full px-3.5 text-sm font-extrabold transition-colors', preset === p.id ? 'bg-ink text-ground' : 'bg-sunken text-ink-soft hover:text-ink')}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        {preset === 'personalizado' && (
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="flex items-center gap-2 text-xs font-extrabold text-ink-soft">
+              Desde
+              <Input type="date" value={customFrom} max={customTo || undefined} onChange={(e) => setCustomFrom(e.target.value)} className="h-10 w-auto" aria-invalid={!!customError} />
+            </label>
+            <label className="flex items-center gap-2 text-xs font-extrabold text-ink-soft">
+              Hasta
+              <Input type="date" value={customTo} min={customFrom || undefined} onChange={(e) => setCustomTo(e.target.value)} className="h-10 w-auto" aria-invalid={!!customError} />
+            </label>
+            {customError && (
+              <span role="alert" className="text-xs font-extrabold text-peligro">
+                {customError}
+              </span>
+            )}
+          </div>
+        )}
+        <span className="num text-sm font-bold text-ink-soft sm:ml-auto">{range ? profit.label : G.find((x) => x.id === gEff)!.hint}</span>
+      </section>
+
+      {/* Indicadores del período */}
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label={`Ventas · ${G.find((x) => x.id === g)!.label.toLowerCase()} actual`} value={formatPrice(current?.total ?? 0)} change={current?.change ?? null} />
-        <Stat label="Participación en el rango" value={`${(current?.share ?? 0).toFixed(1)}%`} sub={G.find((x) => x.id === g)!.hint} />
+        {range ? (
+          <>
+            <Stat
+              label="Ventas del período"
+              value={formatPrice(profit.cur.gross)}
+              change={profit.prev.gross > 0 ? ((profit.cur.gross - profit.prev.gross) / profit.prev.gross) * 100 : null}
+              sub="Sin ventas en el período anterior"
+            />
+            <Stat label="Ganancia (margen bruto)" value={formatPrice(profit.cur.margin)} sub="Ventas netas − costo de lo vendido" />
+          </>
+        ) : (
+          <>
+            <Stat label={`Ventas · ${G.find((x) => x.id === gEff)!.label.toLowerCase()} actual`} value={formatPrice(current?.total ?? 0)} change={current?.change ?? null} />
+            <Stat label="Participación en el rango" value={`${(current?.share ?? 0).toFixed(1)}%`} sub={G.find((x) => x.id === gEff)!.hint} />
+          </>
+        )}
         <Stat label="Unidades vendidas (rango)" value={String(series.reduce((a, b) => a + b.units, 0))} sub={`${series.reduce((a, b) => a + b.count, 0)} ventas`} />
         <Stat
           label="Ticket promedio (rango)"
@@ -100,7 +222,7 @@ export default function ReportsPage() {
 
       <section className="flex flex-col gap-4 rounded-3xl bg-surface p-5 shadow-card sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-black">Ventas por {G.find((x) => x.id === g)!.label.toLowerCase()}</h2>
+          <h2 className="font-black">Ventas por {G.find((x) => x.id === gEff)!.label.toLowerCase()}</h2>
           <button onClick={() => setTable((t) => !t)} className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-extrabold text-ink-soft hover:bg-sunken hover:text-ink" aria-pressed={table}>
             <Table2 className="size-4" aria-hidden /> {table ? 'Ver gráfico' : 'Ver tabla'}
           </button>
@@ -123,6 +245,8 @@ export default function ReportsPage() {
           </div>
         )}
       </section>
+
+      <ProfitCard {...profit} />
 
       <div className="grid items-start gap-5 lg:grid-cols-2">
         <Ranking title="Más vendidos" icon={TrendingUp} rows={ranking.top} empty="Sin ventas en el rango." />
@@ -272,7 +396,7 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
             text={
               be.fixed === 0
                 ? 'Carga tus gastos fijos del mes (a la derecha) para calcular cuánto necesitas vender para no perder plata.'
-                : 'Falta el precio de compra de los productos para calcular el margen. Cárgalo en Carga Rápida o en el cajón del producto.'
+                : 'Falta el precio de compra de los productos para calcular el margen. Cárgalo en Cargar productos o en el cajón del producto.'
             }
           />
         ) : (
@@ -359,15 +483,75 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
             e.preventDefault()
             void addCost()
           }}
-          className="flex gap-2"
+          className="grid grid-cols-[minmax(0,1fr)_7.5rem_auto] gap-2"
         >
-          <Input aria-label="Concepto" placeholder="Concepto" value={name} onChange={(e) => setName(e.target.value)} className="h-10 flex-1" />
-          <Input aria-label="Monto mensual" placeholder="Monto" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className="num h-10 w-28" />
+          <Input aria-label="Concepto" placeholder="Concepto" value={name} onChange={(e) => setName(e.target.value)} className="h-10" />
+          <Input aria-label="Monto mensual" placeholder="Monto" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className="num h-10" />
           <Button type="submit" size="sm" variant="primary" className="h-10" disabled={busy} aria-label="Agregar gasto">
             {busy ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
           </Button>
         </form>
       </div>
+    </section>
+  )
+}
+
+type BalanceT = ReturnType<typeof balance>
+
+/** Ganancias del rango elegido, al lado del período anterior para comparar. */
+function ProfitCard({ cur, prev, label, prevLabel }: { cur: BalanceT; prev: BalanceT; label: string; prevLabel: string }) {
+  const rows: [string, keyof BalanceT, 'suma' | 'resta' | 'resultado'][] = [
+    ['Ventas con IVA', 'gross', 'suma'],
+    ['IVA contenido', 'iva', 'resta'],
+    ['Ventas netas', 'net', 'suma'],
+    ['Costo de lo vendido', 'cogs', 'resta'],
+    ['Ganancia (margen bruto)', 'margin', 'resultado'],
+    ['Gastos fijos prorrateados', 'fixed', 'resta'],
+    ['Resultado final', 'result', 'resultado'],
+  ]
+  return (
+    <section className="flex flex-col gap-4 rounded-3xl bg-surface p-5 shadow-card sm:p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="flex items-center gap-2 font-black">
+          <Wallet className="size-5 text-hoja-ink" aria-hidden /> Ganancias del período
+        </h2>
+        <p className="num text-sm font-bold text-ink-soft">{label}</p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[34rem] text-sm">
+          <thead>
+            <tr className="text-left text-xs font-extrabold text-ink-soft">
+              <th className="py-2">Concepto</th>
+              <th className="py-2 text-right">Este período</th>
+              <th className="py-2 text-right">
+                Anterior <span className="num block font-semibold">{prevLabel}</span>
+              </th>
+              <th className="py-2 text-right">Variación</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {rows.map(([name, key, kind]) => {
+              const a = cur[key] as number
+              const b = prev[key] as number
+              const d = b !== 0 ? ((a - b) / Math.abs(b)) * 100 : null
+              // En los costos, subir es malo; en ventas y ganancias, subir es bueno.
+              const good = d === null ? null : kind === 'resta' ? d <= 0 : d >= 0
+              return (
+                <tr key={key}>
+                  <td className={clsx('py-2', kind === 'resultado' ? 'font-black' : 'font-bold')}>{kind === 'resta' ? `− ${name}` : name}</td>
+                  <td className={clsx('num py-2 text-right', kind === 'resultado' && clsx('font-black', a >= 0 ? 'text-turquesa-ink' : 'text-peligro'))}>{formatPrice(a)}</td>
+                  <td className="num py-2 text-right text-ink-soft">{formatPrice(b)}</td>
+                  <td className={clsx('num py-2 text-right text-xs font-extrabold', good === null ? 'text-ink-soft' : good ? 'text-turquesa-ink' : 'text-peligro')}>{d === null ? '—' : pct(d)}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs font-semibold text-ink-soft">
+        Los gastos fijos mensuales se reparten por los días del período que ya pasaron. El período anterior se compara con el mismo tramo de días.
+        {cur.netWithoutCost > 0 && <span className="font-bold text-sol-ink"> {formatPrice(cur.netWithoutCost)} de ventas netas son de productos sin precio de compra: no entran en la ganancia.</span>}
+      </p>
     </section>
   )
 }

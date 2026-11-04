@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { LuChevronDown as ChevronDown, LuFileSpreadsheet as FileSpreadsheet, LuKeyboard as Keyboard, LuTarget as Target, LuZap as Zap } from 'react-icons/lu'
+import { LuChevronDown as ChevronDown, LuFileSpreadsheet as FileSpreadsheet, LuKeyboard as Keyboard, LuListPlus as ListPlus, LuTarget as Target, LuZap as Zap } from 'react-icons/lu'
 import { useCallback, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { Kbd } from '@/components/ui/Button'
@@ -10,12 +10,13 @@ import { useCan } from '@/stores/auth'
 import { useLote } from '@/stores/lote'
 import { BulkDropzone } from './components/BulkDropzone'
 import { CameraScanner, cameraScanSupported } from './components/CameraScanner'
+import { ListEntry } from './components/ListEntry'
 import { LoteTrack } from './components/LoteTrack'
 import { QuickAddForm } from './components/QuickAddForm'
 import { RecentStack } from './components/RecentStack'
 import { MOD } from '@/hooks/useHotkeys'
 
-type Mode = 'continua' | 'archivo'
+type Mode = 'continua' | 'lista' | 'archivo'
 
 export default function QuickAddPage() {
   const [mode, setMode] = useState<Mode>('continua')
@@ -50,18 +51,18 @@ export default function QuickAddPage() {
     <div className="flex flex-col gap-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Carga Rápida</h1>
+          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Cargar productos</h1>
           <p className="mt-1 text-sm font-semibold text-ink-soft">
             {supplier ? supplier.name : 'Sin proveedor asignado'} · lote iniciado{' '}
             {new Date(lote.startedAt).toLocaleDateString('es', { day: 'numeric', month: 'short' })}
           </p>
         </div>
-        {canImport && (
-        <div role="tablist" aria-label="Modo de carga" className="flex rounded-2xl bg-sunken p-1">
+        <div role="tablist" aria-label="Modo de carga" className="flex max-w-full overflow-x-auto rounded-2xl bg-sunken p-1">
           {(
             [
               ['continua', 'Carga continua', Zap],
-              ['archivo', 'Desde archivo', FileSpreadsheet],
+              ['lista', 'Desde lista', ListPlus],
+              ...(canImport ? ([['archivo', 'Desde archivo', FileSpreadsheet]] as const) : []),
             ] as const
           ).map(([id, label, Icon]) => (
             <button
@@ -70,7 +71,7 @@ export default function QuickAddPage() {
               aria-selected={mode === id}
               onClick={() => setMode(id)}
               className={clsx(
-                'relative flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-extrabold transition-colors',
+                'relative flex h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-extrabold transition-colors sm:px-4',
                 mode === id ? 'text-ink' : 'text-ink-soft hover:text-ink',
               )}
             >
@@ -82,7 +83,6 @@ export default function QuickAddPage() {
             </button>
           ))}
         </div>
-        )}
       </header>
 
       {/* En el celular los datos del lote se pliegan en una línea para que el formulario quede arriba. */}
@@ -126,7 +126,9 @@ export default function QuickAddPage() {
 
       <LoteTrack onNewLote={closeLote} />
 
-      {mode === 'continua' || !canImport ? (
+      {mode === 'lista' ? (
+        <ListEntry />
+      ) : mode === 'continua' || !canImport ? (
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
           <div className="flex min-w-0 flex-col gap-3">
             <QuickAddForm

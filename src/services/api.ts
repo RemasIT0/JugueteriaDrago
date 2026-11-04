@@ -1,20 +1,21 @@
 /**
- * Capa de datos. Toda la app habla con estas funciones y nunca con fetch directamente.
- * Con VITE_API_URL definido usan la API real (rutas REST sugeridas abajo);
- * sin él, guardan en la base local del navegador (IndexedDB, ver localDb.ts).
+ * Capa de datos. Toda la app habla con estas funciones y nunca con la base directamente.
+ * Con Supabase configurado (.env.local) cada operación es una función de la base que valida
+ * permisos en el servidor; sin él, se guarda en la base local del navegador (localDb.ts).
  *
  * En modo local, cada operación valida permisos, guarda de inmediato, deja un movimiento
  * de stock cuando el stock cambia y registra en la actividad las acciones sensibles.
  */
 import { seedCategories, seedProducts, seedSuppliers } from '@/mocks/seed'
-import { STORE } from '@/lib/config'
+import { defaultSeasons } from '@/lib/defaults'
 import { formatPrice, uid } from '@/lib/format'
 import type { Category, Product, ProductInput, StockMovement, Supplier } from '@/types'
 import { audit } from './audit'
 import { requirePermission } from './auth'
-import { ApiError, http, useRealApi } from './http'
+import { ApiError } from './http'
 import { loadDb, markInitialized, save } from './localDb'
 import { currentUser } from './session'
+import { cloud, rpc } from './supabase'
 
 function build(input: ProductInput): Product {
   const at = new Date().toISOString()
@@ -39,29 +40,27 @@ async function fileToDataUrl(file: File, max = 1200): Promise<string> {
 }
 
 export const productsApi = {
-  // GET /products
   async list(): Promise<Product[]> {
-    if (useRealApi()) return http('/products')
+    if (cloud) return rpc('list_products')
     requirePermission('inventario.ver')
     return structuredClone((await loadDb()).products)
   },
 
-  // POST /products
   async create(input: ProductInput): Promise<Product> {
-    if (useRealApi()) return http('/products', { method: 'POST', body: JSON.stringify(input) })
+    if (cloud) return rpc('product_create', { p: input })
     requirePermission('productos.crear')
     const db = await loadDb()
     assertUniqueSku(db.products, input.sku)
     const p = build(input)
     db.products.unshift(p)
-    db.movements.unshift(movement(p.id, p.stock, 'alta', input.loteId ? 'Carga rápida' : undefined))
+    db.movements.unshift(movement(p.id, p.stock, 'alta', input.loteId ? 'Carga de productos' : undefined))
     await Promise.all([save('products'), save('movements')])
     return structuredClone(p)
   },
 
-  // POST /products/bulk — todo o nada: si una fila falla, no se guarda ninguna.
+  // Todo o nada: si una fila falla, no se guarda ninguna.
   async bulkCreate(inputs: ProductInput[]): Promise<Product[]> {
-    if (useRealApi()) return http('/products/bulk', { method: 'POST', body: JSON.stringify(inputs) })
+    if (cloud) return rpc('product_bulk_create', { p_items: inputs })
     requirePermission('productos.importar')
     const db = await loadDb()
     const seen = new Set<string>()
@@ -78,9 +77,9 @@ export const productsApi = {
     return structuredClone(created)
   },
 
-  // POST /products/:id/restock — suma unidades que llegaron (cualquier usuario).
+  // Suma unidades que llegaron (cualquier usuario).
   async restock(id: string, qty: number): Promise<Product> {
-    if (useRealApi()) return http(`/products/${id}/restock`, { method: 'POST', body: JSON.stringify({ qty }) })
+    if (cloud) return rpc('product_restock', { p_id: id, p_qty: qty })
     requirePermission('productos.reponer')
     if (!Number.isInteger(qty) || qty <= 0) throw new ApiError(400, 'La cantidad debe ser un número entero mayor a 0')
     const db = await loadDb()
@@ -93,9 +92,9 @@ export const productsApi = {
     return structuredClone(p)
   },
 
-  // PATCH /products/:id — un cambio de stock por esta vía es un ajuste y exige motivo.
+  // Un cambio de stock por esta vía es un ajuste y exige motivo.
   async update(id: string, patch: Partial<ProductInput>, reason?: string): Promise<Product> {
-    if (useRealApi()) return http(`/products/${id}`, { method: 'PATCH', body: JSON.stringify({ ...patch, reason }) })
+    if (cloud) return rpc('product_update', { p_id: id, p_patch: patch, p_reason: reason ?? null })
     const db = await loadDb()
     const i = db.products.findIndex((p) => p.id === id)
     if (i < 0) throw new ApiError(404, 'El producto ya no existe')
@@ -123,9 +122,9 @@ export const productsApi = {
     return structuredClone(db.products[i])
   },
 
-  // DELETE /products/:id — se conserva su historial de movimientos.
+  // Se conserva su historial de movimientos.
   async remove(id: string): Promise<void> {
-    if (useRealApi()) return http(`/products/${id}`, { method: 'DELETE' })
+    if (cloud) return rpc('product_delete', { p_id: id })
     requirePermission('productos.eliminar')
     const db = await loadDb()
     const p = db.products.find((x) => x.id === id)
@@ -135,9 +134,9 @@ export const productsApi = {
     await audit('Producto eliminado', `${p.name} (${p.sku}) con ${p.stock} u en stock`)
   },
 
-  // DELETE /products/:id (deshacer una carga recién hecha) — permitido a quien la cargó.
+  // Deshacer una carga recién hecha: permitido a quien la cargó.
   async undoCreate(id: string): Promise<void> {
-    if (useRealApi()) return http(`/products/${id}?undo=1`, { method: 'DELETE' })
+    if (cloud) return rpc('product_undo_create', { p_id: id })
     requirePermission('productos.crear')
     const db = await loadDb()
     const p = db.products.find((x) => x.id === id)
@@ -151,9 +150,9 @@ export const productsApi = {
     await audit('Carga deshecha', `${p.name} (${p.sku})`)
   },
 
-  // POST /products/:id/restock/undo — revierte una reposición recién hecha.
+  // Revierte una reposición recién hecha.
   async undoRestock(id: string, qty: number): Promise<Product> {
-    if (useRealApi()) return http(`/products/${id}/restock/undo`, { method: 'POST', body: JSON.stringify({ qty }) })
+    if (cloud) return rpc('product_undo_restock', { p_id: id, p_qty: qty })
     requirePermission('productos.reponer')
     const db = await loadDb()
     const p = db.products.find((x) => x.id === id)
@@ -166,15 +165,9 @@ export const productsApi = {
     return structuredClone(p)
   },
 
-  // POST /products/:id/photos (multipart, campo "photo") → producto actualizado
+  // Foto reducida; en la nube viaja como data URL hasta sumar el almacenamiento de archivos.
   async addPhoto(id: string, file: File): Promise<Product> {
-    if (useRealApi()) {
-      const body = new FormData()
-      body.append('photo', file)
-      const res = await fetch(`${STORE.apiUrl}/products/${id}/photos`, { method: 'POST', body })
-      if (!res.ok) throw new ApiError(res.status, 'No se pudo subir la foto')
-      return res.json()
-    }
+    if (cloud) return rpc('product_add_photo', { p_id: id, p_url: await fileToDataUrl(file) })
     requirePermission('productos.fotos')
     const db = await loadDb()
     const p = db.products.find((x) => x.id === id)
@@ -184,40 +177,42 @@ export const productsApi = {
     return structuredClone(p)
   },
 
-  // GET /movements?days=N — movimientos recientes de todo el inventario (para el asistente).
+  // Movimientos recientes de todo el inventario (para el asistente).
   async recentMovements(days: number): Promise<StockMovement[]> {
-    if (useRealApi()) return http(`/movements?days=${days}`)
+    if (cloud) return rpc('list_movements', { p_product_id: null, p_days: days })
     requirePermission('inventario.ver')
     const from = Date.now() - days * 86_400_000
     return structuredClone((await loadDb()).movements.filter((m) => new Date(m.date).getTime() >= from))
   },
 
-  // GET /products/:id/movements — historial real, el más reciente primero.
+  // Historial real, el más reciente primero.
   async movements(product: Product): Promise<StockMovement[]> {
-    if (useRealApi()) return http(`/products/${product.id}/movements`)
+    if (cloud) return rpc('list_movements', { p_product_id: product.id, p_days: null })
     requirePermission('inventario.ver')
     return structuredClone((await loadDb()).movements.filter((m) => m.productId === product.id))
   },
 }
 
 export const catalogApi = {
-  // GET /categories
   async categories(): Promise<Category[]> {
-    if (useRealApi()) return http('/categories')
+    if (cloud) return rpc('list_categories')
     return structuredClone((await loadDb()).categories)
   },
-  // GET /suppliers
   async suppliers(): Promise<Supplier[]> {
-    if (useRealApi()) return http('/suppliers')
+    if (cloud) return rpc('list_suppliers')
     return structuredClone((await loadDb()).suppliers)
   },
 }
 
 /**
- * Primer uso del modo local: deja las categorías base (con sus plantillas) y, solo si se pide,
+ * Primer uso: deja las categorías base (con sus plantillas), las temporadas y, solo si se pide,
  * el catálogo de ejemplo. Los productos de ejemplo quedan marcados en su proveedor "(ejemplo)".
  */
 export async function initializeLocalData({ demo }: { demo: boolean }) {
+  if (cloud) {
+    const demoData = demo ? { suppliers: seedSuppliers, products: seedProducts } : null
+    return rpc('initialize_store', { p_categories: seedCategories, p_seasons: defaultSeasons(), p_demo: demoData })
+  }
   const db = await loadDb()
   if (!db.categories.length) {
     db.categories = structuredClone(seedCategories)

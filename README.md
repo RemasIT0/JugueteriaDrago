@@ -14,9 +14,24 @@ npm run build    # compila a dist/
 
 **Acceso:** dos roles. El **dueño** puede todo; el **vendedor** carga, repone y consulta, pero no ajusta ni borra stock, no importa archivos y no ve reportes, usuarios ni actividad. Detalle, límites de seguridad y plan por etapas: [AUDITORIA.md](AUDITORIA.md).
 
+## Secciones
+
+| Sección | Para qué |
+|---|---|
+| **Tienda online** (`/tienda`, sin login) | Lo que ven los clientes: dragón animado, catálogo con filtros por categoría, edad y temporada, promociones, carrito, cupones y reserva para pagar al retirar. Permite compras de prueba. |
+| Inventario | Ordenado por urgencia (lo que falta primero), filtros por categoría, stock y temporada, cajón con precios, margen, temporadas e historial. |
+| Cargar productos | Alta continua con lector, precio de compra y precio recomendado, temporadas; reposición desde una lista escrita o pegada (entiende errores de escritura y pregunta «¿quisiste decir…?»); importación con plantilla Excel (versión del dueño y versión para el proveedor, sin precio de venta). |
+| Temporadas | Navidad, Reyes y Día de las Infancias (editables): cuenta regresiva y cuánto pedir de cada producto. |
+| Reportes | Ventas por día/semana/mes/año (gráficos de barras y línea, %), más y menos vendidos, balance del mes y punto de equilibrio. |
+| Facturación | Comprobantes de cada venta (A, B o X), impresión y anulación con devolución de stock. |
+| Descuentos | Promociones para uno o varios productos, por categoría o por temporada, y cupones con código. |
+| Avisos y asistente | Campana con productos para reponer (al verlos se apagan) y asistente con preguntas como "¿quién bajó el stock?". |
+
+**Límites honestos:** sin servidor no hay cobro online real (las compras se reservan y se pagan al retirar), los comprobantes no son factura electrónica de ARCA/AFIP, y la tienda solo ve el inventario de este mismo navegador.
+
 ## Stack
 
-React 19 + Vite · TypeScript · Tailwind CSS 3 · Framer Motion · React Hook Form + Zod · Zustand · Lucide React · PapaParse y read-excel-file (importación).
+React 19 + Vite · TypeScript · Tailwind CSS 3 · Framer Motion · React Hook Form + Zod · Zustand · React Icons · Recharts (gráficos) · ExcelJS (plantilla) · PapaParse y read-excel-file (importación) · idb-keyval (base local).
 
 ## Estructura
 
@@ -27,7 +42,7 @@ src/
 │   ├── layout/AppShell.tsx      Barra lateral, navegación móvil, transiciones de página
 │   └── ui/                      Button, Field, Drawer, Skeleton, Toaster, Board (pips de stock, etiquetas)
 ├── features/
-│   ├── quick-add/               ★ Modo Carga Rápida
+│   ├── quick-add/               ★ Cargar productos
 │   │   ├── QuickAddPage.tsx     Página: lote, meta, proveedor, modo continuo / archivo
 │   │   ├── schema.ts            Validación Zod + campos que se mantienen entre productos
 │   │   ├── importFile.ts        Lectura y mapeo de CSV/Excel de proveedores
@@ -51,7 +66,7 @@ src/
 | `Ctrl + Enter` | Guardar y siguiente |
 | `Enter` en el código | Ir al siguiente campo útil (Nombre si es nuevo, Cantidad si ya existe) |
 | `Alt + 1…6` | Elegir categoría desde cualquier campo |
-| `Alt + N` | Limpiar el formulario / ir a Carga Rápida desde otra sección |
+| `Alt + N` | Limpiar el formulario / ir a Cargar productos desde otra sección |
 | `Ctrl + Z` (con el campo vacío) | Deshacer el último guardado |
 | `/` | Buscar en Inventario |
 | `Esc` | Cerrar el cajón de producto |
@@ -62,7 +77,7 @@ src/
 
 Meta: un producto cada 6 segundos.
 
-1. **Abrir el lote (10 s).** `Alt + N` desde cualquier pantalla lleva a Carga Rápida. Se elige el proveedor y la meta (50). La pista del lote muestra 50 casillas vacías y la bandera al final.
+1. **Abrir el lote (10 s).** `Alt + N` desde cualquier pantalla lleva a Cargar productos. Se elige el proveedor y la meta (50). La pista del lote muestra 50 casillas vacías y la bandera al final.
 2. **Escanear (≈1 s).** El cursor ya está en *Código*. Se pasa el lector: el código entra solo y el cursor salta.
    - **Producto nuevo** → salta a *Nombre*.
    - **Producto que ya existe** → aparece un aviso azul con el stock actual, se completan nombre, categoría y precio, y el cursor salta directo a *Cantidad*: solo se escribe cuántas llegaron. Así se resuelve en ~2 s la mayor parte de un lote de reposición.

@@ -6,12 +6,13 @@
  */
 import { findCoupon, ivaContained, priceFor, round2 } from '@/lib/pricing'
 import { formatPrice, uid } from '@/lib/format'
-import type { BoardColor, Category, Discount, InvoiceType, PaymentMethod, Sale, SaleItem, Season, Settings, Supplier } from '@/types'
+import type { BoardColor, Category, Discount, InvoiceType, PaymentMethod, Product, Sale, SaleItem, Season, Settings, Supplier } from '@/types'
 import { audit } from './audit'
 import { requirePermission } from './auth'
 import { ApiError } from './http'
 import { loadDb, save } from './localDb'
 import { currentUser } from './session'
+import { cloud, rpc } from './supabase'
 
 const norm = (s: string) => s.normalize('NFC').trim().toLocaleLowerCase('es')
 
@@ -20,6 +21,7 @@ export type CategoryInput = Omit<Category, 'id'>
 
 export const categoriesApi = {
   async create(input: CategoryInput): Promise<Category> {
+    if (cloud) return rpc('category_create', { p: input })
     requirePermission('categorias.crear')
     const db = await loadDb()
     const name = input.name.trim()
@@ -32,6 +34,7 @@ export const categoriesApi = {
     return structuredClone(cat)
   },
   async update(id: string, patch: Partial<CategoryInput>): Promise<Category> {
+    if (cloud) return rpc('category_update', { p_id: id, p: patch })
     requirePermission('categorias.editar')
     const db = await loadDb()
     const cat = db.categories.find((c) => c.id === id)
@@ -55,6 +58,7 @@ export type SupplierInput = Omit<Supplier, 'id'>
 
 export const suppliersApi = {
   async create(input: SupplierInput): Promise<Supplier> {
+    if (cloud) return rpc('supplier_create', { p: input })
     requirePermission('proveedores.gestionar')
     const db = await loadDb()
     if (input.name.trim().length < 2) throw new ApiError(400, 'Escribe el nombre del proveedor')
@@ -66,6 +70,7 @@ export const suppliersApi = {
     return structuredClone(sup)
   },
   async update(id: string, patch: Partial<SupplierInput>): Promise<Supplier> {
+    if (cloud) return rpc('supplier_update', { p_id: id, p: patch })
     requirePermission('proveedores.gestionar')
     const db = await loadDb()
     const sup = db.suppliers.find((s) => s.id === id)
@@ -80,9 +85,11 @@ export const suppliersApi = {
 // ── Temporadas ─────────────────────────────────────────────────────────────────
 export const seasonsApi = {
   async list(): Promise<Season[]> {
+    if (cloud) return rpc('list_seasons')
     return structuredClone((await loadDb()).seasons)
   },
   async save(season: Season): Promise<Season> {
+    if (cloud) return rpc('season_save', { p: season })
     requirePermission('temporadas.gestionar')
     const db = await loadDb()
     if (season.name.trim().length < 2) throw new ApiError(400, 'Escribe el nombre de la temporada')
@@ -99,11 +106,12 @@ export const seasonsApi = {
 export type DiscountInput = Omit<Discount, 'id' | 'createdAt'>
 
 export const discountsApi = {
-  /** Lectura pública: la tienda necesita las promociones vigentes. */
   async list(): Promise<Discount[]> {
+    if (cloud) return rpc('list_discounts')
     return structuredClone((await loadDb()).discounts)
   },
   async create(input: DiscountInput): Promise<Discount> {
+    if (cloud) return rpc('discount_create', { p: input })
     requirePermission('descuentos.gestionar')
     validateDiscount(input)
     const db = await loadDb()
@@ -116,6 +124,7 @@ export const discountsApi = {
     return structuredClone(d)
   },
   async update(id: string, patch: Partial<DiscountInput>): Promise<Discount> {
+    if (cloud) return rpc('discount_update', { p_id: id, p: patch })
     requirePermission('descuentos.gestionar')
     const db = await loadDb()
     const d = db.discounts.find((x) => x.id === id)
@@ -127,6 +136,7 @@ export const discountsApi = {
     return structuredClone(d)
   },
   async remove(id: string) {
+    if (cloud) return rpc<void>('discount_delete', { p_id: id })
     requirePermission('descuentos.gestionar')
     const db = await loadDb()
     const d = db.discounts.find((x) => x.id === id)
@@ -134,12 +144,19 @@ export const discountsApi = {
     await save('discounts')
     if (d) await audit('Descuento eliminado', d.name)
   },
+  /** La tienda valida el cupón que escribe el cliente sin recibir la lista de códigos. */
+  async checkCoupon(code: string): Promise<{ code: string; percent: number } | null> {
+    if (cloud) return rpc('check_coupon', { p_code: code })
+    const c = findCoupon(code, (await loadDb()).discounts)
+    return c ? { code: c.code!, percent: c.percent } : null
+  },
 }
 
 function validateDiscount(d: DiscountInput) {
   if (!d.name.trim()) throw new ApiError(400, 'Ponle un nombre al descuento')
   if (!(d.percent > 0 && d.percent <= 90)) throw new ApiError(400, 'El porcentaje debe estar entre 1 y 90')
   if (d.kind === 'cupon' && !/^[A-Z0-9-]{3,20}$/i.test(d.code ?? '')) throw new ApiError(400, 'El código del cupón: 3 a 20 letras o números, sin espacios')
+  if (d.kind === 'producto' && d.targetIds && d.targetIds.length === 0) throw new ApiError(400, 'Elige al menos un producto')
   if (d.kind !== 'cupon' && !d.targetId) throw new ApiError(400, 'Elige a qué aplica el descuento')
   if (d.startsAt && d.endsAt && d.startsAt > d.endsAt) throw new ApiError(400, 'La fecha de fin es anterior a la de inicio')
 }
@@ -147,9 +164,12 @@ function validateDiscount(d: DiscountInput) {
 // ── Configuración ──────────────────────────────────────────────────────────────
 export const settingsApi = {
   async get(): Promise<Settings> {
+    // Sin sesión (tienda) solo se reciben los datos del emisor para el comprobante.
+    if (cloud) return rpc(currentUser() ? 'get_settings' : 'public_settings')
     return structuredClone((await loadDb()).settings[0])
   },
   async update(patch: Partial<Settings>): Promise<Settings> {
+    if (cloud) return rpc('settings_update', { p: patch })
     requirePermission('ajustes.gestionar')
     const db = await loadDb()
     db.settings[0] = { ...db.settings[0], ...patch }
@@ -173,6 +193,7 @@ export interface CheckoutInput {
 
 export const salesApi = {
   async list(): Promise<Sale[]> {
+    if (cloud) return rpc('list_sales')
     requirePermission('ventas.ver')
     return structuredClone((await loadDb()).sales)
   },
@@ -182,6 +203,7 @@ export const salesApi = {
    * deja movimientos "venta" y numera el comprobante. Todo o nada.
    */
   async checkout(input: CheckoutInput): Promise<Sale> {
+    if (cloud) return rpc('checkout', { p: input })
     if (input.channel === 'mostrador') requirePermission('productos.reponer')
     if (!input.items.length) throw new ApiError(400, 'El carrito está vacío')
     if (!input.customer.name.trim()) throw new ApiError(400, 'Escribe el nombre de quien compra')
@@ -241,6 +263,7 @@ export const salesApi = {
 
   /** Anula una venta: devuelve el stock y la conserva marcada como anulada (nunca se borra). */
   async void(id: string, reason: string): Promise<Sale> {
+    if (cloud) return rpc('sale_void', { p_id: id, p_reason: reason })
     requirePermission('ventas.anular')
     if (!reason.trim()) throw new ApiError(400, 'Indica el motivo de la anulación')
     const db = await loadDb()
@@ -266,7 +289,13 @@ export const salesApi = {
 export const invoiceLabel = (s: Pick<Sale, 'invoiceType' | 'number'>) => `${s.invoiceType === 'X' ? 'Comprobante X' : `Factura ${s.invoiceType}`} 0001-${String(s.number).padStart(8, '0')}`
 
 /** Catálogo público para la tienda: solo lo necesario, sin costos ni proveedores. */
-export async function publicCatalog() {
+export async function publicCatalog(): Promise<{
+  products: Pick<Product, 'id' | 'sku' | 'name' | 'categoryId' | 'price' | 'stock' | 'ageMin' | 'batteries' | 'brand' | 'photos' | 'seasons'>[]
+  categories: Category[]
+  seasons: Season[]
+  discounts: Discount[]
+}> {
+  if (cloud) return rpc('public_catalog')
   const db = await loadDb()
   return {
     products: db.products

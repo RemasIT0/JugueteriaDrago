@@ -135,6 +135,8 @@ export interface Discount {
   kind: 'producto' | 'categoria' | 'temporada' | 'cupon'
   /** Producto, categoría o temporada a la que aplica (no en cupones). */
   targetId: string | null
+  /** Solo "producto": todos los productos elegidos (los descuentos viejos solo tienen targetId). */
+  targetIds?: string[]
   /** Solo cupones: código que escribe el cliente. */
   code: string | null
   percent: number

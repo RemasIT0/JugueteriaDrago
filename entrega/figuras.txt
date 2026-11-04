@@ -1,0 +1,20 @@
+Figura 1. Etapas del proyecto, desde el inicio hasta la primera entrega del 30/10/2026.
+Figura 2. Pantalla de inventario del sistema: los productos con poco stock aparecen primero.
+Figura 3. Importación desde Excel en Carga Rápida: acá se detectan montos mal escritos o códigos repetidos antes de guardar.
+Figura 4. Tipos de prueba y cómo se aplican en DragoToY.
+Figura 6. Prueba de sistema: una compra de prueba completa en la tienda online, registrada y con su factura.
+Figura 7. Prueba de integración y de caja negra: la venta aparece en Facturación, y el nombre con código HTML se muestra como texto, sin ejecutarse.
+Figura 8. Prueba de regresión: el nuevo descuento para varios productos convive con los descuentos que ya existían.
+Figura 9. Cuanto más tarde se detecta un error, más cuesta corregirlo (esquema ilustrativo).
+Figura 10. Combinaciones posibles entre fiabilidad y seguridad.
+Figura 12. Inicio de sesión con datos incorrectos: solo avisa que el usuario o la contraseña son incorrectos.
+Figura 13. Después de 5 intentos fallidos, el ingreso queda bloqueado aunque la contraseña sea correcta.
+Figura 14. Los mecanismos de protección y el lugar donde actúa cada uno.
+Figura 15. Menú del dueño y menú del vendedor: el vendedor no ve lo que maneja dinero ni la administración.
+Figura 16. Contenido real de la tabla de usuarios: solo hay sal y hash, y la misma contraseña genera hashes distintos.
+Figura 17. Desglose del trabajo en nueve paquetes.
+Figura 18. Programa por etapas hasta la primera entrega del 30/10/2026.
+Figura 19. Los tres enfoques en la planificación, el desarrollo y la entrega.
+Figura 20. Forma de combinar ambos enfoques en el proyecto, con su tablero de seguimiento.
+Figura 21. Mejora por niveles de madurez (tipo CMMI) frente a mejora por iteraciones (ágil).
+Figura 22. Reportes del sistema con el selector de período: ventas, ganancia y comparación con el período anterior.

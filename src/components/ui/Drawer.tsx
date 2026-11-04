@@ -43,7 +43,7 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
             aria-modal="true"
             aria-label={title}
             tabIndex={-1}
-            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[460px] flex-col bg-surface shadow-drawer outline-none sm:rounded-l-3xl"
+            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[460px] flex-col bg-surface text-ink shadow-drawer outline-none sm:rounded-l-3xl"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}

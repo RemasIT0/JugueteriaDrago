@@ -64,7 +64,7 @@ export function AlertsBell({ variant }: { variant: 'rail' | 'header' }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.96 }}
             transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-            className="fixed bottom-24 right-4 z-[55] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-3xl bg-surface shadow-lift ring-2 ring-coral lg:bottom-6"
+            className="fixed bottom-44 right-4 z-[55] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-3xl bg-surface text-ink shadow-lift ring-2 ring-coral lg:bottom-24 lg:right-6"
           >
             <div className="flex items-center gap-3 bg-coral px-5 py-3 text-on-fill">
               <BellRing className="size-5" aria-hidden />

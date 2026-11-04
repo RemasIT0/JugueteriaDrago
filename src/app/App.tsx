@@ -11,8 +11,9 @@ import type { Permission } from '@/lib/permissions'
 import { useAuth, useCan } from '@/stores/auth'
 import { useInventory } from '@/stores/inventory'
 import { useSales } from '@/stores/sales'
+import { onExternalChange } from '@/services/localDb'
 
-// Las secciones de consulta se cargan bajo demanda; Inventario y Carga Rápida van en el paquete inicial.
+// Las secciones de consulta se cargan bajo demanda; Inventario y Cargar productos van en el paquete inicial.
 const SuppliersPage = lazy(() => import('@/features/suppliers/SuppliersPage'))
 const CategoriesPage = lazy(() => import('@/features/categories/CategoriesPage'))
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'))
@@ -91,6 +92,15 @@ function Panel() {
   useEffect(() => {
     if (phase === 'in') void load()
   }, [phase, load])
+
+  // Si en otra pestaña (la tienda) hubo una venta, se refrescan stock y ventas sin recargar.
+  useEffect(() => {
+    if (phase !== 'in') return
+    return onExternalChange((table) => {
+      if (table === 'products') void useInventory.getState().refreshProducts()
+      if (table === 'sales' && canSales) void loadSales(true)
+    })
+  }, [phase, canSales, loadSales])
 
   // Las ventas alimentan avisos de temporada, reportes y el asistente (solo si el rol las puede ver).
   useEffect(() => {

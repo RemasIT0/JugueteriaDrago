@@ -10,11 +10,12 @@ Fecha: 29 oct 2026. Base: el código de este repositorio, revisado archivo por a
 
 | Módulo | Estado |
 |---|---|
-| Carga Rápida (alta continua, lector USB/cámara, plantillas por categoría, reposición, deshacer, importación CSV/Excel) | Completo |
+| Cargar productos (alta continua, lector USB/cámara, plantillas por categoría, reposición, deshacer, importación CSV/Excel) | Completo |
 | Inventario (tabla, búsqueda, filtros por categoría y nivel de stock, cajón de detalle, fotos) | Completo |
-| Categorías (colores y plantillas) | Solo lectura: no se pueden crear ni editar desde la app |
-| Proveedores | Solo lectura: no se pueden crear ni editar desde la app |
-| Reportes | Valor de stock por categoría y lista para reponer. Sin ventas, porque todavía no hay ventas |
+| Categorías (colores, plantillas y margen) | Alta y edición desde la app |
+| Proveedores | Alta y edición desde la app |
+| Reportes | Ventas por período, más y menos vendidos, balance y punto de equilibrio |
+| Tienda online, descuentos, facturación, temporadas, avisos y asistente | Nuevo (etapa 3) |
 | Login, roles, usuarios, actividad, copias de seguridad | Nuevo (etapa 1) |
 
 ## 2. Problemas encontrados y corregidos en esta etapa
@@ -24,7 +25,7 @@ Fecha: 29 oct 2026. Base: el código de este repositorio, revisado archivo por a
 3. **El stock se podía cambiar con +/− sin motivo ni rastro.** → El ajuste manual pide el stock contado y un motivo (conteo físico, merma, dañado, exhibición, error de carga, otro), queda en el historial y en Actividad, y solo lo puede hacer el dueño.
 4. **Cualquiera podía borrar productos.** → Solo el dueño, con confirmación y registro.
 5. **La importación no verificaba códigos repetidos en la capa de datos.** → Ahora es todo o nada: si un código ya existe o se repite en el archivo, no se guarda ninguna fila.
-6. **"Deshacer" en Carga Rápida usaba borrar y editar stock.** Con roles, eso le habría fallado al vendedor. → Operaciones propias: deshacer una carga recién hecha (la de uno mismo, hasta 30 min) o una reposición, con registro.
+6. **"Deshacer" en Cargar productos usaba borrar y editar stock.** Con roles, eso le habría fallado al vendedor. → Operaciones propias: deshacer una carga recién hecha (la de uno mismo, hasta 30 min) o una reposición, con registro.
 7. **No había usuarios ni control de acceso.** → Etapa 1, abajo.
 
 ## 3. Etapa 1 implementada: acceso, roles y trazabilidad
@@ -61,17 +62,19 @@ Sin servidor, el login **ordena el acceso y deja rastro**, pero **no es una barr
 
 | Área | Hecho | Falta |
 |---|---|---|
-| A. Productos | SKU único, alta por escaneo, categorías, marca, importación CSV/Excel, fotos | Variantes, duplicar producto, exportación, edición masiva, etiquetas/QR, ABM de categorías y marcas |
-| B. POS | — | Todo |
-| C. Inventario | Stock mínimo, alertas (reportes), historial real con motivo, ajustes con motivo (mermas, dañados, exhibición) | Stock máximo, inventario físico guiado, sin rotación, sugerencias de compra |
-| D. Caja y finanzas | — | Todo (requiere POS) |
-| E. Compras y proveedores | Lista de proveedores; los lotes de Carga Rápida funcionan como recepción simple | ABM de proveedores, órdenes de compra, recepción parcial, costos, cuentas pendientes |
-| F. Clientes | — | Todo |
-| G. Reportes | Stock valorizado a precio de venta, para reponer | Todo lo que depende de ventas, costos y compras |
-| H. Juguetería | Edad, baterías (sí/no) | Tipo de pilas, advertencias de seguridad, licencias, colecciones, temporada, kits, asistente de regalos |
+| A. Productos | SKU único, alta por escaneo, categorías (crear/editar), marca, precio de compra y recomendado, importación con plantilla Excel y resolución de categorías nuevas, fotos | Variantes, duplicar, exportación, edición masiva, etiquetas/QR |
+| B. Ventas | Tienda online con carrito, cupones, promociones, reserva "paga al retirar" y compras de prueba; descuento automático de stock; anulación con trazabilidad | Punto de venta de mostrador con lector, pagos divididos, ventas en espera |
+| C. Inventario | Stock mínimo, avisos de reposición (se marcan vistos), orden por urgencia, historial real con motivo, ajustes con motivo | Stock máximo, inventario físico guiado |
+| D. Caja y finanzas | Balance del mes (ventas, IVA, costo, margen, gastos fijos), punto de equilibrio | Apertura/cierre de caja, arqueo, retiros, gastos variables |
+| E. Compras y proveedores | Alta y edición de proveedores; sugerencias de reposición por temporada | Órdenes de compra, recepción parcial, cuentas pendientes |
+| F. Clientes | Datos del cliente en cada venta | Ficha, historial, cumpleaños, lista de deseos |
+| G. Reportes | Ventas por día/semana/mes/año con %, más y menos vendidos, stock valorizado, balance, equilibrio | Comparativas de períodos personalizadas, reportes de caja y compras |
+| H. Juguetería | Edad, baterías, temporadas (Navidad, Reyes, Día de las Infancias, editables) con anticipación de reposición | Tipo de pilas, advertencias, licencias, kits, asistente de regalos |
+| Facturación | Comprobantes A/B/X numerados, IVA 21 % (discriminado en A, contenido en B), impresión, anulación | Factura electrónica ARCA/AFIP (requiere servidor + certificado) |
+| Asistente | Preguntas predefinidas y escritas a mano, respondidas con datos reales y según el rol | IA conversacional real (requiere backend para la clave de API) |
 | Seguridad | Roles, permisos, validaciones, confirmaciones, duplicados, auditoría, copias | Copia automática programada; seguridad real requiere backend |
 
-**Dato que falta en el modelo:** el producto no tiene **costo**, solo precio de venta. Sin costo no hay márgenes, rentabilidad ni stock valorizado a costo. Es lo primero a agregar en la etapa 3.
+**Costo:** el producto ya tiene precio de compra. Los productos cargados antes no lo tienen; hasta completarlo, no entran en el cálculo de margen ni de equilibrio.
 
 ## 5. Plan por etapas (siguientes)
 
@@ -82,7 +85,7 @@ Sin servidor, el login **ordena el acceso y deja rastro**, pero **no es una barr
 | 4 | POS | Venta con lector, carrito, descuentos, varios medios de pago, pagos divididos, ventas en espera, ticket, devoluciones y anulaciones con trazabilidad | 3 (costos) |
 | 5 | Inventario | Inventario físico guiado, stock máximo, productos sin rotación, sugerencias de compra | 4 (ventas) |
 | 6 | Caja | Apertura y cierre, arqueo, ingresos y egresos, retiros, gastos, control por medio de pago | 4 |
-| 7 | Compras | Órdenes de compra, recepción parcial o total (reutiliza Carga Rápida), actualización de costos, cuentas de proveedores | 3 |
+| 7 | Compras | Órdenes de compra, recepción parcial o total (reutiliza Cargar productos), actualización de costos, cuentas de proveedores | 3 |
 | 8 | Clientes | Ficha, historial, cumpleaños, lista de deseos, frecuentes | 4 |
 | 9 | Reportes | Ventas por período, más y menos vendidos, rentabilidad, comparativas, caja, compras, gastos, dashboard | 4–7 |
 | 10 | Juguetería | Kits de regalo, accesorios compatibles, asistente de regalos por edad y presupuesto | 3, 4 |
@@ -97,7 +100,7 @@ Sin servidor, el login **ordena el acceso y deja rastro**, pero **no es una barr
 5. Como vendedor:
    - no ves Reportes, Usuarios ni Actividad (y si escribes `/reportes` en la barra, la app te avisa que es solo para el dueño);
    - en el cajón de un producto no aparecen "Ajustar" ni "Eliminar";
-   - en Carga Rápida no aparece "Desde archivo".
+   - en Cargar productos no aparece "Desde archivo".
 6. Como dueño, ajusta el stock de un producto: el ajuste aparece en el historial del cajón y en **Actividad**.
 7. Recarga la página: la sesión y los datos siguen ahí.
 

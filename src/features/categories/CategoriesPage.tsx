@@ -39,7 +39,7 @@ export default function CategoriesPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Categorías</h1>
           <p className="mt-1 max-w-2xl text-sm font-semibold text-ink-soft">
-            Cada categoría tiene su color de casilla y una plantilla: al elegirla en Carga Rápida, estos datos se completan solos.
+            Cada categoría tiene su color de casilla y una plantilla: al elegirla en Cargar productos, estos datos se completan solos.
           </p>
         </div>
         {canCreate && !creating && (

@@ -15,6 +15,7 @@ import { ROLE_LABEL } from '@/lib/permissions'
 import { audit } from '@/services/audit'
 import { createUser, listUsers, resetPassword, setUserActive, setUserRole, validatePassword } from '@/services/auth'
 import { exportBackup, importBackup } from '@/services/localDb'
+import { cloud } from '@/services/supabase'
 import { useAuth } from '@/stores/auth'
 import type { PublicUser, Role } from '@/types'
 
@@ -267,13 +268,17 @@ function BackupCard() {
 
   const restore = async (file?: File) => {
     if (!file) return
-    const typed = prompt('Restaurar REEMPLAZA todos los datos actuales por los de la copia.\nPara confirmar escribe: RESTAURAR')
+    const typed = prompt(
+      cloud
+        ? 'Se van a subir a la nube los productos, ventas y actividad de la copia. Solo se puede hacer una vez, con la nube vacía.\nPara confirmar escribe: RESTAURAR'
+        : 'Restaurar REEMPLAZA todos los datos actuales por los de la copia.\nPara confirmar escribe: RESTAURAR',
+    )
     if (typed?.trim().toUpperCase() !== 'RESTAURAR') return toast({ tone: 'error', text: 'Restauración cancelada.' })
     setBusy(true)
     try {
       await importBackup(file)
       await audit('Copia de seguridad restaurada', file.name)
-      toast({ tone: 'ok', text: 'Datos restaurados. Recargando…' })
+      toast({ tone: 'ok', text: cloud ? 'Datos subidos a la nube. Recargando…' : 'Datos restaurados. Recargando…' })
       setTimeout(() => location.reload(), 900)
     } catch (e) {
       toast({ tone: 'error', text: errorText(e, 'No se pudo restaurar la copia.') })
@@ -290,7 +295,9 @@ function BackupCard() {
         <div>
           <h2 className="font-black">Copia de seguridad</h2>
           <p className="mt-1 max-w-2xl text-sm font-semibold text-ink-soft">
-            Los datos viven solo en este navegador. Descarga una copia al menos una vez por semana y guárdala fuera de esta computadora (pendrive o nube).
+            {cloud
+              ? 'Los datos se guardan en la nube y se ven desde cualquier equipo. Igual conviene descargar una copia cada tanto. Si tenías datos en el navegador de antes, súbelos una sola vez con «Subir copia del navegador».'
+              : 'Los datos viven solo en este navegador. Descarga una copia al menos una vez por semana y guárdala fuera de esta computadora (pendrive o nube).'}
           </p>
         </div>
       </div>
@@ -300,7 +307,7 @@ function BackupCard() {
         </Button>
         {/* Restaurar reemplaza todo: separado y con confirmación escrita. */}
         <label className={clsx('ml-auto inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border-2 border-peligro/40 px-4 text-[0.9375rem] font-extrabold text-peligro transition-colors hover:border-peligro hover:bg-peligro-wash', busy && 'pointer-events-none opacity-50')}>
-          {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" aria-hidden />} Restaurar desde archivo
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" aria-hidden />} {cloud ? 'Subir copia del navegador' : 'Restaurar desde archivo'}
           <input type="file" accept="application/json,.json" className="sr-only" onChange={(e) => (void restore(e.target.files?.[0]), (e.target.value = ''))} />
         </label>
       </div>

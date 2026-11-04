@@ -16,7 +16,8 @@ import { useInventory } from '@/stores/inventory'
 import { useSales } from '@/stores/sales'
 import type { Season } from '@/types'
 
-const dateFmt = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+const dateFmtRaw = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+const dateFmt = { format: (d: Date) => dateFmtRaw.format(d).replace(/^./, (c) => c.toUpperCase()) }
 
 export default function SeasonsPage() {
   const { status, seasons, products, saveSeason } = useInventory()
@@ -86,7 +87,7 @@ export default function SeasonsPage() {
                 </div>
                 <div className="min-w-0">
                   <h2 className="text-xl font-black">{s.name}</h2>
-                  <p className="text-sm font-semibold capitalize text-ink-soft">{dateFmt.format(plan.date)}</p>
+                  <p className="text-sm font-semibold text-ink-soft">{dateFmt.format(plan.date)}</p>
                   <p className="text-xs font-semibold text-ink-soft">
                     Cada año: {describeRule(s.rule)} · avisa {s.leadDays} días antes · {tagged} productos marcados
                   </p>
@@ -109,7 +110,7 @@ export default function SeasonsPage() {
               </div>
               {tagged === 0 ? (
                 <p className="border-t-2 border-line px-6 py-4 text-sm font-semibold text-ink-soft">
-                  Ningún producto está marcado para esta temporada. Márcalos en Carga Rápida (sección Plantilla) o en el cajón del producto.
+                  Ningún producto está marcado para esta temporada. Márcalos en Cargar productos (sección Plantilla) o en el cajón del producto.
                 </p>
               ) : plan.items.length === 0 ? (
                 <p className="flex items-center gap-2 border-t-2 border-line px-6 py-4 text-sm font-bold text-turquesa-ink">

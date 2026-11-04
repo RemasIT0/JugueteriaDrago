@@ -24,12 +24,12 @@ import { AlertsBell } from '@/features/alerts/AlertsCenter'
 import { AssistantWidget } from '@/features/assistant/AssistantWidget'
 import { AnimatedBackdrop } from './AnimatedBackdrop'
 
-type NavItem = { to: string; label: string; icon: IconType; perm: Permission; color: BoardColor; group: string; admin?: boolean }
+type NavItem = { to: string; label: string; /** Nombre corto para la barra inferior del celular. */ short?: string; icon: IconType; perm: Permission; color: BoardColor; group: string; admin?: boolean }
 
 /** El menú es un tablero: cada sección es una casilla de su color, unidas por un camino. */
 const NAV: NavItem[] = [
   { to: '/', label: 'Inventario', icon: LuBoxes, perm: 'inventario.ver', color: 'turquesa', group: 'Tienda' },
-  { to: '/carga', label: 'Carga Rápida', icon: LuZap, perm: 'productos.crear', color: 'sol', group: 'Tienda' },
+  { to: '/carga', label: 'Cargar productos', short: 'Cargar', icon: LuZap, perm: 'productos.crear', color: 'sol', group: 'Tienda' },
   { to: '/temporadas', label: 'Temporadas', icon: LuCalendarHeart, perm: 'temporadas.ver', color: 'coral', group: 'Tienda' },
   { to: '/reportes', label: 'Reportes', icon: LuChartColumn, perm: 'reportes.ver', color: 'cielo', group: 'Negocio' },
   { to: '/facturacion', label: 'Facturación', icon: LuReceiptText, perm: 'facturacion.ver', color: 'hoja', group: 'Negocio' },
@@ -43,7 +43,7 @@ const NAV: NavItem[] = [
 function Logo() {
   return (
     <span className="flex items-center gap-2.5 text-xl font-black tracking-tight">
-      <span className="grid size-9 place-items-center rounded-xl bg-sol text-on-fill shadow-[0_3px_0_rgb(0_0_0/0.18)]" aria-hidden>
+      <span className="grid size-9 place-items-center logo-tile rounded-xl" aria-hidden>
         <SiDragonframe className="size-6" />
       </span>
       {STORE.name}
@@ -98,7 +98,7 @@ export function AppShell() {
   // En el celular caben 4 secciones; el resto va en «Más».
   const mobileMain = items.filter((n) => !n.admin).slice(0, 4)
 
-  // Atajo global para ir a cargar. En Carga Rápida, el formulario usa los mismos atajos para limpiar.
+  // Atajo global para ir a cargar. En Cargar productos, el formulario usa los mismos atajos para limpiar.
   const goCarga = () => location.pathname !== '/carga' && navigate('/carga')
   useHotkeys({ 'alt+n': goCarga, 'mod+n': goCarga }, location.pathname !== '/carga')
 
@@ -176,7 +176,7 @@ export function AppShell() {
           aria-label="Principal"
           className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t-2 border-line bg-surface/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
         >
-          {mobileMain.map(({ to, label, icon: Icon }) => (
+          {mobileMain.map(({ to, label, short, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
@@ -190,7 +190,7 @@ export function AppShell() {
                   <span className={clsx('grid h-8 w-12 place-items-center rounded-full transition-colors', isActive && 'bg-sol text-on-fill')}>
                     <Icon className="size-5" strokeWidth={2.4} aria-hidden />
                   </span>
-                  <span className="max-w-full truncate px-1">{label}</span>
+                  <span className="max-w-full truncate px-1">{short ?? label}</span>
                 </>
               )}
             </NavLink>

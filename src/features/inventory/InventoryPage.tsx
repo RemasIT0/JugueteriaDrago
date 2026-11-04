@@ -84,7 +84,7 @@ export default function InventoryPage() {
           to="/carga"
           className="inline-flex h-12 items-center gap-2 rounded-2xl bg-sol px-5 font-extrabold text-on-fill shadow-card transition-[filter,transform] hover:-translate-y-px hover:brightness-[1.04] active:scale-[0.97]"
         >
-          <Zap className="size-5" strokeWidth={2.5} aria-hidden /> Carga Rápida
+          <Zap className="size-5" strokeWidth={2.5} aria-hidden /> Cargar productos
         </Link>
       </header>
 
@@ -151,7 +151,7 @@ export default function InventoryPage() {
             <PackageSearch className="size-10 text-ink-soft" strokeWidth={1.8} aria-hidden />
             <p className="text-lg font-black">{filtered ? 'Nada coincide con estos filtros' : 'El inventario está vacío'}</p>
             <p className="max-w-sm text-sm font-semibold text-ink-soft">
-              {filtered ? 'Prueba con otra categoría o borra la búsqueda.' : 'Carga el primer lote desde Carga Rápida.'}
+              {filtered ? 'Prueba con otra categoría o borra la búsqueda.' : 'Carga el primer lote desde Cargar productos.'}
             </p>
             {filtered && (
               <Button variant="secondary" onClick={() => (setQuery(''), setCat(null), setLevel(null), setSeason(null))}>

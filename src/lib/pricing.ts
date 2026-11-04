@@ -23,7 +23,7 @@ export function bestDiscount(product: Pick<Product, 'id' | 'categoryId' | 'seaso
   for (const d of discounts) {
     if (d.kind === 'cupon' || !isLive(d, now)) continue
     const applies =
-      (d.kind === 'producto' && d.targetId === product.id) ||
+      (d.kind === 'producto' && (d.targetIds?.includes(product.id) ?? d.targetId === product.id)) ||
       (d.kind === 'categoria' && d.targetId === product.categoryId) ||
       (d.kind === 'temporada' && !!d.targetId && product.seasons.includes(d.targetId))
     if (applies && (!best || d.percent > best.percent)) best = d

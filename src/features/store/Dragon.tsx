@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 /**
  * Cabeza de dragón (SVG dibujado a mano) con ojos que brillan y siguen el cursor,
@@ -173,8 +173,7 @@ interface P {
   size: number
 }
 
-/** Fuego de partículas desde la boca (73 % de alto, centro), con mezcla aditiva. */
-import { forwardRef, useImperativeHandle } from 'react'
+/** Fuego de partículas desde la boca, con mezcla aditiva. */
 
 const FireCanvas = forwardRef<FireHandle, { still: boolean }>(function FireCanvas({ still }, ref) {
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -206,12 +205,13 @@ const FireCanvas = forwardRef<FireHandle, { still: boolean }>(function FireCanva
       const w = c.width
       const h = c.height
       const ox = w * 0.5
-      const oy = h * 0.6
+      // La boca queda al 75 % del alto del dragón; el lienzo empieza al 20 % y mide 150 %.
+      const oy = h * 0.37
       if (now < emitUntil.current) {
         for (let i = 0; i < 9 * power.current; i++) {
-          const spread = (Math.random() - 0.5) * 0.9
-          const speed = (3 + Math.random() * 4.5) * devicePixelRatio * power.current
-          parts.push({ x: ox + (Math.random() - 0.5) * w * 0.05, y: oy, vx: spread * speed, vy: speed * (0.75 + Math.random() * 0.4), life: 0, max: 38 + Math.random() * 26, size: (10 + Math.random() * 18) * devicePixelRatio })
+          const spread = (Math.random() - 0.5) * 1.6
+          const speed = (2.4 + Math.random() * 3.2) * devicePixelRatio * power.current
+          parts.push({ x: ox + (Math.random() - 0.5) * w * 0.05, y: oy, vx: spread * speed, vy: speed * (0.75 + Math.random() * 0.4), life: 0, max: 26 + Math.random() * 18, size: (10 + Math.random() * 18) * devicePixelRatio })
         }
       }
       ctx.clearRect(0, 0, w, h)
@@ -222,7 +222,7 @@ const FireCanvas = forwardRef<FireHandle, { still: boolean }>(function FireCanva
         p.x += p.vx
         p.y += p.vy
         p.vx *= 1.015
-        p.vy *= 0.985
+        p.vy *= 0.94
         const t = p.life / p.max
         if (t >= 1) {
           parts.splice(i, 1)

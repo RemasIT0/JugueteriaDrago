@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { LuBadgePercent as BadgePercent, LuLoaderCircle as Loader2, LuPause as Pause, LuPlay as Play, LuPlus as Plus, LuTag as Tag, LuTicket as Ticket, LuTrash2 as Trash2 } from 'react-icons/lu'
+import { LuBadgePercent as BadgePercent, LuLoaderCircle as Loader2, LuPause as Pause, LuPlay as Play, LuPlus as Plus, LuTag as Tag, LuTicket as Ticket, LuTrash2 as Trash2, LuX as X } from 'react-icons/lu'
 import { useMemo, useState } from 'react'
 import clsx from 'clsx'
 import { Button } from '@/components/ui/Button'
@@ -23,9 +23,15 @@ export default function DiscountsPage() {
   const { discounts, products, categories, seasons, addDiscount, updateDiscount, removeDiscount } = useInventory()
   const [creating, setCreating] = useState(false)
 
+  const productNames = (d: Discount) => {
+    const names = (d.targetIds ?? [d.targetId]).map((id) => products.find((p) => p.id === id)?.name).filter(Boolean)
+    if (names.length === 0) return undefined
+    return names.length <= 2 ? names.join(', ') : `${names.slice(0, 2).join(', ')} y ${names.length - 2} más`
+  }
+
   const targetName = (d: Discount) =>
     d.kind === 'producto'
-      ? products.find((p) => p.id === d.targetId)?.name
+      ? productNames(d)
       : d.kind === 'categoria'
         ? categories.find((c) => c.id === d.targetId)?.name
         : d.kind === 'temporada'
@@ -81,7 +87,10 @@ export default function DiscountsPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-lg font-black">{d.name}</p>
                     <p className="flex items-center gap-1.5 text-sm font-semibold text-ink-soft">
-                      <Icon className="size-4" aria-hidden /> {KIND_LABEL[d.kind]}: {targetName(d) ?? '(ya no existe)'}
+                      <Icon className="size-4 shrink-0" aria-hidden />
+                      <span className="truncate">
+                        {d.kind === 'producto' && (d.targetIds?.length ?? 1) > 1 ? `${d.targetIds!.length} productos` : KIND_LABEL[d.kind]}: {targetName(d) ?? '(ya no existe)'}
+                      </span>
                     </p>
                   </div>
                   <span className={clsx('shrink-0 rounded-full px-2.5 py-1 text-xs font-extrabold', st.cls)}>{st.label}</span>
@@ -117,6 +126,7 @@ function DiscountForm({ onSave, onCancel }: { onSave: (v: DiscountInput) => Prom
   const [kind, setKind] = useState<Discount['kind']>('categoria')
   const [name, setName] = useState('')
   const [targetId, setTargetId] = useState('')
+  const [productIds, setProductIds] = useState<string[]>([])
   const [code, setCode] = useState('')
   const [percent, setPercent] = useState('15')
   const [startsAt, setStartsAt] = useState('')
@@ -127,16 +137,21 @@ function DiscountForm({ onSave, onCancel }: { onSave: (v: DiscountInput) => Prom
   const targets = useMemo(() => {
     if (kind === 'categoria') return categories.map((c) => ({ id: c.id, name: c.name }))
     if (kind === 'temporada') return seasons.map((s) => ({ id: s.id, name: s.name }))
-    if (kind === 'producto')
-      return products
-        .filter((p) => !q || p.name.toLowerCase().includes(q.toLowerCase()) || p.sku.includes(q))
-        .slice(0, 60)
-        .map((p) => ({ id: p.id, name: `${p.name} · ${p.sku}` }))
     return []
-  }, [kind, categories, seasons, products, q])
+  }, [kind, categories, seasons])
+
+  const matches = useMemo(() => {
+    const term = q.trim().toLocaleLowerCase('es')
+    return products.filter((p) => !term || p.name.toLocaleLowerCase('es').includes(term) || p.sku.includes(term)).slice(0, 80)
+  }, [products, q])
+  const toggle = (id: string) => setProductIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]))
+  const allShown = matches.length > 0 && matches.every((p) => productIds.includes(p.id))
+  const toggleShown = () =>
+    setProductIds((ids) => (allShown ? ids.filter((id) => !matches.some((p) => p.id === id)) : [...new Set([...ids, ...matches.map((p) => p.id)])]))
 
   const pct = Number(percent)
-  const valid = name.trim() && pct > 0 && pct <= 90 && (kind === 'cupon' ? /^[A-Za-z0-9-]{3,20}$/.test(code) : !!targetId)
+  const hasTarget = kind === 'cupon' ? /^[A-Za-z0-9-]{3,20}$/.test(code) : kind === 'producto' ? productIds.length > 0 : !!targetId
+  const valid = name.trim() && pct > 0 && pct <= 90 && hasTarget
 
   return (
     <motion.form
@@ -150,7 +165,8 @@ function DiscountForm({ onSave, onCancel }: { onSave: (v: DiscountInput) => Prom
         await onSave({
           name: name.trim(),
           kind,
-          targetId: kind === 'cupon' ? null : targetId,
+          targetId: kind === 'cupon' ? null : kind === 'producto' ? productIds[0] : targetId,
+          ...(kind === 'producto' && { targetIds: productIds }),
           code: kind === 'cupon' ? code.toUpperCase() : null,
           percent: pct,
           startsAt: startsAt ? new Date(`${startsAt}T00:00:00`).toISOString() : null,
@@ -187,10 +203,55 @@ function DiscountForm({ onSave, onCancel }: { onSave: (v: DiscountInput) => Prom
           <Field label="Código del cupón" htmlFor="df-code" hint="3 a 20 letras o números, sin espacios">
             <Input id="df-code" className="num uppercase" value={code} onChange={(e) => setCode(e.target.value.replace(/\s/g, ''))} placeholder="DRAGO10" />
           </Field>
+        ) : kind === 'producto' ? (
+          <Field label={`Productos (${productIds.length} elegido${productIds.length === 1 ? '' : 's'})`} htmlFor="df-q" className="sm:col-span-2">
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <Input id="df-q" placeholder="Buscar por nombre o código…" value={q} onChange={(e) => setQ(e.target.value)} className="h-10 flex-1" />
+                <Button size="sm" variant="secondary" className="h-10" onClick={toggleShown} disabled={matches.length === 0}>
+                  {allShown ? 'Quitar los mostrados' : 'Elegir los mostrados'}
+                </Button>
+              </div>
+              {productIds.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {productIds.slice(0, 12).map((id) => {
+                    const p = products.find((x) => x.id === id)
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => toggle(id)}
+                        aria-label={`Quitar ${p?.name ?? 'producto'}`}
+                        className="flex max-w-[16rem] items-center gap-1 rounded-full bg-coral-wash px-3 py-1 text-xs font-extrabold text-coral-ink hover:bg-coral hover:text-on-fill"
+                      >
+                        <span className="truncate">{p?.name ?? '(ya no existe)'}</span>
+                        <X className="size-3.5 shrink-0" aria-hidden />
+                      </button>
+                    )
+                  })}
+                  {productIds.length > 12 && <span className="num px-1 py-1 text-xs font-extrabold text-ink-soft">+{productIds.length - 12} más</span>}
+                  <button type="button" onClick={() => setProductIds([])} className="px-2 text-xs font-extrabold text-ink-soft underline hover:text-ink">
+                    Quitar todos
+                  </button>
+                </div>
+              )}
+              <ul className="max-h-64 overflow-y-auto rounded-2xl border-2 border-line p-1" aria-label="Productos">
+                {matches.length === 0 && <li className="px-3 py-4 text-center text-sm font-semibold text-ink-soft">Ningún producto coincide.</li>}
+                {matches.map((p) => (
+                  <li key={p.id}>
+                    <label className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 hover:bg-sunken">
+                      <input type="checkbox" className="size-4 accent-coral" checked={productIds.includes(p.id)} onChange={() => toggle(p.id)} />
+                      <span className="min-w-0 flex-1 truncate text-sm font-bold">{p.name}</span>
+                      <span className="num shrink-0 text-xs font-semibold text-ink-soft">{p.sku}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Field>
         ) : (
           <Field label={`Aplica a (${KIND_LABEL[kind].toLowerCase()})`} htmlFor="df-target">
             <div className="flex flex-col gap-2">
-              {kind === 'producto' && <Input placeholder="Buscar producto…" value={q} onChange={(e) => setQ(e.target.value)} className="h-10" />}
               <Select id="df-target" value={targetId} onChange={(e) => setTargetId(e.target.value)}>
                 <option value="">Elegir…</option>
                 {targets.map((t) => (

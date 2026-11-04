@@ -1,6 +1,8 @@
 /**
  * Plantilla Excel para cargar productos: colores por tipo de columna, listas desplegables
  * con las categorías y temporadas reales de la tienda, validaciones y una hoja de instrucciones.
+ * Dos versiones: la del dueño (completa) y la del proveedor, que no tiene precio de venta
+ * ni temporadas (eso lo decide la tienda) y trae la hoja protegida para que no se agreguen columnas.
  * ExcelJS es pesado: se descarga solo cuando alguien pide la plantilla.
  */
 import type { Category, Season } from '@/types'
@@ -42,10 +44,28 @@ const COLUMNS: Col[] = [
   { header: 'Temporadas', key: 'seasons', width: 26, required: false, help: 'Una de la lista, o varias separadas por coma.', example: 'Navidad, Reyes' },
 ]
 
+export type TemplateVersion = 'dueno' | 'proveedor'
+
+/** El proveedor completa lo que sabe: código, nombre, categoría, su precio y cuántas manda. */
+function columnsFor(version: TemplateVersion): Col[] {
+  if (version === 'dueno') return COLUMNS
+  return COLUMNS.filter((c) => c.key !== 'price' && c.key !== 'seasons').map((c) =>
+    c.key === 'cost'
+      ? { ...c, header: 'Precio de compra *', required: true, help: 'Tu precio por unidad para la juguetería, en pesos. Sin el signo $.' }
+      : c.key === 'qty'
+        ? { ...c, help: 'Unidades que enviás.' }
+        : c.key === 'cat'
+          ? { ...c, help: 'Elegí de la lista. Si ninguna encaja, escribí la que te parezca: la tienda la revisa al importar.' }
+          : c,
+  )
+}
+
 const HEADER_ROW = 5
 const ROWS = 300
 
-export async function downloadTemplate(categories: Category[], seasons: Season[]) {
+export async function downloadTemplate(categories: Category[], seasons: Season[], version: TemplateVersion = 'dueno') {
+  const forSupplier = version === 'proveedor'
+  const COLUMNS = columnsFor(version)
   const { default: ExcelJS } = await import('exceljs')
   const wb = new ExcelJS.Workbook()
   wb.creator = 'DragoToY'
@@ -54,17 +74,19 @@ export async function downloadTemplate(categories: Category[], seasons: Season[]
   // ── Hoja principal ──
   const ws = wb.addWorksheet('Productos', {
     views: [{ state: 'frozen', ySplit: HEADER_ROW, xSplit: 2, showGridLines: false }],
-    properties: { tabColor: { argb: C.sol } },
+    properties: { tabColor: { argb: forSupplier ? C.turqInk : C.sol } },
   })
   COLUMNS.forEach((c, i) => (ws.getColumn(i + 1).width = c.width))
   const last = COLUMNS.length
 
   ws.mergeCells(1, 1, 1, last)
-  Object.assign(ws.getCell(1, 1), { value: 'DragoToY · Carga de productos' })
+  Object.assign(ws.getCell(1, 1), { value: forSupplier ? 'DragoToY · Lista de productos para el proveedor' : 'DragoToY · Carga de productos' })
   ws.getCell(1, 1).font = { name: 'Calibri', size: 18, bold: true, color: { argb: C.white } }
   ws.getRow(1).height = 34
   ws.mergeCells(2, 1, 2, last)
-  ws.getCell(2, 1).value = 'Completá una fila por producto desde la fila 6. Las columnas amarillas (*) son obligatorias; las verdes, opcionales. No cambies los títulos de la fila 5.'
+  ws.getCell(2, 1).value = forSupplier
+    ? 'Completá una fila por producto desde la fila 6, con tu precio de compra. El precio de venta lo pone la juguetería. Amarillas (*) obligatorias; verdes, opcionales.'
+    : 'Completá una fila por producto desde la fila 6. Las columnas amarillas (*) son obligatorias; las verdes, opcionales. No cambies los títulos de la fila 5.'
   ws.getCell(2, 1).font = { size: 11, color: { argb: C.white } }
   ws.getRow(2).height = 22
   for (const r of [1, 2]) {
@@ -130,12 +152,19 @@ export async function downloadTemplate(categories: Category[], seasons: Season[]
     promptTitle: 'Categoría',
     prompt: 'Elegí una de la lista o escribí una nueva.',
   })
-  dv('seasons', { type: 'list', allowBlank: true, formulae: [`Listas!$B$1:$B$${Math.max(1, seasons.length)}`], showErrorMessage: false })
+  if (!forSupplier) dv('seasons', { type: 'list', allowBlank: true, formulae: [`Listas!$B$1:$B$${Math.max(1, seasons.length)}`], showErrorMessage: false })
   dv('bat', { type: 'list', allowBlank: true, formulae: ['Listas!$C$1:$C$2'], showErrorMessage: true, errorTitle: 'Baterías', error: 'Elegí Sí o No.' })
-  for (const key of ['cost', 'price'])
+  for (const key of ['cost', 'price'].filter((k) => idx(k) > 0))
     dv(key, { type: 'decimal', operator: 'greaterThanOrEqual', allowBlank: true, formulae: [0], showErrorMessage: true, errorTitle: 'Precio', error: 'Escribí un número mayor o igual a 0, sin el signo $.' })
   for (const key of ['qty', 'age'])
     dv(key, { type: 'whole', operator: 'between', allowBlank: true, formulae: [0, 99999], showErrorMessage: true, errorTitle: 'Número entero', error: 'Escribí un número entero, sin decimales.' })
+
+  if (forSupplier) {
+    for (let r = HEADER_ROW + 1; r <= HEADER_ROW + ROWS; r++)
+      for (let c = 1; c <= last; c++) ws.getCell(r, c).protection = { locked: false }
+    // Sin contraseña: no es seguridad, solo evita que se agregue una columna de precio de venta o se cambien los títulos.
+    await ws.protect('', { selectLockedCells: true, selectUnlockedCells: true, autoFilter: true, sort: true, formatColumns: true, insertColumns: false, deleteColumns: false, insertRows: false, deleteRows: false })
+  }
 
   // ── Hoja de instrucciones ──
   const help = wb.addWorksheet('Instrucciones', { properties: { tabColor: { argb: C.rail } }, views: [{ showGridLines: false }] })
@@ -147,12 +176,20 @@ export async function downloadTemplate(categories: Category[], seasons: Season[]
   help.getCell('A1').font = { size: 16, bold: true, color: { argb: C.white } }
   help.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rail } }
   help.getRow(1).height = 30
-  const steps = [
+  const steps = forSupplier
+    ? [
+        '1. Completá la hoja «Productos» desde la fila 6: una fila por producto que envíes.',
+        '2. Las columnas amarillas son obligatorias. Las verdes podés dejarlas vacías.',
+        '3. Poné tu precio de compra por unidad. El precio de venta al público lo define la juguetería.',
+        '4. Guardá el archivo y mandalo a DragoToY por el medio de siempre.',
+      ]
+    : [
     '1. Completá la hoja «Productos» desde la fila 6: una fila por producto.',
     '2. Las columnas amarillas son obligatorias. Las verdes podés dejarlas vacías.',
-    '3. Guardá el archivo y en DragoToY andá a Carga Rápida → Desde archivo, y arrastralo.',
+    '3. Guardá el archivo y en DragoToY andá a Cargar productos → Desde archivo, y arrastralo.',
     '4. Antes de guardar, el sistema te muestra qué filas están bien y cuáles tienen problemas.',
     '5. Si escribiste una categoría nueva, el sistema te pregunta si crearla o usar una existente.',
+    '6. Si el proveedor mandó la versión para proveedores (sin precio de venta), se usa el precio recomendado según tu margen.',
   ]
   steps.forEach((s, i) => {
     help.mergeCells(i + 3, 1, i + 3, 3)
@@ -181,9 +218,11 @@ export async function downloadTemplate(categories: Category[], seasons: Season[]
   help.getCell(catRow, 1).value = 'Categorías actuales'
   help.getCell(catRow, 1).font = { bold: true }
   help.getCell(catRow, 2).value = categories.map((c) => c.name).join(' · ')
-  help.getCell(catRow + 1, 1).value = 'Temporadas'
-  help.getCell(catRow + 1, 1).font = { bold: true }
-  help.getCell(catRow + 1, 2).value = seasons.map((s) => s.name).join(' · ')
+  if (!forSupplier) {
+    help.getCell(catRow + 1, 1).value = 'Temporadas'
+    help.getCell(catRow + 1, 1).font = { bold: true }
+    help.getCell(catRow + 1, 2).value = seasons.map((s) => s.name).join(' · ')
+  }
 
   // ── Hoja de listas (oculta, al final) para los desplegables ──
   const lists = wb.addWorksheet('Listas', { state: 'veryHidden' })
@@ -196,6 +235,6 @@ export async function downloadTemplate(categories: Category[], seasons: Season[]
 
   const buf = await wb.xlsx.writeBuffer()
   const url = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }))
-  Object.assign(document.createElement('a'), { href: url, download: 'plantilla-productos-dragotoy.xlsx' }).click()
+  Object.assign(document.createElement('a'), { href: url, download: forSupplier ? 'lista-proveedor-dragotoy.xlsx' : 'plantilla-productos-dragotoy.xlsx' }).click()
   URL.revokeObjectURL(url)
 }

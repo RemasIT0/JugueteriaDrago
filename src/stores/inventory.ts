@@ -39,7 +39,7 @@ interface InventoryState {
   /** Edición; si cambia el stock es un ajuste y exige motivo (solo dueño). */
   update: (id: string, patch: Partial<ProductInput>, reason?: string) => Promise<void>
   remove: (id: string) => Promise<void>
-  /** Deshace la última carga o reposición de Carga Rápida. */
+  /** Deshace la última carga o reposición de Cargar productos. */
   undoEntry: (entry: { kind: 'nuevo' | 'reposicion'; sku: string; qty: number }) => Promise<void>
   /** Al cerrar sesión: el siguiente usuario vuelve a cargar con sus permisos. */
   reset: () => void

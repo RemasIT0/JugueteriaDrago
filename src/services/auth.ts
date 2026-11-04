@@ -1,7 +1,7 @@
 /**
- * Autenticación en modo local. Las contraseñas se guardan como hash PBKDF2 con sal propia.
- * Sin servidor esto ordena el acceso y deja rastro de quién hizo qué, pero no es una
- * barrera ante alguien con acceso técnico al equipo: para eso hace falta un backend.
+ * Autenticación. Con Supabase configurado, todo pasa por Supabase Auth (authCloud.ts).
+ * En modo local las contraseñas se guardan como hash PBKDF2 con sal propia: eso ordena el
+ * acceso y deja rastro, pero no es una barrera ante alguien con acceso técnico al equipo.
  */
 import { can, type Permission } from '@/lib/permissions'
 import { uid } from '@/lib/format'
@@ -9,7 +9,9 @@ import type { PublicUser, Role, User } from '@/types'
 import { audit } from './audit'
 import { ApiError } from './http'
 import { loadDb, save } from './localDb'
+import * as remote from './authCloud'
 import { currentUser, setCurrentUser } from './session'
+import { cloud } from './supabase'
 
 const ITERATIONS = 210_000
 const SESSION_KEY = 'dragotoy-session'
@@ -75,11 +77,17 @@ const writeAttempts = (a: Attempts) => {
 
 // ── API pública ──────────────────────────────────────────────────────────────────
 export async function hasUsers() {
+  if (cloud) return remote.hasUsers()
   return (await loadDb()).users.length > 0
 }
 
 /** Primer uso: crea la cuenta del dueño. Solo funciona si no hay ningún usuario. */
 export async function setupOwner(input: { name: string; username: string; password: string }) {
+  if (cloud) {
+    const problem = validatePassword(input.password)
+    if (problem) throw new ApiError(400, problem)
+    return remote.setupOwner(input, normalize(input.username))
+  }
   const db = await loadDb()
   if (db.users.length) throw new ApiError(409, 'El sistema ya tiene usuarios. Ingresa con tu cuenta.')
   const user = await buildUser({ ...input, role: 'dueno' })
@@ -114,6 +122,23 @@ export async function login(username: string, password: string): Promise<PublicU
   if (a && a.until > Date.now()) {
     const secs = Math.ceil((a.until - Date.now()) / 1000)
     throw new ApiError(429, `Demasiados intentos. Espera ${secs} segundos e intenta de nuevo.`)
+  }
+
+  if (cloud) {
+    try {
+      const user = await remote.login(key, password)
+      delete attempts[key]
+      writeAttempts(attempts)
+      return user
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        const count = (a?.count ?? 0) + 1
+        attempts[key] = { count: count >= MAX_ATTEMPTS ? 0 : count, until: count >= MAX_ATTEMPTS ? Date.now() + LOCK_MS : 0 }
+        writeAttempts(attempts)
+        if (count >= MAX_ATTEMPTS) throw new ApiError(401, 'Demasiados intentos. Espera 1 minuto.')
+      }
+      throw e
+    }
   }
 
   const db = await loadDb()
@@ -152,6 +177,7 @@ function startSession(user: User) {
 
 /** Recupera la sesión guardada si no venció y el usuario sigue activo. */
 export async function restoreSession(): Promise<PublicUser | null> {
+  if (cloud) return remote.restoreSession().catch(() => null)
   try {
     const raw = localStorage.getItem(SESSION_KEY)
     if (!raw) return null
@@ -167,6 +193,7 @@ export async function restoreSession(): Promise<PublicUser | null> {
 }
 
 export async function logout() {
+  if (cloud) return remote.logout()
   await audit('Salida', '')
   setCurrentUser(null)
   try {
@@ -179,17 +206,24 @@ export async function logout() {
 /** Solo id → nombre, para mostrar quién hizo cada movimiento (sin datos sensibles). */
 export async function userNames(): Promise<Record<string, string>> {
   if (!currentUser()) return {}
+  if (cloud) return remote.userNames()
   return Object.fromEntries((await loadDb()).users.map((u) => [u.id, u.name]))
 }
 
 // ── Gestión de usuarios (dueño) ──────────────────────────────────────────────────
 export async function listUsers(): Promise<PublicUser[]> {
   requirePermission('usuarios.gestionar')
+  if (cloud) return remote.listUsers()
   return (await loadDb()).users.map(toPublic)
 }
 
 export async function createUser(input: { name: string; username: string; password: string; role: Role }) {
   requirePermission('usuarios.gestionar')
+  if (cloud) {
+    const problem = validatePassword(input.password)
+    if (problem) throw new ApiError(400, problem)
+    return remote.createUser(input, normalize(input.username))
+  }
   const db = await loadDb()
   if (db.users.some((u) => u.username === normalize(input.username))) throw new ApiError(409, 'Ya existe un usuario con ese nombre de ingreso.')
   const user = await buildUser(input)
@@ -203,6 +237,7 @@ const activeOwners = (users: User[]) => users.filter((u) => u.role === 'dueno' &
 
 export async function setUserActive(id: string, active: boolean) {
   requirePermission('usuarios.gestionar')
+  if (cloud) return void (await remote.setUserActive(id, active))
   const db = await loadDb()
   const user = db.users.find((u) => u.id === id)
   if (!user) throw new ApiError(404, 'El usuario ya no existe')
@@ -215,6 +250,7 @@ export async function setUserActive(id: string, active: boolean) {
 
 export async function setUserRole(id: string, role: Role) {
   requirePermission('usuarios.gestionar')
+  if (cloud) return void (await remote.setUserRole(id, role))
   const db = await loadDb()
   const user = db.users.find((u) => u.id === id)
   if (!user) throw new ApiError(404, 'El usuario ya no existe')
@@ -227,6 +263,11 @@ export async function setUserRole(id: string, role: Role) {
 export async function resetPassword(id: string, password: string) {
   const me = currentUser()
   if (me?.id !== id) requirePermission('usuarios.gestionar')
+  if (cloud) {
+    const problem = validatePassword(password)
+    if (problem) throw new ApiError(400, problem)
+    return remote.resetPassword(id, password)
+  }
   const db = await loadDb()
   const user = db.users.find((u) => u.id === id)
   if (!user) throw new ApiError(404, 'El usuario ya no existe')
@@ -242,6 +283,11 @@ export async function resetPassword(id: string, password: string) {
 export async function changeOwnPassword(current: string, next: string) {
   const me = currentUser()
   if (!me) throw new ApiError(401, 'Tu sesión terminó. Vuelve a ingresar.')
+  if (cloud) {
+    const problem = validatePassword(next)
+    if (problem) throw new ApiError(400, problem)
+    return remote.changeOwnPassword(me, current, next)
+  }
   const user = (await loadDb()).users.find((u) => u.id === me.id)
   if (!user || !sameHash(await hash(current, user.salt), user.passwordHash)) throw new ApiError(400, 'La contraseña actual no es correcta.')
   await resetPassword(me.id, next)

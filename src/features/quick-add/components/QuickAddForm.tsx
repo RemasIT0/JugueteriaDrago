@@ -279,7 +279,7 @@ export function QuickAddForm({ onSaved, onOpenCamera, undoRef, scanRef }: Props)
       }}
       noValidate
       className="flex flex-col rounded-3xl bg-surface shadow-card"
-      aria-label="Carga rápida de producto"
+      aria-label="Cargar un producto"
     >
       <div ref={scope} className="flex flex-col gap-5 p-4 sm:p-6">
         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">

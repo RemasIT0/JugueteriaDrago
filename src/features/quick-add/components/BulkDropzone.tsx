@@ -12,7 +12,7 @@ import { useCan } from '@/stores/auth'
 import { useInventory } from '@/stores/inventory'
 import { useLote } from '@/stores/lote'
 import { findUnknownCategories, mapRows, readRows, type UnknownCategory } from '../importFile'
-import { downloadTemplate } from '../templateXlsx'
+import { downloadTemplate, type TemplateVersion } from '../templateXlsx'
 
 const NEW = '__nueva__'
 
@@ -113,9 +113,9 @@ export function BulkDropzone() {
     }
   }
 
-  const getTemplate = async () => {
+  const getTemplate = async (version: TemplateVersion) => {
     try {
-      await downloadTemplate(categories, seasons)
+      await downloadTemplate(categories, seasons, version)
     } catch {
       toast({ tone: 'error', text: 'No se pudo generar la plantilla.' })
     }
@@ -165,11 +165,19 @@ export function BulkDropzone() {
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-sunken px-4 py-3">
         <p className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
           <FileSpreadsheet className="size-5 shrink-0 text-hoja-ink" aria-hidden />
-          La plantilla trae las columnas ordenadas, colores, listas con tus categorías y una hoja de instrucciones.
+          <span>
+            Plantillas con colores, listas de tus categorías e instrucciones. La <strong className="text-ink">del proveedor</strong> no tiene precio de venta: al importarla se usa el
+            precio recomendado según tu margen.
+          </span>
         </p>
-        <Button variant="secondary" size="sm" className="bg-surface" onClick={() => void getTemplate()}>
-          <Download className="size-4" aria-hidden /> Descargar plantilla Excel
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" size="sm" className="bg-surface" onClick={() => void getTemplate('dueno')}>
+            <Download className="size-4" aria-hidden /> Plantilla del dueño
+          </Button>
+          <Button variant="secondary" size="sm" className="bg-surface" onClick={() => void getTemplate('proveedor')}>
+            <Download className="size-4" aria-hidden /> Plantilla para el proveedor
+          </Button>
+        </div>
       </div>
 
       <AnimatePresence>

@@ -20,25 +20,31 @@ Inventory management for a toy store: register incoming stock, browse and filter
 
 ## Positioning
 
-Obsessive focus on "Carga Rápida" (Quick-Add): continuous entry without page reloads, scanner detection, keyboard-first shortcuts, category-based smart defaults, and a CSV/Excel bulk-import fallback.
+Obsessive focus on "Cargar productos" (Quick-Add; formerly "Carga Rápida"): continuous entry without page reloads, scanner detection, keyboard-first shortcuts, category-based smart defaults, and a CSV/Excel bulk-import fallback.
 
 ## Operating Context
 
 - Shipment arrival: continuous entry, scanner bursts, keyboard shortcuts (Ctrl+N new, Ctrl+Enter save and next, Tab between logical fields).
 - Supplier spreadsheets (CSV/Excel) imported in bulk.
 - Inventory review: table with quick filters by category and stock state (Bajo, Medio, Alto); product detail in a side drawer.
-- Sections: Inventario, Carga Rápida, Proveedores, Categorías, Reportes.
+- Sections: Inventario, Cargar productos, Proveedores, Categorías, Reportes.
 
 ## Capabilities and Constraints
 
 - UI language: Spanish.
 - Must work on desktop and on tablet/phone (responsive is a real requirement, not an afterthought).
-- Currency: not yet specified; kept configurable in one place (inferred default "$").
-- No real sales history data exists yet; any shown is mock data and must be labelled as such in code.
+- Country: Argentina (confirmed). Currency ARS shown as "$", locale es-AR, IVA 21 % included in shelf prices; Día de las Infancias = 3rd Sunday of August.
+- Customer store at /tienda (public, no login): live in-stock catalog, promotions, coupons, cart, checkout as "reserve and pay at pickup" or "test purchase". No payment gateway yet.
+- Sales with numbered internal invoices (A/B/X), voiding with reason that restores stock. Not AFIP/ARCA electronic invoicing (needs a server, digital certificate and CAE).
+- Purchase price (cost) per product; recommended price = cost + category/general margin; break-even from monthly fixed costs.
+- Assistant answers predefined questions from store data; no external AI (an LLM would need a backend to keep the API key safe).
+- Sales, stock movements and activity are real records. The demo catalog loads only if the owner opts in at setup, and its suppliers are labelled "(ejemplo)".
 
 ## Brand Commitments
 
 - Name: DragoToY.
+- Logo: the SiDragonframe icon from react-icons (user-chosen), shown on a sol-yellow tile.
+- Customer store hero: a dragon head in the center breathing fire with glowing eyes (user-pinned).
 - Brief-pinned feel: professional but friendly, fitting a toy store without becoming childish. Light, low-fatigue base with soft vibrant accents (soft yellow, coral, turquoise), rounded sans-serif, rounded cards with soft shadows, optional dark mode.
 
 ## Evidence on Hand

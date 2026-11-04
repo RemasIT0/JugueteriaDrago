@@ -55,12 +55,23 @@ export interface Bucket {
 /** Ventas agrupadas en los últimos N períodos (14 días, 12 semanas, 12 meses o 5 años). */
 export function buckets(sales: Sale[], g: Granularity, now = new Date()): Bucket[] {
   const first = step(bucketStart(now, g), g, -(COUNT[g] - 1))
-  const list = Array.from({ length: COUNT[g] }, (_, i) => {
-    const start = step(first, g, i)
-    return { start, end: step(start, g, 1), total: 0, units: 0, count: 0 }
-  })
+  return bucketsInRange(sales, g, first, step(bucketStart(now, g), g, 1))
+}
+
+/** Cuántas barras saldrían al agrupar el rango [from, to) por g. */
+export function bucketCount(g: Granularity, from: Date, to: Date) {
+  let n = 0
+  for (let d = bucketStart(from, g); d < to && n <= 1000; d = step(d, g, 1)) n++
+  return n
+}
+
+/** Ventas agrupadas entre dos fechas elegidas ([from, to), "to" excluido). Los extremos pueden ser períodos parciales. */
+export function bucketsInRange(sales: Sale[], g: Granularity, from: Date, to: Date): Bucket[] {
+  const list: { start: Date; end: Date; total: number; units: number; count: number }[] = []
+  for (let start = bucketStart(from, g); start < to && list.length < 1000; start = step(start, g, 1)) list.push({ start, end: step(start, g, 1), total: 0, units: 0, count: 0 })
   for (const s of sales) {
     const t = new Date(s.at)
+    if (t < from || t >= to) continue
     const b = list.find((x) => t >= x.start && t < x.end)
     if (!b) continue
     b.total += s.total
@@ -80,11 +91,12 @@ export function buckets(sales: Sale[], g: Granularity, now = new Date()): Bucket
 }
 
 /** Unidades e ingresos por producto en un rango; incluye los que no vendieron nada (para "menos vendidos"). */
-export function productRanking(sales: Sale[], products: Product[], from: number) {
+export function productRanking(sales: Sale[], products: Product[], from: number, to = Infinity) {
   const map = new Map<string, { id: string; name: string; units: number; revenue: number }>()
   for (const p of products) map.set(p.id, { id: p.id, name: p.name, units: 0, revenue: 0 })
   for (const s of sales) {
-    if (new Date(s.at).getTime() < from) continue
+    const t = new Date(s.at).getTime()
+    if (t < from || t >= to) continue
     for (const i of s.items) {
       const row = map.get(i.productId) ?? { id: i.productId, name: i.name, units: 0, revenue: 0 }
       row.units += i.qty
@@ -150,6 +162,22 @@ export function balance(sales: Sale[], settings: Settings | undefined, from: num
   }
 }
 
+/** Meses que abarca un rango, para prorratear los gastos fijos mensuales (un mes = 30,44 días). */
+export const monthsIn = (from: number, to: number) => Math.max(0, to - from) / (DAY * 30.4375)
+
+/**
+ * El período anterior para comparar: si el rango son meses enteros (del 1 al 1), los meses anteriores;
+ * si no, la misma cantidad de días justo antes.
+ */
+export function previousRange(from: Date, to: Date): [Date, Date] {
+  const wholeMonths = from.getDate() === 1 && to.getDate() === 1 && from.getHours() === 0 && to.getHours() === 0
+  if (wholeMonths) {
+    const months = (to.getFullYear() - from.getFullYear()) * 12 + to.getMonth() - from.getMonth()
+    return [new Date(from.getFullYear(), from.getMonth() - months, 1), new Date(from)]
+  }
+  return [new Date(from.getTime() - (to.getTime() - from.getTime())), new Date(from)]
+}
+
 /**
  * Punto de equilibrio mensual: cuánto hay que vender (con IVA) para cubrir los gastos fijos.
  * Usa el margen de contribución real de los últimos 90 días; si todavía no hay ventas con costo,
@@ -173,7 +201,8 @@ export function breakEven(sales: Sale[], products: Product[], settings: Settings
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
   const monthSales = sales.filter((s) => new Date(s.at) >= monthStart)
   const soldThisMonth = monthSales.reduce((a, s) => a + s.total, 0)
-  const target = ratio && ratio > 0 ? (fixed / ratio) * (1 + rate) : null
+  // Sin gastos fijos cargados no hay objetivo que alcanzar.
+  const target = fixed > 0 && ratio && ratio > 0 ? (fixed / ratio) * (1 + rate) : null
   // Acumulado por día del mes, para la línea contra el objetivo.
   const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
   let acc = 0

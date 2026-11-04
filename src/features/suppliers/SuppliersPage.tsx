@@ -49,7 +49,7 @@ export default function SuppliersPage() {
         <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed border-line px-6 py-14 text-center">
           <Truck className="size-10 text-ink-soft" strokeWidth={1.8} aria-hidden />
           <p className="font-black">Todavía no cargaste proveedores</p>
-          <p className="max-w-sm text-sm font-semibold text-ink-soft">Agrégalos para asignarlos a cada lote en Carga Rápida y saber qué mercadería trae cada uno.</p>
+          <p className="max-w-sm text-sm font-semibold text-ink-soft">Agrégalos para asignarlos a cada lote en Cargar productos y saber qué mercadería trae cada uno.</p>
         </div>
       )}
 
