@@ -75,7 +75,7 @@ export function bucketsInRange(sales: Sale[], g: Granularity, from: Date, to: Da
     const b = list.find((x) => t >= x.start && t < x.end)
     if (!b) continue
     b.total += s.total
-    b.count++
+    if (!s.creditFor) b.count++
     b.units += s.items.reduce((a, i) => a + i.qty, 0)
   }
   const sum = list.reduce((a, b) => a + b.total, 0)

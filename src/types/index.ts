@@ -22,6 +22,10 @@ export interface Product {
   /** URLs de fotos; la primera es la principal. */
   photos: string[]
   loteId: string | null
+  /** Ficha para la tienda: texto libre que lee el cliente. Vacío = sin ficha. */
+  description?: string
+  /** Ficha para la tienda: puntos cortos (material, medidas, qué incluye…). */
+  features?: string[]
   createdAt: string
   updatedAt: string
 }
@@ -162,6 +166,8 @@ export interface SaleItem {
   unitFinal: number
   /** Costo unitario al momento de vender (null si el producto no tenía costo). */
   unitCost: number | null
+  /** En una nota de crédito: si el producto volvió al stock (false = vino dañado, su costo es pérdida). */
+  restock?: boolean
 }
 
 export interface Sale {
@@ -182,12 +188,70 @@ export interface Sale {
   /** IVA contenido en el total. */
   iva: number
   paymentMethod: PaymentMethod
-  status: 'completada' | 'anulada'
+  /**
+   * reservada: pedido de la tienda que separa stock, sin cobrar ni numerar (no cuenta en reportes).
+   * completada: venta cobrada con comprobante. anulada: venta cobrada que se anuló.
+   * cancelada: reserva que no se retiró (el stock volvió).
+   */
+  status: 'reservada' | 'completada' | 'anulada' | 'cancelada'
+  /** Fecha de anulación o cancelación. */
   voidedAt?: string
   voidReason?: string
+  /** Solo pedidos de la tienda: código R-0001 que el cliente muestra al retirar. */
+  reservationCode?: number | null
+  reservedAt?: string | null
+  /** Hasta cuándo se guarda la reserva. */
+  expiresAt?: string | null
+  /**
+   * Nota de crédito (devolución): id de la venta original. Sus importes y cantidades son negativos,
+   * así Reportes y ganancias restan solos.
+   */
+  creditFor?: string | null
+  creditForLabel?: string | null
+  /** Solo al buscar una venta para devolver: unidades ya devueltas por producto. */
+  returned?: Record<string, number>
   /** Compra de prueba: se ve en reportes marcada y se puede excluir. */
   test: boolean
   userId: string | null
+}
+
+/** Totales de un medio de pago en un turno de caja. */
+export interface CashMethodTotal {
+  method: PaymentMethod
+  /** Neto: ventas − devoluciones − anulaciones de turnos anteriores. */
+  amount: number
+  sales: number
+  refunds: number
+  voids: number
+}
+
+/** Turno de caja abierto: lo que entró y salió desde el último cierre. */
+export interface CashStatus {
+  from: string
+  to: string
+  /** Lo que se dejó en caja en el último cierre (fondo para este turno). */
+  openingCash: number
+  byMethod: CashMethodTotal[]
+  cashNet: number
+  lastClosedBy?: string | null
+}
+
+export interface CashClosing {
+  id: string
+  openedAt: string
+  closedAt: string
+  userId: string | null
+  userName: string
+  openingCash: number
+  byMethod: CashMethodTotal[]
+  salesCount: number
+  refundsCount: number
+  expectedCash: number
+  countedCash: number
+  /** Contado − esperado: positivo sobra, negativo falta. */
+  difference: number
+  keptCash: number
+  note: string
 }
 
 export interface Settings {

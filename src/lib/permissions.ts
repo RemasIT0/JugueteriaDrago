@@ -24,7 +24,14 @@ const MATRIX = {
   'descuentos.gestionar': ['dueno'],
   'costos.ver': ['dueno'],
   'ventas.ver': ['dueno'],
+  // Cobrar en el mostrador y entregar pedidos es tarea diaria del vendedor (nunca ve costos).
+  'ventas.crear': ['dueno', 'vendedor'],
+  'ventas.devolver': ['dueno', 'vendedor'],
   'ventas.anular': ['dueno'],
+  // Cerrar el turno lo hace quien atiende; el historial de cierres (con diferencias) lo ve el dueño.
+  'caja.cerrar': ['dueno', 'vendedor'],
+  'caja.historial': ['dueno'],
+  'pedidos.gestionar': ['dueno', 'vendedor'],
   'facturacion.ver': ['dueno'],
   'ajustes.gestionar': ['dueno'],
   'reportes.ver': ['dueno'],

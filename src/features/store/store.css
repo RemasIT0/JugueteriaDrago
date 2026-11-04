@@ -1,0 +1,101 @@
+/* El valle: mundo visual propio de la tienda para clientes (/tienda). El panel interno no lo usa. */
+@import '@fontsource/lilita-one/latin-400.css';
+@import '@fontsource/lilita-one/latin-ext-400.css';
+
+.store-world {
+  --sw-ground: 14 21 19; /* #0E1513 pino casi negro */
+  --sw-surface: 22 32 30; /* #16201E */
+  --sw-raised: 30 44 41; /* #1E2C29 */
+  --sw-line: 38 52 49; /* #263431 */
+  --sw-rim: 42 74 53; /* #2A4A35 musgo oscuro: borde de las tarjetas */
+  --sw-ink: 244 247 242; /* #F4F7F2 */
+  --sw-sage: 143 168 155; /* #8FA89B texto secundario */
+  --sw-moss: 107 196 138; /* #6BC48A títulos verdes */
+  --sw-fire: 255 138 43; /* #FF8A2B la acción */
+  --sw-fire-ink: 35 16 4; /* #231004 texto sobre fuego */
+  --sw-ember: 255 211 78; /* #FFD34E */
+  --sw-alert: 255 122 104; /* #FF7A68 errores sobre oscuro */
+
+  min-height: 100dvh;
+  background: rgb(var(--sw-ground));
+  color: rgb(var(--sw-ink));
+  font-family: 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;
+  color-scheme: dark;
+  scrollbar-color: rgb(var(--sw-rim)) rgb(var(--sw-ground));
+}
+
+.store-world ::selection {
+  background: rgb(var(--sw-fire) / 0.45);
+  color: rgb(var(--sw-ink));
+}
+
+.store-world :focus-visible {
+  outline: 3px solid rgb(var(--sw-ember));
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+.store-world input {
+  caret-color: rgb(var(--sw-fire));
+}
+
+.store-world .font-display {
+  font-family: 'Lilita One', 'Nunito Variable', ui-rounded, system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+}
+
+/* El azulejo del logo en este mundo: sombra suave con desenfoque, nunca un borde duro debajo. */
+.store-world .logo-tile {
+  box-shadow:
+    inset 0 1.5px 0 rgb(255 255 255 / 0.5),
+    inset 0 -2px 0 rgb(120 20 10 / 0.25),
+    0 10px 24px -10px rgb(224 49 43 / 0.55);
+}
+
+/* Bordes de las ventanas de imagen: redondeados pero no perfectos, como recortados a mano. */
+.store-world .organic {
+  border-radius: 26px 34px 22px 30px / 30px 22px 34px 26px;
+}
+.store-world .organic-alt {
+  border-radius: 34px 22px 30px 24px / 24px 32px 22px 34px;
+}
+
+/* Línea fina cortada por un solo punto: el separador del mundo. */
+.store-world .rule-dot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: rgb(var(--sw-rim));
+}
+.store-world .rule-dot::before,
+.store-world .rule-dot::after {
+  content: '';
+  height: 1px;
+  background: rgb(var(--sw-line));
+}
+.store-world .rule-dot::before {
+  flex: var(--dot-at, 1);
+}
+.store-world .rule-dot::after {
+  flex: calc(2 - var(--dot-at, 1));
+}
+
+.vs-twinkle {
+  animation: vs-twinkle 3.6s ease-in-out infinite;
+}
+@keyframes vs-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vs-twinkle {
+    animation: none;
+  }
+}

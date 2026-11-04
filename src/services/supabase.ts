@@ -45,6 +45,9 @@ export function toApiError(e: { message: string; hint?: string | null; code?: st
   if (status) return new ApiError(status, e.message)
   // Permiso negado antes de entrar a la función: no hay sesión válida.
   if (e.code === '42501') return new ApiError(401, 'Tu sesión terminó. Vuelve a ingresar.')
+  // La app es más nueva que la base: falta correr una migración de supabase/migrations en el SQL Editor.
+  if (e.code === 'PGRST202')
+    return new ApiError(501, 'La base de datos en la nube está desactualizada: falta aplicar la última migración de supabase/migrations en el SQL Editor de Supabase.')
   if (/fetch|network/i.test(e.message)) return new ApiError(0, 'No hay conexión con el servidor. Revisa internet e intenta de nuevo.')
   return new ApiError(500, e.message || 'El servidor no pudo completar la operación.')
 }

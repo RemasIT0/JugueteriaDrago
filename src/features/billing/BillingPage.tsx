@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { LuBan as Ban, LuBuilding2 as Building2, LuFileText as FileText, LuLoaderCircle as Loader2, LuPrinter as Printer, LuReceiptText as ReceiptText, LuSearch as Search } from 'react-icons/lu'
+import { LuBan as Ban, LuBuilding2 as Building2, LuFileText as FileText, LuLoaderCircle as Loader2, LuPrinter as Printer, LuRepeat as Repeat, LuReceiptText as ReceiptText, LuSearch as Search } from 'react-icons/lu'
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import { Button } from '@/components/ui/Button'
 import { Drawer } from '@/components/ui/Drawer'
@@ -8,14 +9,14 @@ import { Field, Input } from '@/components/ui/Field'
 import { Shimmer } from '@/components/ui/Skeleton'
 import { toast } from '@/components/ui/Toaster'
 import { formatDate, formatPrice, formatTime } from '@/lib/format'
-import { invoiceLabel } from '@/services/commerce'
+import { invoiceLabel, reservationLabel } from '@/services/commerce'
 import { useCan } from '@/stores/auth'
 import { useInventory } from '@/stores/inventory'
 import { useSales } from '@/stores/sales'
 import type { Sale } from '@/types'
 import { paymentLabel, printInvoice } from './invoiceHtml'
 
-type Filter = 'todas' | 'A' | 'B' | 'X' | 'anuladas' | 'prueba'
+type Filter = 'todas' | 'A' | 'B' | 'X' | 'notas' | 'anuladas' | 'prueba'
 
 export default function BillingPage() {
   const { sales, load, status } = useSales()
@@ -31,10 +32,13 @@ export default function BillingPage() {
 
   const rows = useMemo(() => {
     const t = q.trim().toLowerCase()
+    // Solo lo cobrado lleva comprobante: las reservas sin retirar y las canceladas están en Pedidos.
     return sales.filter(
       (s) =>
+        (s.status === 'completada' || s.status === 'anulada') &&
         (filter === 'todas' ||
           (filter === 'anuladas' && s.status === 'anulada') ||
+          (filter === 'notas' && !!s.creditFor) ||
           (filter === 'prueba' && s.test) ||
           (['A', 'B', 'X'].includes(filter) && s.invoiceType === filter)) &&
         (!t || invoiceLabel(s).toLowerCase().includes(t) || s.customer.name.toLowerCase().includes(t) || s.customer.doc.includes(t)),
@@ -92,6 +96,7 @@ export default function BillingPage() {
               ['B', 'Factura B'],
               ['A', 'Factura A'],
               ['X', 'Comprob. X'],
+              ['notas', 'Notas de crédito'],
               ['prueba', 'Prueba'],
               ['anuladas', 'Anuladas'],
             ] as [Filter, string][]
@@ -118,7 +123,7 @@ export default function BillingPage() {
           <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
             <ReceiptText className="size-10 text-ink-soft" strokeWidth={1.8} aria-hidden />
             <p className="font-black">{sales.length ? 'Nada coincide con el filtro' : 'Todavía no hay ventas'}</p>
-            <p className="max-w-sm text-sm font-semibold text-ink-soft">Cada compra en la tienda genera su comprobante automáticamente.</p>
+            <p className="max-w-sm text-sm font-semibold text-ink-soft">Cada venta del mostrador y cada pedido retirado de la tienda genera su comprobante automáticamente.</p>
           </div>
         ) : (
           <ul className="divide-y divide-line">
@@ -135,6 +140,7 @@ export default function BillingPage() {
                   <span className="flex gap-1 sm:justify-end">
                     {s.test && <span className="rounded-full bg-sol-wash px-2 py-0.5 text-2xs font-black text-sol-ink">Prueba</span>}
                     {s.status === 'anulada' && <span className="rounded-full bg-peligro-wash px-2 py-0.5 text-2xs font-black text-peligro">Anulada</span>}
+                    {s.creditFor && <span className="rounded-full bg-coral-wash px-2 py-0.5 text-2xs font-black text-coral-ink">Devolución</span>}
                   </span>
                   <span className={clsx('num text-right font-black', s.status === 'anulada' && 'text-ink-soft line-through')}>{formatPrice(s.total)}</span>
                 </button>
@@ -154,6 +160,10 @@ function SaleDrawer({ sale, onClose }: { sale: Sale | null; onClose: () => void 
   const settings = useInventory((s) => s.settings)
   const voidSale = useSales((s) => s.voidSale)
   const canVoid = useCan('ventas.anular')
+  const canReturn = useCan('ventas.devolver')
+  const navigate = useNavigate()
+  const sales = useSales((s) => s.sales)
+  const credits = sale ? sales.filter((x) => x.creditFor === sale.id) : []
   const [voiding, setVoiding] = useState(false)
   const [reason, setReason] = useState('')
   const [busy, setBusy] = useState(false)
@@ -186,7 +196,7 @@ function SaleDrawer({ sale, onClose }: { sale: Sale | null; onClose: () => void 
             <div>
               <h2 className="num text-xl font-black">{invoiceLabel(sale)}</h2>
               <p className="text-sm font-semibold text-ink-soft">
-                {new Date(sale.at).toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' })} · {sale.channel === 'tienda' ? 'Tienda online' : 'Mostrador'}
+                {new Date(sale.at).toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' })} · {sale.channel === 'tienda' ? `Tienda online${sale.reservationCode ? ` · ${reservationLabel(sale.reservationCode)}` : ''}` : 'Mostrador'}
               </p>
             </div>
           </div>
@@ -196,6 +206,17 @@ function SaleDrawer({ sale, onClose }: { sale: Sale | null; onClose: () => void 
             </p>
           )}
           {sale.test && <p className="rounded-2xl bg-sol-wash px-4 py-3 text-sm font-bold text-sol-ink">Compra de prueba: el stock sí se descontó.</p>}
+          {sale.creditFor && (
+            <p className="rounded-2xl bg-coral-wash px-4 py-3 text-sm font-bold text-coral-ink">
+              Devolución sobre {sale.creditForLabel ?? 'la venta original'}: se devolvieron {formatPrice(-sale.total)} con {paymentLabel(sale.paymentMethod).toLowerCase()}.
+              {sale.voidReason && ` Motivo: ${sale.voidReason}.`}
+            </p>
+          )}
+          {credits.length > 0 && (
+            <p className="rounded-2xl bg-coral-wash px-4 py-3 text-sm font-bold text-coral-ink">
+              Tuvo devoluciones: {credits.map((c) => `${invoiceLabel(c)} (${formatPrice(-c.total)})`).join(', ')}.
+            </p>
+          )}
           <div className="rounded-2xl bg-sunken p-4 text-sm">
             <p className="font-extrabold">{sale.customer.name}</p>
             <p className="font-semibold text-ink-soft">
@@ -229,7 +250,13 @@ function SaleDrawer({ sale, onClose }: { sale: Sale | null; onClose: () => void 
             <Printer className="size-4" aria-hidden /> Imprimir comprobante
           </Button>
 
-          {canVoid && sale.status === 'completada' && (
+          {canReturn && sale.status === 'completada' && !sale.creditFor && (
+            <Button variant="secondary" onClick={() => navigate(`/vender?devolver=${sale.id}`)}>
+              <Repeat className="size-4" aria-hidden /> Cambio o devolución
+            </Button>
+          )}
+
+          {canVoid && sale.status === 'completada' && !sale.creditFor && credits.length === 0 && (
             <div className="mt-auto border-t-2 border-line pt-5">
               <AnimatePresence initial={false} mode="wait">
                 {voiding ? (

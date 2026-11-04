@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { LuPackageSearch as PackageSearch, LuSearch as Search, LuZap as Zap } from 'react-icons/lu'
+import { LuPackageSearch as PackageSearch, LuSearch as Search, LuTrendingUp as TrendingUp, LuZap as Zap } from 'react-icons/lu'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import clsx from 'clsx'
@@ -12,6 +12,8 @@ import type { StockLevel } from '@/types'
 import { useHotkeys } from '@/hooks/useHotkeys'
 import { InventoryTable, type Sort, type SortKey } from './components/InventoryTable'
 import { ProductDrawer } from './components/ProductDrawer'
+import { PriceIncreaseDrawer } from './components/PriceIncreaseDrawer'
+import { useCan } from '@/stores/auth'
 
 /** Cuánto le queda respecto de su mínimo: 0 = agotado; menor = más urgente. */
 const urgency = (p: { stock: number; minStock: number }) => (p.stock <= 0 ? -1 : p.stock / Math.max(1, p.minStock))
@@ -19,6 +21,9 @@ const urgency = (p: { stock: number; minStock: number }) => (p.stock <= 0 ? -1 :
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 export default function InventoryPage() {
+  // Cambiar precios en masa es decisión del dueño (mismo permiso que editar precios).
+  const canPrices = useCan('categorias.editar')
+  const [raising, setRaising] = useState(false)
   const { status, error, products, categories, seasons } = useInventory()
   const [query, setQuery] = useState('')
   const [cat, setCat] = useState<string | null>(null)
@@ -80,12 +85,19 @@ export default function InventoryPage() {
             {status === 'ready' ? `${products.length} productos · ${counts.bajo} con stock bajo` : 'Cargando…'}
           </p>
         </div>
+        <div className="flex flex-wrap gap-2">
+        {canPrices && (
+          <Button variant="secondary" className="h-12" onClick={() => setRaising(true)}>
+            <TrendingUp className="size-5" aria-hidden /> Aumentar precios
+          </Button>
+        )}
         <Link
           to="/carga"
           className="inline-flex h-12 items-center gap-2 rounded-2xl bg-sol px-5 font-extrabold text-on-fill shadow-card transition-[filter,transform] hover:-translate-y-px hover:brightness-[1.04] active:scale-[0.97]"
         >
           <Zap className="size-5" strokeWidth={2.5} aria-hidden /> Cargar productos
         </Link>
+        </div>
       </header>
 
       <div className="flex flex-col gap-3 rounded-3xl bg-surface p-3 shadow-card sm:p-4">
@@ -165,6 +177,7 @@ export default function InventoryPage() {
       </section>
 
       <ProductDrawer productId={open} onClose={() => setOpen(null)} />
+      <PriceIncreaseDrawer open={raising} onClose={() => setRaising(false)} />
     </div>
   )
 }

@@ -4,6 +4,8 @@ import { stockLevel } from '@/lib/format'
 import { useAuth } from '@/stores/auth'
 import { useInventory } from '@/stores/inventory'
 import { useSales } from '@/stores/sales'
+import { usePendingOrders } from '@/stores/orders'
+import { isExpired } from '@/services/commerce'
 
 export interface Alert {
   /** Identidad estable del aviso. */
@@ -15,6 +17,8 @@ export interface Alert {
   detail: string
   productId?: string
   seasonId?: string
+  /** Sección a la que lleva el aviso (si no es un producto o una temporada). */
+  to?: string
 }
 
 // Lo visto se guarda por usuario en este navegador.
@@ -45,9 +49,31 @@ export function useAlerts() {
   const products = useInventory((s) => s.products)
   const seasons = useInventory((s) => s.seasons)
   const sales = useSales((s) => s.sales)
+  const pending = usePendingOrders()
 
   const alerts = useMemo<Alert[]>(() => {
     const out: Alert[] = []
+    // Pedidos online: los vencidos siguen separando stock; los demás esperan al cliente.
+    const expired = pending.filter((o) => isExpired(o))
+    if (expired.length)
+      out.push({
+        id: 'pedidos:vencidos',
+        signature: expired.map((o) => o.id).join(','),
+        tone: 'peligro',
+        title: expired.length === 1 ? '1 pedido online vencido' : `${expired.length} pedidos online vencidos`,
+        detail: 'Siguen separando stock: libéralos en Pedidos',
+        to: '/pedidos',
+      })
+    const waiting = pending.length - expired.length
+    if (waiting)
+      out.push({
+        id: 'pedidos:por-retirar',
+        signature: pending.filter((o) => !isExpired(o)).map((o) => o.id).join(','),
+        tone: 'sol',
+        title: waiting === 1 ? '1 pedido online por retirar' : `${waiting} pedidos online por retirar`,
+        detail: 'Prepáralos para cuando vengan al local',
+        to: '/pedidos',
+      })
     for (const p of products) {
       if (p.syncState || stockLevel(p) !== 'bajo') continue
       out.push({
@@ -72,7 +98,7 @@ export function useAlerts() {
       })
     }
     return out
-  }, [products, seasons, sales])
+  }, [products, seasons, sales, pending])
 
   const seen = useSyncExternalStore(
     (cb) => (listeners.add(cb), () => listeners.delete(cb)),

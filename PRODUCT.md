@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-User-specified: React + Vite, TypeScript, Tailwind CSS, Framer Motion, React Hook Form + Zod, Zustand, Lucide React. No backend yet: data access goes through a service layer with mocked async calls, ready to point at a real API later.
+User-specified: React + Vite, TypeScript, Tailwind CSS, Framer Motion, React Hook Form + Zod, Zustand, Lucide React. Backend: Supabase (PostgreSQL + Auth + Realtime) when .env.local is configured; otherwise the same service layer stores data in the browser (IndexedDB).
 
 ## Users
 
@@ -34,7 +34,12 @@ Obsessive focus on "Cargar productos" (Quick-Add; formerly "Carga Rápida"): con
 - UI language: Spanish.
 - Must work on desktop and on tablet/phone (responsive is a real requirement, not an afterthought).
 - Country: Argentina (confirmed). Currency ARS shown as "$", locale es-AR, IVA 21 % included in shelf prices; Día de las Infancias = 3rd Sunday of August.
-- Customer store at /tienda (public, no login): live in-stock catalog, promotions, coupons, cart, checkout as "reserve and pay at pickup" or "test purchase". No payment gateway yet.
+- Customer store at /tienda (public, no login): live in-stock catalog, promotions, coupons, cart, a page per toy (/tienda/juguete/:id) with a description and features the owner writes in the product drawer. Checkout creates a reservation (code R-0001, held 3 days, stock set aside): it is not a sale until the customer picks it up and pays. No payment gateway yet.
+- Pedidos online (panel): reservations are collected (issue the invoice, count as a sale on pickup day) or cancelled (stock comes back); expired ones are released in one click.
+- Vender (panel): counter sale with barcode reader, camera or search; ticket, coupon, payment method, change for cash, invoice A/B/X. Sellers can sell and hand over orders but never see costs.
+- Cambios y devoluciones (Vender → Cambio o devolución, or from a sale in Facturación): the return is a credit note with negative amounts that points to the original sale, so reports, profit and units subtract on their own; damaged items do not go back to stock and their cost stays as a loss. An exchange is a credit note plus a new sale with the same payment method, so only the difference changes hands.
+- Cierre de caja: totals per payment method since the last closing (sales, returns, voids of earlier shifts; test purchases excluded), cash count against the expected amount (opening float + net cash), what stays as the next float and what is withdrawn. Sellers close their shift; only the owner sees the history.
+- Aumentar precios (Inventario, owner only): raise or lower prices by % for all products or by category, brand or supplier, rounded up to $10/100/500/1000, optionally the cost too; preview with per-product opt-out, confirmation, all-or-nothing save, one-click undo, logged in Actividad.
 - Sales with numbered internal invoices (A/B/X), voiding with reason that restores stock. Not AFIP/ARCA electronic invoicing (needs a server, digital certificate and CAE).
 - Purchase price (cost) per product; recommended price = cost + category/general margin; break-even from monthly fixed costs.
 - Assistant answers predefined questions from store data; no external AI (an LLM would need a backend to keep the API key safe).
@@ -43,9 +48,9 @@ Obsessive focus on "Cargar productos" (Quick-Add; formerly "Carga Rápida"): con
 ## Brand Commitments
 
 - Name: DragoToY.
-- Logo: the SiDragonframe icon from react-icons (user-chosen), shown on a sol-yellow tile.
-- Customer store hero: a dragon head in the center breathing fire with glowing eyes (user-pinned).
-- Brief-pinned feel: professional but friendly, fitting a toy store without becoming childish. Light, low-fatigue base with soft vibrant accents (soft yellow, coral, turquoise), rounded sans-serif, rounded cards with soft shadows, optional dark mode.
+- Logo: the SiDragonframe icon from react-icons (user-chosen), white on a fire-gradient tile (gold to orange to red); also the browser favicon.
+- Customer store (/tienda): its own dark world, user-pinned on 2026-11-03 from a dark game-site style reference: the logo replaces the old dragon head at the center of a framed dusk-valley scene; no newsletter or social links until the store has real accounts.
+- Brief-pinned feel for the staff panel: professional but friendly, fitting a toy store without becoming childish. Light, low-fatigue base with soft vibrant accents (soft yellow, coral, turquoise), rounded sans-serif, rounded cards with soft shadows, optional dark mode.
 
 ## Evidence on Hand
 

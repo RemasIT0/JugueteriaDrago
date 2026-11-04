@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { LuBadgePercent, LuCalendarHeart, LuChartColumn, LuBoxes, LuExternalLink, LuHistory, LuKeyRound as KeyRound, LuLogOut as LogOut, LuMenu as Menu, LuMoon as Moon, LuReceiptText, LuShapes, LuSun as Sun, LuTruck, LuUsers, LuZap } from 'react-icons/lu'
+import { LuWallet, LuBadgePercent, LuShoppingBag, LuCalendarHeart, LuScanBarcode, LuChartColumn, LuBoxes, LuExternalLink, LuHistory, LuKeyRound as KeyRound, LuLogOut as LogOut, LuMenu as Menu, LuMoon as Moon, LuReceiptText, LuShapes, LuSun as Sun, LuTruck, LuUsers, LuZap } from 'react-icons/lu'
 import { SiDragonframe } from 'react-icons/si'
 import type { IconType } from 'react-icons'
 import { Fragment, useState } from 'react'
@@ -23,14 +23,29 @@ import type { BoardColor } from '@/types'
 import { AlertsBell } from '@/features/alerts/AlertsCenter'
 import { AssistantWidget } from '@/features/assistant/AssistantWidget'
 import { AnimatedBackdrop } from './AnimatedBackdrop'
+import { usePendingOrders } from '@/stores/orders'
+
+/** Número de pedidos online por retirar, junto a «Pedidos». */
+function OrdersBadge({ className }: { className?: string }) {
+  const n = usePendingOrders().length
+  if (!n) return null
+  return (
+    <span className={clsx('num grid h-5 min-w-5 place-items-center rounded-full bg-coral px-1.5 text-2xs font-black text-on-fill', className)} aria-label={`${n} por retirar`}>
+      {n}
+    </span>
+  )
+}
 
 type NavItem = { to: string; label: string; /** Nombre corto para la barra inferior del celular. */ short?: string; icon: IconType; perm: Permission; color: BoardColor; group: string; admin?: boolean }
 
 /** El menú es un tablero: cada sección es una casilla de su color, unidas por un camino. */
 const NAV: NavItem[] = [
   { to: '/', label: 'Inventario', icon: LuBoxes, perm: 'inventario.ver', color: 'turquesa', group: 'Tienda' },
+  { to: '/vender', label: 'Vender', icon: LuScanBarcode, perm: 'ventas.crear', color: 'hoja', group: 'Tienda' },
+  { to: '/pedidos', label: 'Pedidos online', short: 'Pedidos', icon: LuShoppingBag, perm: 'pedidos.gestionar', color: 'cielo', group: 'Tienda' },
   { to: '/carga', label: 'Cargar productos', short: 'Cargar', icon: LuZap, perm: 'productos.crear', color: 'sol', group: 'Tienda' },
   { to: '/temporadas', label: 'Temporadas', icon: LuCalendarHeart, perm: 'temporadas.ver', color: 'coral', group: 'Tienda' },
+  { to: '/caja', label: 'Cierre de caja', short: 'Caja', icon: LuWallet, perm: 'caja.cerrar', color: 'sol', group: 'Negocio' },
   { to: '/reportes', label: 'Reportes', icon: LuChartColumn, perm: 'reportes.ver', color: 'cielo', group: 'Negocio' },
   { to: '/facturacion', label: 'Facturación', icon: LuReceiptText, perm: 'facturacion.ver', color: 'hoja', group: 'Negocio' },
   { to: '/descuentos', label: 'Descuentos', icon: LuBadgePercent, perm: 'descuentos.gestionar', color: 'coral', group: 'Negocio' },
@@ -187,8 +202,9 @@ export function AppShell() {
             >
               {({ isActive }) => (
                 <>
-                  <span className={clsx('grid h-8 w-12 place-items-center rounded-full transition-colors', isActive && 'bg-sol text-on-fill')}>
+                  <span className={clsx('relative grid h-8 w-12 place-items-center rounded-full transition-colors', isActive && 'bg-sol text-on-fill')}>
                     <Icon className="size-5" strokeWidth={2.4} aria-hidden />
+                    {to === '/pedidos' && <OrdersBadge className="absolute -right-1 -top-1" />}
                   </span>
                   <span className="max-w-full truncate px-1">{short ?? label}</span>
                 </>
@@ -247,6 +263,7 @@ function BoardLink({ item, pathConnect }: { item: NavItem; pathConnect: boolean 
           </span>
           <span className={clsx('relative transition-colors', isActive ? 'text-white' : 'group-hover:text-white')}>{label}</span>
           {to === '/carga' && !isActive && <Kbd className="relative ml-auto text-rail-ink">Alt N</Kbd>}
+          {to === '/pedidos' && <OrdersBadge className="relative ml-auto" />}
         </>
       )}
     </NavLink>

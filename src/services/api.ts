@@ -39,6 +39,9 @@ async function fileToDataUrl(file: File, max = 1200): Promise<string> {
   return canvas.toDataURL('image/jpeg', 0.82)
 }
 
+/** Límites de la ficha de tienda (los mismos que valida la base en la nube). */
+export const DETAILS_LIMITS = { description: 1500, features: 12, feature: 120 } as const
+
 export const productsApi = {
   async list(): Promise<Product[]> {
     if (cloud) return rpc('list_products')
@@ -75,6 +78,34 @@ export const productsApi = {
     await Promise.all([save('products'), save('movements')])
     await audit('Importación', `${created.length} productos desde archivo`)
     return structuredClone(created)
+  },
+
+  /**
+   * Cambio de precios masivo (aumento por %). Todo o nada: si un producto falla, no se cambia ninguno.
+   * cost solo se toca si viene en el ítem.
+   */
+  async setPrices(items: { id: string; price: number; cost?: number | null }[], note: string): Promise<Product[]> {
+    if (cloud) return rpc('products_set_prices', { p_items: items, p_note: note })
+    requirePermission('categorias.editar')
+    if (!items.length) throw new ApiError(400, 'No hay productos para cambiar')
+    const db = await loadDb()
+    // Primero se valida todo; recién después se toca algo.
+    const targets = items.map((it) => {
+      const p = db.products.find((x) => x.id === it.id)
+      if (!p) throw new ApiError(404, 'Un producto ya no existe: vuelve a abrir el aumento')
+      if (!(it.price >= 0)) throw new ApiError(400, 'Hay un precio inválido')
+      if (it.cost != null && !(it.cost >= 0)) throw new ApiError(400, 'Hay un costo inválido')
+      return { p, it }
+    })
+    const now = new Date().toISOString()
+    for (const { p, it } of targets) {
+      p.price = Math.round(it.price * 100) / 100
+      if ('cost' in it) p.cost = it.cost == null ? null : Math.round(it.cost * 100) / 100
+      p.updatedAt = now
+    }
+    await save('products')
+    await audit('Cambio de precios masivo', `${note.trim() || 'Precios actualizados'} · ${items.length} producto${items.length === 1 ? '' : 's'}`)
+    return targets.map(({ p }) => structuredClone(p))
   },
 
   // Suma unidades que llegaron (cualquier usuario).
@@ -174,6 +205,26 @@ export const productsApi = {
     if (!p) throw new ApiError(404, 'El producto ya no existe')
     p.photos = [...p.photos, await fileToDataUrl(file)]
     await save('products')
+    return structuredClone(p)
+  },
+
+  /** Ficha para la tienda: descripción y características. Mismos límites que la base en la nube. */
+  async setDetails(id: string, description: string, features: string[]): Promise<Product> {
+    const desc = description.trim()
+    const feats = features.map((f) => f.trim()).filter(Boolean)
+    if (cloud) return rpc('product_set_details', { p_id: id, p_description: desc, p_features: feats })
+    requirePermission('productos.crear')
+    if (desc.length > DETAILS_LIMITS.description) throw new ApiError(400, `La descripción puede tener hasta ${DETAILS_LIMITS.description} letras`)
+    if (feats.length > DETAILS_LIMITS.features) throw new ApiError(400, `Pon hasta ${DETAILS_LIMITS.features} características`)
+    if (feats.some((f) => f.length > DETAILS_LIMITS.feature)) throw new ApiError(400, `Cada característica puede tener hasta ${DETAILS_LIMITS.feature} letras`)
+    const db = await loadDb()
+    const p = db.products.find((x) => x.id === id)
+    if (!p) throw new ApiError(404, 'El producto ya no existe')
+    p.description = desc
+    p.features = feats
+    p.updatedAt = new Date().toISOString()
+    await save('products')
+    await audit('Ficha de tienda editada', p.name)
     return structuredClone(p)
   },
 

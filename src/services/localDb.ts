@@ -9,7 +9,7 @@
 import { createStore, get, set } from 'idb-keyval'
 import { defaultSeasons, defaultSettings } from '@/lib/defaults'
 import { cloud, rpc, sb } from './supabase'
-import type { AuditEntry, Category, Discount, Product, Sale, Season, Settings, StockMovement, Supplier, User } from '@/types'
+import type { AuditEntry, Category, Discount, Product, Sale, Season, Settings, StockMovement, Supplier, User, CashClosing } from '@/types'
 
 export interface Tables {
   products: Product[]
@@ -23,6 +23,8 @@ export interface Tables {
   seasons: Season[]
   /** Una sola fila: la configuración de la tienda. */
   settings: Settings[]
+  /** Cierres de caja. */
+  closings: CashClosing[]
 }
 
 /** Versión del esquema: si cambia la forma de los datos, aquí va la migración no destructiva. */
@@ -32,7 +34,7 @@ const store = createStore('dragotoy', 'tablas')
 let cache: Tables | null = null
 let loading: Promise<Tables> | null = null
 
-const EMPTY: Tables = { products: [], categories: [], suppliers: [], movements: [], users: [], audit: [], sales: [], discounts: [], seasons: [], settings: [] }
+const EMPTY: Tables = { products: [], categories: [], suppliers: [], movements: [], users: [], audit: [], sales: [], discounts: [], seasons: [], settings: [], closings: [] }
 
 export function loadDb(): Promise<Tables> {
   if (cache) return Promise.resolve(cache)

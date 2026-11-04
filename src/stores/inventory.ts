@@ -44,6 +44,10 @@ interface InventoryState {
   /** Al cerrar sesión: el siguiente usuario vuelve a cargar con sus permisos. */
   reset: () => void
   addPhoto: (id: string, file: File) => Promise<void>
+  /** Cambio de precios masivo (todo o nada). */
+  setPrices: (items: { id: string; price: number; cost?: number | null }[], note: string) => Promise<void>
+  /** Ficha para la tienda (descripción y características). */
+  saveDetails: (id: string, description: string, features: string[]) => Promise<void>
   skuExists: (sku: string) => boolean
 }
 
@@ -140,6 +144,17 @@ export const useInventory = create<InventoryState>((set, get) => {
         set({ products: before })
         throw e
       }
+    },
+
+    async setPrices(items, note) {
+      const saved = await productsApi.setPrices(items, note)
+      const byId = new Map(saved.map((p) => [p.id, p]))
+      set((s) => ({ products: s.products.map((p) => byId.get(p.id) ?? p) }))
+    },
+
+    async saveDetails(id, description, features) {
+      const saved = await productsApi.setDetails(id, description, features)
+      set((s) => ({ products: s.products.map((p) => (p.id === id ? saved : p)) }))
     },
 
     async remove(id) {

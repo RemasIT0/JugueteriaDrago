@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-30T02:13:01.883Z",
+  "generatedAt": "2026-11-04T01:02:10.804Z",
   "title": "Design System: DragoToY Inventario",
   "extensions": {
     "colorMeta": {
@@ -610,6 +610,54 @@
           "oklch(85% 0.013 28)",
           "oklch(95% 0.004 28)"
         ]
+      },
+      "logo-gold": {
+        "role": "brand",
+        "displayName": "Logo Gold",
+        "canonical": "rgb(255 211 78)",
+        "tonalRamp": [
+          "oklch(15% 0.024 92)",
+          "oklch(27% 0.078 92)",
+          "oklch(39% 0.133 92)",
+          "oklch(51% 0.160 92)",
+          "oklch(63% 0.160 92)",
+          "oklch(75% 0.114 92)",
+          "oklch(85% 0.069 92)",
+          "oklch(95% 0.024 92)"
+        ],
+        "note": "First stop of the logo-tile fire gradient (140deg). Logo tile and favicon only."
+      },
+      "logo-orange": {
+        "role": "brand",
+        "displayName": "Logo Orange",
+        "canonical": "rgb(255 138 43)",
+        "tonalRamp": [
+          "oklch(15% 0.027 55)",
+          "oklch(27% 0.088 55)",
+          "oklch(39% 0.149 55)",
+          "oklch(51% 0.180 55)",
+          "oklch(63% 0.180 55)",
+          "oklch(75% 0.128 55)",
+          "oklch(85% 0.077 55)",
+          "oklch(95% 0.027 55)"
+        ],
+        "note": "Middle stop (48%) of the logo-tile fire gradient."
+      },
+      "logo-red": {
+        "role": "brand",
+        "displayName": "Logo Red",
+        "canonical": "rgb(224 49 43)",
+        "tonalRamp": [
+          "oklch(15% 0.030 28)",
+          "oklch(27% 0.098 28)",
+          "oklch(39% 0.166 28)",
+          "oklch(51% 0.200 28)",
+          "oklch(63% 0.200 28)",
+          "oklch(75% 0.142 28)",
+          "oklch(85% 0.086 28)",
+          "oklch(95% 0.030 28)"
+        ],
+        "note": "Last stop of the logo-tile fire gradient."
       }
     },
     "typographyMeta": {
@@ -761,10 +809,580 @@
         "name": "container-max",
         "value": "1400px"
       }
-    ]
+    ],
+    "worlds": {
+      "store": {
+        "name": "El valle",
+        "route": "/tienda",
+        "scopeSelector": ".store-world",
+        "source": "src/features/store/store.css",
+        "pinned": "2026-11-03 (user-pinned)",
+        "tokenPrefix": {
+          "colors": "sw-",
+          "typography": "store-",
+          "rounded": "store-",
+          "components": "store-"
+        },
+        "colorMeta": {
+          "sw-ground": {
+            "role": "neutral",
+            "displayName": "Pine Ground",
+            "canonical": "rgb(14 21 19)",
+            "cssVar": "--sw-ground",
+            "tonalRamp": [
+              "oklch(15% 0.002 165)",
+              "oklch(27% 0.006 165)",
+              "oklch(39% 0.010 165)",
+              "oklch(51% 0.012 165)",
+              "oklch(63% 0.012 165)",
+              "oklch(75% 0.009 165)",
+              "oklch(85% 0.005 165)",
+              "oklch(95% 0.002 165)"
+            ]
+          },
+          "sw-surface": {
+            "role": "neutral",
+            "displayName": "Pine Surface",
+            "canonical": "rgb(22 32 30)",
+            "cssVar": "--sw-surface",
+            "tonalRamp": [
+              "oklch(15% 0.002 175)",
+              "oklch(27% 0.006 175)",
+              "oklch(39% 0.010 175)",
+              "oklch(51% 0.012 175)",
+              "oklch(63% 0.012 175)",
+              "oklch(75% 0.009 175)",
+              "oklch(85% 0.005 175)",
+              "oklch(95% 0.002 175)"
+            ]
+          },
+          "sw-raised": {
+            "role": "neutral",
+            "displayName": "Pine Raised",
+            "canonical": "rgb(30 44 41)",
+            "cssVar": "--sw-raised",
+            "tonalRamp": [
+              "oklch(15% 0.002 175)",
+              "oklch(27% 0.007 175)",
+              "oklch(39% 0.012 175)",
+              "oklch(51% 0.015 175)",
+              "oklch(63% 0.015 175)",
+              "oklch(75% 0.011 175)",
+              "oklch(85% 0.006 175)",
+              "oklch(95% 0.002 175)"
+            ]
+          },
+          "sw-line": {
+            "role": "neutral",
+            "displayName": "Hairline",
+            "canonical": "rgb(38 52 49)",
+            "cssVar": "--sw-line",
+            "tonalRamp": [
+              "oklch(15% 0.002 175)",
+              "oklch(27% 0.007 175)",
+              "oklch(39% 0.012 175)",
+              "oklch(51% 0.014 175)",
+              "oklch(63% 0.014 175)",
+              "oklch(75% 0.010 175)",
+              "oklch(85% 0.006 175)",
+              "oklch(95% 0.002 175)"
+            ]
+          },
+          "sw-rim": {
+            "role": "neutral",
+            "displayName": "Moss Rim",
+            "canonical": "rgb(42 74 53)",
+            "cssVar": "--sw-rim",
+            "tonalRamp": [
+              "oklch(15% 0.007 150)",
+              "oklch(27% 0.022 150)",
+              "oklch(39% 0.037 150)",
+              "oklch(51% 0.045 150)",
+              "oklch(63% 0.045 150)",
+              "oklch(75% 0.032 150)",
+              "oklch(85% 0.019 150)",
+              "oklch(95% 0.007 150)"
+            ]
+          },
+          "sw-ink": {
+            "role": "neutral",
+            "displayName": "Ink",
+            "canonical": "rgb(244 247 242)",
+            "cssVar": "--sw-ink",
+            "tonalRamp": [
+              "oklch(15% 0.001 130)",
+              "oklch(27% 0.004 130)",
+              "oklch(39% 0.007 130)",
+              "oklch(51% 0.008 130)",
+              "oklch(63% 0.008 130)",
+              "oklch(75% 0.006 130)",
+              "oklch(85% 0.003 130)",
+              "oklch(95% 0.001 130)"
+            ]
+          },
+          "sw-sage": {
+            "role": "neutral",
+            "displayName": "Sage",
+            "canonical": "rgb(143 168 155)",
+            "cssVar": "--sw-sage",
+            "tonalRamp": [
+              "oklch(15% 0.004 160)",
+              "oklch(27% 0.015 160)",
+              "oklch(39% 0.025 160)",
+              "oklch(51% 0.030 160)",
+              "oklch(63% 0.030 160)",
+              "oklch(75% 0.021 160)",
+              "oklch(85% 0.013 160)",
+              "oklch(95% 0.004 160)"
+            ]
+          },
+          "sw-moss": {
+            "role": "secondary",
+            "displayName": "Moss",
+            "canonical": "rgb(107 196 138)",
+            "cssVar": "--sw-moss",
+            "tonalRamp": [
+              "oklch(15% 0.018 150)",
+              "oklch(27% 0.059 150)",
+              "oklch(39% 0.100 150)",
+              "oklch(51% 0.120 150)",
+              "oklch(63% 0.120 150)",
+              "oklch(75% 0.085 150)",
+              "oklch(85% 0.052 150)",
+              "oklch(95% 0.018 150)"
+            ]
+          },
+          "sw-fire": {
+            "role": "primary",
+            "displayName": "Fire Orange",
+            "canonical": "rgb(255 138 43)",
+            "cssVar": "--sw-fire",
+            "tonalRamp": [
+              "oklch(15% 0.027 55)",
+              "oklch(27% 0.088 55)",
+              "oklch(39% 0.149 55)",
+              "oklch(51% 0.180 55)",
+              "oklch(63% 0.180 55)",
+              "oklch(75% 0.128 55)",
+              "oklch(85% 0.077 55)",
+              "oklch(95% 0.027 55)"
+            ]
+          },
+          "sw-fire-ink": {
+            "role": "primary",
+            "displayName": "Fire Ink",
+            "canonical": "rgb(35 16 4)",
+            "cssVar": "--sw-fire-ink",
+            "tonalRamp": [
+              "oklch(15% 0.006 50)",
+              "oklch(27% 0.020 50)",
+              "oklch(39% 0.033 50)",
+              "oklch(51% 0.040 50)",
+              "oklch(63% 0.040 50)",
+              "oklch(75% 0.028 50)",
+              "oklch(85% 0.017 50)",
+              "oklch(95% 0.006 50)"
+            ]
+          },
+          "sw-ember": {
+            "role": "secondary",
+            "displayName": "Ember Gold",
+            "canonical": "rgb(255 211 78)",
+            "cssVar": "--sw-ember",
+            "tonalRamp": [
+              "oklch(15% 0.024 92)",
+              "oklch(27% 0.078 92)",
+              "oklch(39% 0.133 92)",
+              "oklch(51% 0.160 92)",
+              "oklch(63% 0.160 92)",
+              "oklch(75% 0.114 92)",
+              "oklch(85% 0.069 92)",
+              "oklch(95% 0.024 92)"
+            ]
+          },
+          "sw-alert": {
+            "role": "error",
+            "displayName": "Alert",
+            "canonical": "rgb(255 122 104)",
+            "cssVar": "--sw-alert",
+            "tonalRamp": [
+              "oklch(15% 0.024 30)",
+              "oklch(27% 0.078 30)",
+              "oklch(39% 0.133 30)",
+              "oklch(51% 0.160 30)",
+              "oklch(63% 0.160 30)",
+              "oklch(75% 0.114 30)",
+              "oklch(85% 0.069 30)",
+              "oklch(95% 0.024 30)"
+            ]
+          }
+        },
+        "typographyMeta": {
+          "store-display": {
+            "displayName": "Display",
+            "purpose": "Hero headline from sm (3.6rem, balanced, scene text shadow)."
+          },
+          "store-display-sm": {
+            "displayName": "Display small",
+            "purpose": "Hero headline on phones; Cómo comprar numerals in moss."
+          },
+          "store-headline": {
+            "displayName": "Headline",
+            "purpose": "Section titles from sm."
+          },
+          "store-headline-sm": {
+            "displayName": "Headline small",
+            "purpose": "Section titles on phones; moss footer wordmark."
+          },
+          "store-total": {
+            "displayName": "Total",
+            "purpose": "Cart total, tabular."
+          },
+          "store-title-lg": {
+            "displayName": "Title large",
+            "purpose": "Confirmation title."
+          },
+          "store-title-empty": {
+            "displayName": "Empty title",
+            "purpose": "Catalog empty-state line."
+          },
+          "store-title": {
+            "displayName": "Title",
+            "purpose": "Cart heading."
+          },
+          "store-tab": {
+            "displayName": "Tab",
+            "purpose": "Category tabs: moss inactive, ink active."
+          },
+          "store-card-title": {
+            "displayName": "Card title",
+            "purpose": "Product name from sm."
+          },
+          "store-card-title-sm": {
+            "displayName": "Card title small",
+            "purpose": "Product name on phones."
+          },
+          "store-wordmark": {
+            "displayName": "Wordmark",
+            "purpose": "Header wordmark; cart-empty line."
+          },
+          "store-price": {
+            "displayName": "Price",
+            "purpose": "Card price from sm, tabular."
+          },
+          "store-price-sm": {
+            "displayName": "Price small",
+            "purpose": "Card price on phones, tabular."
+          },
+          "store-step-title": {
+            "displayName": "Step title",
+            "purpose": "How-to-buy step titles."
+          },
+          "store-action-lg": {
+            "displayName": "Action large",
+            "purpose": "Ver juguetes, Continuar, order number."
+          },
+          "store-action": {
+            "displayName": "Action",
+            "purpose": "Reservar, Seguir comprando, Comprobante, Volver, reset link."
+          },
+          "store-link": {
+            "displayName": "Link",
+            "purpose": "Header and footer links, cart pill, Aplicar, card action row on phones."
+          },
+          "store-lead": {
+            "displayName": "Lead",
+            "purpose": "Hero line under the headline (1rem phones, 1.125rem from sm)."
+          },
+          "store-body": {
+            "displayName": "Body",
+            "purpose": "Descriptions and step text in sage."
+          },
+          "store-label": {
+            "displayName": "Label",
+            "purpose": "Field labels, pills, countdown chip."
+          },
+          "store-meta": {
+            "displayName": "Meta",
+            "purpose": "Meta lines under card titles, notes."
+          },
+          "store-badge": {
+            "displayName": "Badge",
+            "purpose": "Low-stock badge on images."
+          }
+        },
+        "shadows": [
+          {
+            "name": "tile-glow",
+            "value": "inset 0 1.5px 0 rgb(255 255 255 / 0.5), inset 0 -2px 0 rgb(120 20 10 / 0.25), 0 10px 24px -10px rgb(224 49 43 / 0.55)",
+            "purpose": "Logo tile inside the store (overrides the shared tile shadow)."
+          },
+          {
+            "name": "hero-action",
+            "value": "0 14px 30px -14px rgb(0 0 0 / 0.7)",
+            "purpose": "Ver juguetes pill over the scene."
+          },
+          {
+            "name": "fire-glow",
+            "value": "0 10px 24px -12px rgb(255 138 43 / 0.7)",
+            "purpose": "Fire actions in the cart."
+          },
+          {
+            "name": "seal-glow",
+            "value": "0 12px 28px -12px rgb(255 138 43 / 0.75)",
+            "purpose": "Confirmation seal."
+          },
+          {
+            "name": "sticker",
+            "value": "0 6px 14px -6px rgb(0 0 0 / 0.6)",
+            "purpose": "Badges on card wells."
+          },
+          {
+            "name": "drawer",
+            "value": "-24px 0 60px -30px rgb(0 0 0 / 0.8)",
+            "purpose": "Cart drawer."
+          },
+          {
+            "name": "modal",
+            "value": "0 30px 60px -24px rgb(0 0 0 / 0.8)",
+            "purpose": "Confirmation modal."
+          },
+          {
+            "name": "field-error",
+            "value": "0 0 0 4px rgb(var(--sw-alert) / 0.18)",
+            "purpose": "Invalid field halo."
+          },
+          {
+            "name": "scene-text",
+            "value": "0 2px 18px rgb(9 30 48 / 0.55)",
+            "purpose": "Hero headline on the sky."
+          },
+          {
+            "name": "scene-text-lead",
+            "value": "0 1px 2px rgb(9 30 48 / 0.7), 0 2px 16px rgb(9 30 48 / 0.75)",
+            "purpose": "Hero lead line on the sky."
+          }
+        ],
+        "motion": [
+          {
+            "name": "parallax",
+            "value": "spring stiffness 60, damping 20; layer depth 6 to 44px of travel",
+            "purpose": "Pointer x over the hero moves scene layers; fine pointers only; resets on leave."
+          },
+          {
+            "name": "embers",
+            "value": "canvas, up to 90 particles, additive blend, gold to orange, rise with sway",
+            "purpose": "Above the hero tile and behind the confirmation seal."
+          },
+          {
+            "name": "twinkle",
+            "value": "3.6s ease-in-out infinite, opacity 0.2 to 1",
+            "purpose": "About a quarter of the hero stars."
+          },
+          {
+            "name": "tile-rise",
+            "value": "spring stiffness 120, damping 14; from y 40, scale 0.8",
+            "purpose": "Hero logo tile arrival."
+          },
+          {
+            "name": "card-enter",
+            "value": "spring stiffness 220, damping 24; y 28 to 0; 40ms stagger capped at index 9; exit scale 0.94",
+            "purpose": "Product cards."
+          },
+          {
+            "name": "add-nudge",
+            "value": "spring stiffness 500, damping 14; x 6 to 0",
+            "purpose": "Card action row after adding."
+          },
+          {
+            "name": "bag-wobble",
+            "value": "scale 1,1.25,0.92,1.06,1 and rotate 0,-10,8,-3,0 over 0.55s",
+            "purpose": "Header cart pill when a toy is added."
+          },
+          {
+            "name": "drawer",
+            "value": "spring stiffness 360, damping 36; x 100% to 0",
+            "purpose": "Cart drawer."
+          },
+          {
+            "name": "modal",
+            "value": "spring stiffness 300, damping 20; scale 0.8, y 40 to rest",
+            "purpose": "Confirmation modal."
+          },
+          {
+            "name": "seal",
+            "value": "spring stiffness 380, damping 12, delay 0.1s; scale 0, rotate -20 to rest",
+            "purpose": "Confirmation seal."
+          },
+          {
+            "name": "reduced-motion",
+            "value": "parallax unbound, embers canvas idle, twinkle off; global CSS durations 0.01ms",
+            "purpose": "prefers-reduced-motion: reduce."
+          }
+        ],
+        "breakpoints": [
+          {
+            "name": "sm",
+            "value": "640px"
+          },
+          {
+            "name": "md",
+            "value": "768px"
+          },
+          {
+            "name": "lg",
+            "value": "1024px"
+          },
+          {
+            "name": "container-max",
+            "value": "1312px"
+          },
+          {
+            "name": "hero-height",
+            "value": "clamp(560px, 76vh, 680px)"
+          },
+          {
+            "name": "drawer-max",
+            "value": "448px"
+          }
+        ],
+        "cardScenes": {
+          "sol": {
+            "sky": [
+              "#3A2E5C",
+              "#E79B5B"
+            ],
+            "back": "#3B5A3A",
+            "front": "#4E8A3F",
+            "grass": "#6FB04F",
+            "prop": "sun"
+          },
+          "coral": {
+            "sky": [
+              "#2A2246",
+              "#B8607A"
+            ],
+            "back": "#3A4B3C",
+            "front": "#4C7A3E",
+            "grass": "#66A14E",
+            "prop": "moon"
+          },
+          "turquesa": {
+            "sky": [
+              "#0F2A36",
+              "#2F6C78"
+            ],
+            "back": "#1C4A3C",
+            "front": "#24603F",
+            "grass": "#3E8C55",
+            "prop": "pines"
+          },
+          "lila": {
+            "sky": [
+              "#1E1B3E",
+              "#5B4C93"
+            ],
+            "back": "#283F38",
+            "front": "#335E3E",
+            "grass": "#4F8E57",
+            "prop": "tree"
+          },
+          "hoja": {
+            "sky": [
+              "#174055",
+              "#7FB4C9"
+            ],
+            "back": "#2E5E36",
+            "front": "#3F8A3C",
+            "grass": "#68B552",
+            "prop": "windmill"
+          },
+          "cielo": {
+            "sky": [
+              "#13283A",
+              "#4C7FA8"
+            ],
+            "back": "#1D4232",
+            "front": "#275C36",
+            "grass": "#3F8A4A",
+            "prop": "cloud"
+          }
+        },
+        "narrative": {
+          "northStar": "El valle",
+          "overview": "The store is a toy valley at dusk seen through a vine-framed window. The fire logo tile rises over the hills like the sun, embers drift up from it, toy silhouettes (a bear on the left hill, a block tower and a rocket on the right) stand on the ridges, and the catalog below reads like a game's world index: Lilita One category tabs between hairlines broken by a single dot, and framed card wells that are each a small piece of the valley at their category's hour of day.\n\nThe ground is near-black pine, never white. Light comes from two sources only: the authored dusk scene and fire. Fire is rationed: the gradient belongs to the logo tile, and one flat fire-orange action with dark ink leads each view. Everything else is white ink, sage and moss on pine, with hairline structure instead of boxed sections.\n\nConfirmed rejection: the white e-commerce grid with a banner carousel.",
+          "keyCharacteristics": [
+            "Near-black pine ground with pine surfaces one and two steps lighter; 1px hairlines broken by a single dot.",
+            "Lilita One display in white, moss for inactive tabs and the footer wordmark; Nunito body in sage or ink.",
+            "One flat fire-orange action per view with fire-ink text; the fire gradient only on the logo tile.",
+            "Card image wells with hand-cut organic corners and a 2px moss rim, each holding a per-category valley scene.",
+            "Category colours only as icon tint and small dots, never as fills.",
+            "An authored SVG valley whose hills, vines and grass are anchored to the frame's edges, with pointer parallax and rising embers that stop under reduced motion."
+          ],
+          "rules": [
+            {
+              "name": "The One Fire Rule",
+              "body": "Each view carries exactly one filled fire-orange action with fire-ink text. Other fire on screen (count badge, seal, icon, caret, selection, hover text) points at that same purchase path and is never a second action. A secondary choice beside it is outlined (Comprobante, Volver).",
+              "section": "colors",
+              "world": "store"
+            },
+            {
+              "name": "The Fire Tile Rule",
+              "body": "The gold-orange-red fire gradient lives only on the logo tile and the favicon. Buttons, badges and the seal use flat fire. The valley's own dusk gradients (sky, sun halo, hills) are scene light, not UI fill.",
+              "section": "colors",
+              "world": "store"
+            },
+            {
+              "name": "The Dots and Tints Rule",
+              "body": "On pine, a category colour appears only as the toy icon's tint inside a card well and as the 10px dot on a season pill. It is never a block, band or panel; panel-style category fills do not cross into the store. The shipped sale sticker (a coral disc on discounted cards) is a known divergence from this rule, not a pattern to extend.",
+              "section": "colors",
+              "world": "store"
+            },
+            {
+              "name": "The Two Voices Rule",
+              "body": "Lilita One speaks for whatever a family reads as a name or acts on: titles, tabs, prices, totals, numerals, links and every button label. Nunito carries descriptions, meta, field text and labels. Lilita has one weight; never synthesise bold on it.",
+              "section": "typography",
+              "world": "store"
+            },
+            {
+              "name": "The White, Moss, Sage Rule",
+              "body": "Titles and active states are white ink; inactive tabs, the footer wordmark and footer links are moss; supporting copy is sage. Body Nunito never drops below 600.",
+              "section": "typography",
+              "world": "store"
+            },
+            {
+              "name": "The Glow, Not Slab Rule",
+              "body": "In El valle, anything raised casts a blurred shadow or a warm glow; a hard offset base never appears, including under the logo tile.",
+              "section": "elevation",
+              "world": "store"
+            }
+          ],
+          "dos": [
+            "Do keep the store on pine ground (sw-ground) with pine surface and raised steps; never introduce a white or light surface.",
+            "Do give each view exactly one flat fire-orange action with fire-ink Lilita text, and outline any choice beside it.",
+            "Do separate sections with the rule-dot divider and move the dot between placements rather than adding boxes or borders.",
+            "Do set titles, tabs, prices, links and button labels in Lilita One; descriptions, meta and labels in Nunito 600 to 800.",
+            "Do frame every product image in an organic well with the 2px moss rim, alternating the two organic radii.",
+            "Do show category only as icon tint and small dots, and give photo-less products their category's CardScene.",
+            "Do anchor scene pieces that carry meaning (hills, toys, vines) to the frame's edges so they survive narrow widths, and keep hero text inside the deep-blue band of the sky.",
+            "Do stop parallax, embers and twinkle under reduced motion, and keep the ember focus ring on every focusable element."
+          ],
+          "donts": [
+            "Don't build the white e-commerce grid with a banner carousel.",
+            "Don't use the fire gradient anywhere but the logo tile and favicon.",
+            "Don't put a second filled fire action in the same view, or set text other than fire-ink on fire.",
+            "Don't fill tabs, cards, bands or panels with category colours.",
+            "Don't give anything in the store a hard zero-blur offset shadow, including the logo tile.",
+            "Don't replace the authored valley with a raster or stock image.",
+            "Don't carry panel rules into the store (sol as position marker, category fills, the board-space track); this world has its own."
+          ]
+        }
+      }
+    }
   },
   "components": [
     {
+      "world": "panel",
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
@@ -773,6 +1391,7 @@
       "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:14px;font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;font-size:0.9375rem;font-weight:800;cursor:pointer;transition:background-color 150ms,border-color 150ms,filter 150ms,transform 150ms cubic-bezier(0.16,1,0.3,1)}.ds-btn:hover{transform:translateY(-1px)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-btn-primary{background:rgb(var(--ink));color:rgb(var(--ground));box-shadow:0 1px 0 rgb(var(--line)),0 14px 30px -20px rgb(var(--shadow) / 0.45)}.ds-btn-primary:hover{background:rgb(var(--ink) / 0.9)}.ds-kbd{display:inline-flex;align-items:center;justify-content:center;height:20px;min-width:20px;padding:0 6px;border-radius:6px;font:900 0.6875rem/1rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;font-variant-numeric:tabular-nums;background:color-mix(in srgb,currentColor 16%,transparent)}"
     },
     {
+      "world": "panel",
       "name": "Accent Button",
       "kind": "button",
       "refersTo": "button-accent",
@@ -781,6 +1400,7 @@
       "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:14px;font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;font-size:0.9375rem;font-weight:800;cursor:pointer;transition:background-color 150ms,border-color 150ms,filter 150ms,transform 150ms cubic-bezier(0.16,1,0.3,1)}.ds-btn:hover{transform:translateY(-1px)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-btn-accent{background:rgb(var(--sol));color:rgb(var(--on-fill));box-shadow:0 1px 0 rgb(var(--line)),0 14px 30px -20px rgb(var(--shadow) / 0.45)}.ds-btn-accent:hover{filter:brightness(1.04)}"
     },
     {
+      "world": "panel",
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
@@ -789,6 +1409,7 @@
       "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:14px;font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;font-size:0.9375rem;font-weight:800;cursor:pointer;transition:background-color 150ms,border-color 150ms,filter 150ms,transform 150ms cubic-bezier(0.16,1,0.3,1)}.ds-btn:hover{transform:translateY(-1px)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-btn-secondary{background:rgb(var(--sunken));color:rgb(var(--ink))}.ds-btn-secondary:hover{background:rgb(var(--line) / 0.7)}"
     },
     {
+      "world": "panel",
       "name": "Danger Button",
       "kind": "button",
       "refersTo": "button-danger",
@@ -797,6 +1418,7 @@
       "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:14px;font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;font-size:0.9375rem;font-weight:800;cursor:pointer;transition:background-color 150ms,border-color 150ms,filter 150ms,transform 150ms cubic-bezier(0.16,1,0.3,1)}.ds-btn:hover{transform:translateY(-1px)}.ds-btn:active{transform:scale(0.97)}.ds-btn:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-btn-danger{background:transparent;color:rgb(var(--peligro));border:2px solid rgb(var(--peligro) / 0.4)}.ds-btn-danger:hover,.ds-btn-danger:focus-visible{background:rgb(var(--peligro-wash));border-color:rgb(var(--peligro))}"
     },
     {
+      "world": "panel",
       "name": "Text Field",
       "kind": "input",
       "refersTo": "input",
@@ -805,6 +1427,7 @@
       "css": ".ds-field{display:flex;flex-direction:column;gap:6px;width:320px;font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif}.ds-field-label{font-size:0.75rem;font-weight:800;color:rgb(var(--ink-soft))}.ds-field-hint{font-size:0.75rem;font-weight:600;color:rgb(var(--ink-soft))}.ds-input{height:48px;padding:0 14px;border:2px solid rgb(var(--line));border-radius:14px;background:rgb(var(--surface));color:rgb(var(--ink));font:700 0.9375rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;caret-color:rgb(var(--coral));transition:border-color 150ms,box-shadow 150ms}.ds-input::placeholder{font-weight:600;color:rgb(var(--ink-soft) / 0.8)}.ds-input:hover{border-color:rgb(var(--ink-soft) / 0.4)}.ds-input:focus{outline:none;border-color:rgb(var(--turquesa));box-shadow:0 0 0 4px rgb(var(--turquesa) / 0.28)}.ds-input[aria-invalid=true]{border-color:rgb(var(--peligro))}"
     },
     {
+      "world": "panel",
       "name": "Category Chip",
       "kind": "chip",
       "refersTo": "category-chip",
@@ -813,6 +1436,7 @@
       "css": ".ds-chips{display:flex;flex-wrap:wrap;gap:8px}.ds-chip{display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:0;border-radius:9999px;background:rgb(var(--sunken));color:rgb(var(--ink-soft));font:800 0.875rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;cursor:pointer;transition:color 150ms}.ds-chip:hover{color:rgb(var(--ink))}.ds-chip:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-dot{width:10px;height:10px;border-radius:9999px}.ds-chip-on{color:rgb(var(--on-fill))}.ds-chip-on .ds-dot{background:rgb(var(--on-fill) / 0.7)}"
     },
     {
+      "world": "panel",
       "name": "Category Tag",
       "kind": "chip",
       "refersTo": "category-tag",
@@ -821,6 +1445,7 @@
       "css": ".ds-tag{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:9999px;background:rgb(var(--turquesa-wash));color:rgb(var(--turquesa-ink));font:800 0.75rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif}.ds-tag-dot{width:8px;height:8px;border-radius:9999px;background:rgb(var(--turquesa))}"
     },
     {
+      "world": "panel",
       "name": "Recién guardados Card",
       "kind": "card",
       "refersTo": "stack-card",
@@ -829,6 +1454,7 @@
       "css": ".ds-stack-card{width:320px;overflow:hidden;border-radius:20px;background:rgb(var(--surface));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;box-shadow:0 1px 0 rgb(var(--line)),0 14px 30px -20px rgb(var(--shadow) / 0.45)}.ds-band{height:8px;background:rgb(var(--lila))}.ds-stack-body{padding:10px 14px}.ds-stack-name{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0;font-size:0.9375rem;font-weight:800;color:rgb(var(--ink))}.ds-stack-meta{margin:0;font-size:0.75rem;font-weight:700;color:rgb(var(--ink-soft));font-variant-numeric:tabular-nums;letter-spacing:0.01em}.ds-pips{display:flex;gap:3px}.ds-pip{width:8px;height:8px;border-radius:9999px;background:rgb(var(--line))}.ds-pip.on{background:rgb(var(--sol))}"
     },
     {
+      "world": "panel",
       "name": "Lote Track",
       "kind": "custom",
       "refersTo": "track-space",
@@ -837,17 +1463,81 @@
       "css": ".ds-track-panel{padding:20px;border-radius:28px;background:rgb(var(--surface));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;box-shadow:0 1px 0 rgb(var(--line)),0 14px 30px -20px rgb(var(--shadow) / 0.45)}.ds-count{margin:0 0 16px;font-size:1.875rem;font-weight:900;line-height:1;letter-spacing:-0.025em;color:rgb(var(--ink));font-variant-numeric:tabular-nums}.ds-count span{color:rgb(var(--ink-soft))}.ds-track{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.ds-track li{position:relative;display:grid;place-items:center;height:32px;border-radius:10px;background:rgb(var(--sunken));font:900 0.6875rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;color:rgb(var(--ink-soft));font-variant-numeric:tabular-nums}.ds-track li.ds-ms{background:rgb(var(--line))}.ds-track li.ds-goal{background:rgb(var(--sol))}.ds-token{width:18px;height:18px;border-radius:9999px;background:rgb(var(--ink));box-shadow:0 0 0 3px rgb(var(--surface)),0 3px 0 rgb(var(--shadow) / 0.35),0 8px 14px -4px rgb(var(--shadow) / 0.5);transition:transform 300ms cubic-bezier(0.16,1,0.3,1)}.ds-track li:hover .ds-token{transform:translateY(-3px)}"
     },
     {
+      "world": "panel",
       "name": "Side Rail Navigation",
       "kind": "nav",
       "refersTo": "nav-rail",
       "description": "Deep teal rail; the active item is a sliding sol pill.",
       "html": "<nav class=\"ds-rail\"><a class=\"ds-nav\" href=\"#\">Inventario</a><a class=\"ds-nav ds-nav-on\" href=\"#\" aria-current=\"page\">Carga Rápida</a><a class=\"ds-nav\" href=\"#\">Proveedores</a></nav>",
       "css": ".ds-rail{display:flex;flex-direction:column;gap:4px;width:240px;padding:24px 12px;background:rgb(var(--rail));color:rgb(var(--rail-ink));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif}.ds-nav{display:flex;align-items:center;height:44px;padding:0 12px;border-radius:14px;font-weight:800;color:inherit;text-decoration:none;transition:background-color 150ms,color 150ms}.ds-nav:hover{background:rgb(var(--rail-hover));color:#fff}.ds-nav:focus-visible{outline:3px solid rgb(var(--turquesa));outline-offset:2px}.ds-nav-on,.ds-nav-on:hover{background:rgb(var(--sol));color:rgb(var(--on-fill))}"
+    },
+    {
+      "world": "store",
+      "name": "El valle · Fire Action",
+      "kind": "button",
+      "refersTo": "store-button-fire",
+      "description": "The one filled action per view: flat fire, fire-ink Lilita label.",
+      "html": "<div class=\"ds-sw\"><a class=\"ds-fire\" href=\"#\">Ver juguetes <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14\"/><path d=\"m19 12-7 7-7-7\"/></svg></a><button class=\"ds-fire ds-fire-panel\">Continuar <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button></div>",
+      "css": ".ds-sw{--sw-ground:14 21 19;--sw-surface:22 32 30;--sw-raised:30 44 41;--sw-line:38 52 49;--sw-rim:42 74 53;--sw-ink:244 247 242;--sw-sage:143 168 155;--sw-moss:107 196 138;--sw-fire:255 138 43;--sw-fire-ink:35 16 4;--sw-ember:255 211 78;--sw-alert:255 122 104;background:rgb(var(--sw-ground));color:rgb(var(--sw-ink));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;padding:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.ds-sw :focus-visible{outline:3px solid rgb(var(--sw-ember));outline-offset:3px;border-radius:10px}.ds-sw ::selection{background:rgb(var(--sw-fire) / 0.45)}.ds-fire{display:inline-flex;align-items:center;gap:12px;height:56px;padding:0 28px;border:0;border-radius:9999px;background:rgb(var(--sw-fire));color:rgb(var(--sw-fire-ink));font:400 1.25rem 'Lilita One', 'Nunito Variable', ui-rounded, system-ui, sans-serif;letter-spacing:0.005em;text-decoration:none;cursor:pointer;box-shadow:0 14px 30px -14px rgb(0 0 0 / 0.7);transition:filter 150ms,transform 150ms}.ds-fire:hover{filter:brightness(1.05)}.ds-fire svg{transition:transform 300ms}.ds-fire:hover svg{transform:translateY(4px)}.ds-fire:active{transform:scale(0.97)}.ds-fire-panel{border-radius:20px;padding:0 24px;box-shadow:0 10px 24px -12px rgb(255 138 43 / 0.7)}.ds-fire-panel:hover svg{transform:none}"
+    },
+    {
+      "world": "store",
+      "name": "El valle · Outlined Pill",
+      "kind": "button",
+      "refersTo": "store-button-outline",
+      "description": "Header cart pill and Aplicar: ink outline that inverts on hover; fire count badge.",
+      "html": "<div class=\"ds-sw\"><button class=\"ds-outline\">Carrito <span class=\"ds-count\">3</span></button></div>",
+      "css": ".ds-sw{--sw-ground:14 21 19;--sw-surface:22 32 30;--sw-raised:30 44 41;--sw-line:38 52 49;--sw-rim:42 74 53;--sw-ink:244 247 242;--sw-sage:143 168 155;--sw-moss:107 196 138;--sw-fire:255 138 43;--sw-fire-ink:35 16 4;--sw-ember:255 211 78;--sw-alert:255 122 104;background:rgb(var(--sw-ground));color:rgb(var(--sw-ink));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;padding:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.ds-sw :focus-visible{outline:3px solid rgb(var(--sw-ember));outline-offset:3px;border-radius:10px}.ds-sw ::selection{background:rgb(var(--sw-fire) / 0.45)}.ds-outline{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;border:2px solid rgb(var(--sw-ink) / 0.85);border-radius:9999px;background:transparent;color:rgb(var(--sw-ink));font:400 1.05rem 'Lilita One', 'Nunito Variable', ui-rounded, system-ui, sans-serif;cursor:pointer;transition:background-color 150ms,color 150ms}.ds-outline:hover{background:rgb(var(--sw-ink));color:rgb(var(--sw-ground))}.ds-count{display:grid;place-items:center;min-width:24px;padding:0 6px;border-radius:9999px;background:rgb(var(--sw-fire));color:rgb(var(--sw-fire-ink));font-size:0.875rem;line-height:24px;font-variant-numeric:tabular-nums}"
+    },
+    {
+      "world": "store",
+      "name": "El valle · Filter Pills",
+      "kind": "chip",
+      "refersTo": "store-pill",
+      "description": "Outlined 40px pills; selected fills with ink; season pills carry a category dot.",
+      "html": "<div class=\"ds-sw\"><button class=\"ds-pill\" aria-pressed=\"false\">3 a 5 años</button><button class=\"ds-pill ds-pill-on\" aria-pressed=\"true\">6 a 8 años</button><button class=\"ds-pill\" aria-pressed=\"false\"><span class=\"ds-dot\"></span>Navidad</button></div>",
+      "css": ".ds-sw{--sw-ground:14 21 19;--sw-surface:22 32 30;--sw-raised:30 44 41;--sw-line:38 52 49;--sw-rim:42 74 53;--sw-ink:244 247 242;--sw-sage:143 168 155;--sw-moss:107 196 138;--sw-fire:255 138 43;--sw-fire-ink:35 16 4;--sw-ember:255 211 78;--sw-alert:255 122 104;background:rgb(var(--sw-ground));color:rgb(var(--sw-ink));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;padding:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.ds-sw :focus-visible{outline:3px solid rgb(var(--sw-ember));outline-offset:3px;border-radius:10px}.ds-sw ::selection{background:rgb(var(--sw-fire) / 0.45)}.ds-pill{display:flex;align-items:center;gap:8px;height:40px;padding:0 16px;border:2px solid rgb(var(--sw-line));border-radius:9999px;background:transparent;color:rgb(var(--sw-sage));font:800 0.875rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;cursor:pointer;transition:border-color 150ms,color 150ms}.ds-pill:hover{border-color:rgb(var(--sw-sage));color:rgb(var(--sw-ink))}.ds-pill-on,.ds-pill-on:hover{border-color:rgb(var(--sw-ink));background:rgb(var(--sw-ink));color:rgb(var(--sw-ground))}.ds-dot{width:10px;height:10px;border-radius:9999px;background:#F07C6B}"
+    },
+    {
+      "world": "store",
+      "name": "El valle · Category Tabs and Rule-dot",
+      "kind": "nav",
+      "refersTo": "store-tab",
+      "description": "Lilita tabs between hairlines cut by one dot; the active tab is ink, bracketed by two dots.",
+      "html": "<div class=\"ds-sw\" style=\"flex-direction:column;align-items:stretch\"><div class=\"ds-rule\" style=\"--at:0.3\"><i></i></div><nav class=\"ds-tabs\"><button class=\"ds-tab ds-tab-on\" aria-pressed=\"true\"><i></i>Todos<i></i></button><button class=\"ds-tab\" aria-pressed=\"false\"><i></i>Peluches<i></i></button><button class=\"ds-tab\" aria-pressed=\"false\"><i></i>Bloques<i></i></button></nav><div class=\"ds-rule\" style=\"--at:1.4\"><i></i></div></div>",
+      "css": ".ds-sw{--sw-ground:14 21 19;--sw-surface:22 32 30;--sw-raised:30 44 41;--sw-line:38 52 49;--sw-rim:42 74 53;--sw-ink:244 247 242;--sw-sage:143 168 155;--sw-moss:107 196 138;--sw-fire:255 138 43;--sw-fire-ink:35 16 4;--sw-ember:255 211 78;--sw-alert:255 122 104;background:rgb(var(--sw-ground));color:rgb(var(--sw-ink));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;padding:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.ds-sw :focus-visible{outline:3px solid rgb(var(--sw-ember));outline-offset:3px;border-radius:10px}.ds-sw ::selection{background:rgb(var(--sw-fire) / 0.45)}.ds-rule{display:flex;align-items:center;gap:14px}.ds-rule::before,.ds-rule::after{content:'';height:1px;background:rgb(var(--sw-line))}.ds-rule::before{flex:var(--at,1)}.ds-rule::after{flex:calc(2 - var(--at,1))}.ds-rule i{width:8px;height:8px;border-radius:9999px;background:rgb(var(--sw-rim));flex-shrink:0}.ds-tabs{display:flex;gap:32px;justify-content:space-around;padding:24px 0}.ds-tab{display:flex;align-items:center;gap:12px;border:0;background:none;color:rgb(var(--sw-moss));font:400 1.65rem/1 'Lilita One', 'Nunito Variable', ui-rounded, system-ui, sans-serif;cursor:pointer;transition:color 150ms}.ds-tab:hover,.ds-tab-on{color:rgb(var(--sw-ink))}.ds-tab i{width:8px;height:8px;border-radius:9999px;background:currentColor;opacity:0;transition:opacity 150ms}.ds-tab-on i{opacity:1}"
+    },
+    {
+      "world": "store",
+      "name": "El valle · Product Card",
+      "kind": "card",
+      "refersTo": "store-card-well",
+      "description": "Organic well with moss rim and category scene, Lilita title and price, action row.",
+      "html": "<div class=\"ds-sw\"><article class=\"ds-card\"><div class=\"ds-well\"><svg viewBox=\"0 0 320 200\" preserveAspectRatio=\"xMidYMax slice\" aria-hidden=\"true\"><defs><linearGradient id=\"dsk\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#1E1B3E\"/><stop offset=\"1\" stop-color=\"#5B4C93\"/></linearGradient></defs><rect width=\"320\" height=\"200\" fill=\"url(#dsk)\"/><path d=\"M0 132C70 106 130 98 160 102C220 106 280 124 320 118L320 200L0 200Z\" fill=\"#283F38\"/><path d=\"M0 150C80 134 160 128 240 138C280 143 300 140 320 136L320 200L0 200Z\" fill=\"#335E3E\"/></svg></div><h3>Peluche Dragón 30 cm</h3><p class=\"ds-meta\">Peluches · 3+ años</p><p class=\"ds-price\">$ 18.900</p><button class=\"ds-row\"><span>Agregar al carrito</span><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button></article></div>",
+      "css": ".ds-sw{--sw-ground:14 21 19;--sw-surface:22 32 30;--sw-raised:30 44 41;--sw-line:38 52 49;--sw-rim:42 74 53;--sw-ink:244 247 242;--sw-sage:143 168 155;--sw-moss:107 196 138;--sw-fire:255 138 43;--sw-fire-ink:35 16 4;--sw-ember:255 211 78;--sw-alert:255 122 104;background:rgb(var(--sw-ground));color:rgb(var(--sw-ink));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;padding:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.ds-sw :focus-visible{outline:3px solid rgb(var(--sw-ember));outline-offset:3px;border-radius:10px}.ds-sw ::selection{background:rgb(var(--sw-fire) / 0.45)}.ds-card{width:300px;display:flex;flex-direction:column}.ds-well{aspect-ratio:16/10;overflow:hidden;border:2px solid rgb(var(--sw-rim));background:rgb(var(--sw-raised));border-radius:26px 34px 22px 30px / 30px 22px 34px 26px}.ds-well svg{width:100%;height:100%;display:block}.ds-card h3{margin:20px 0 0;font:400 1.55rem/1.25 'Lilita One', 'Nunito Variable', ui-rounded, system-ui, sans-serif}.ds-meta{margin:8px 0 0;font-weight:600;color:rgb(var(--sw-sage))}.ds-price{margin:12px 0 0;font:400 1.7rem/1 'Lilita One', 'Nunito Variable', ui-rounded, system-ui, sans-serif;font-variant-numeric:tabular-nums}.ds-row{margin-top:20px;display:flex;justify-content:space-between;align-items:center;padding:16px 0 0;border:0;border-top:1px solid rgb(var(--sw-line));background:none;color:rgb(var(--sw-ink));font:400 1.2rem 'Lilita One', 'Nunito Variable', ui-rounded, system-ui, sans-serif;cursor:pointer;transition:color 150ms}.ds-row:hover{color:rgb(var(--sw-fire))}.ds-row svg{transition:transform 150ms}.ds-row:hover svg{transform:translateX(4px)}"
+    },
+    {
+      "world": "store",
+      "name": "El valle · Field",
+      "kind": "input",
+      "refersTo": "store-field",
+      "description": "Cart field: pine ground fill, hairline border, moss focus, fire caret, alert error.",
+      "html": "<div class=\"ds-sw\"><label class=\"ds-f\"><span>Nombre y apellido</span><input class=\"ds-in\" placeholder=\"Tu nombre\"/></label><label class=\"ds-f\"><span>CUIT (11 dígitos)</span><input class=\"ds-in\" aria-invalid=\"true\" value=\"2030\"/><em>Para factura A necesitamos un CUIT de 11 dígitos.</em></label></div>",
+      "css": ".ds-sw{--sw-ground:14 21 19;--sw-surface:22 32 30;--sw-raised:30 44 41;--sw-line:38 52 49;--sw-rim:42 74 53;--sw-ink:244 247 242;--sw-sage:143 168 155;--sw-moss:107 196 138;--sw-fire:255 138 43;--sw-fire-ink:35 16 4;--sw-ember:255 211 78;--sw-alert:255 122 104;background:rgb(var(--sw-ground));color:rgb(var(--sw-ink));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;padding:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.ds-sw :focus-visible{outline:3px solid rgb(var(--sw-ember));outline-offset:3px;border-radius:10px}.ds-sw ::selection{background:rgb(var(--sw-fire) / 0.45)}.ds-f{display:flex;flex-direction:column;gap:8px;width:300px}.ds-f span{font-size:0.875rem;font-weight:800;color:rgb(var(--sw-sage))}.ds-f em{font-style:normal;font-size:0.875rem;font-weight:700;color:rgb(var(--sw-alert))}.ds-in{height:48px;padding:0 16px;border:2px solid rgb(var(--sw-line));border-radius:20px;background:rgb(var(--sw-ground));color:rgb(var(--sw-ink));font:700 1rem 'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;caret-color:rgb(var(--sw-fire))}.ds-in::placeholder{color:rgb(var(--sw-sage) / 0.8)}.ds-in:focus{outline:none;border-color:rgb(var(--sw-moss))}.ds-in[aria-invalid=true]{border-color:rgb(var(--sw-alert));box-shadow:0 0 0 4px rgb(var(--sw-alert) / 0.18)}"
+    },
+    {
+      "world": "shared",
+      "name": "Logo Tile (El valle glow)",
+      "kind": "custom",
+      "refersTo": "store-header",
+      "description": "SiDragonframe dragon in white on the fire-gradient tile (gold, orange, red); soft glow inside the store. The same tile is the favicon.",
+      "html": "<div class=\"ds-sw\"><span class=\"ds-tile\"><svg viewBox=\"0 0 64 64\" width=\"64\" height=\"64\" aria-hidden=\"true\"><path transform=\"translate(14 14) scale(1.5)\" fill=\"#fff\" d=\"M.936.001A.937.937 0 0 0 0 .937v22.132c0 .519.42.93.936.93h9.968s-.519-.466-.611-.56a1.14 1.14 0 0 1-.237-.365c-.053-.128-.094-.383-.112-.51-.017-.128-.06-.222-.102-.332-.043-.112-.238-.381-.289-.45-.05-.068-.332-.39-.39-.459-.06-.068-.06-.145-.034-.195.024-.051-.018-.095-.086-.172-.068-.075-.382-.415-.518-.576-.136-.162-.068-.204-.033-.221.033-.018.27.136.391.196.092.045.325.168.433.197.048.013.073.011.083-.009.013-.02.26-.364.367-1.023.119-1.171-.12-1.867-.4-2.456a7.363 7.363 0 0 0-.714-1.206c-.145-.187-.815-.765-.927-.841-.11-.077-1.393-.918-1.538-1.038-.144-.118.025-.166.08-.142.143.064.428.178.558.238.151.065.91.33 1.054.364.145.033.126.03.103-.119-.017-.111-.23-.604-.332-.782-.103-.18-.553-.817-.859-1.113-.304-.297-.663-.681-.799-.892-.136-.213-.696-1.368-.868-1.792a12.048 12.048 0 0 0-.527-1.114c-.059-.101-.134-.154-.125-.24.007-.083.253.128.365.23.167.153.388.445.661.86.272.418.571.688.621.738.051.05.39.393.44.424.033.017.046.004.053-.024.02-.084 0-.295-.033-.46-.042-.221-.018-.748-.092-1.012-.078-.261-.113-.389-.469-1.02-.358-.628-.74-1.681-1.053-3.347a12.3 12.3 0 0 1-.163-3.264c.018-.163.085-.136.13-.128.04.01.065.265.065.265s-.015.612.731 2.609c.75 1.996 1.633 2.133 1.71 2.15.077.016.11.007.11-.035 0-.041-.213-.9-.136-1.57.076-.673.238-.945.33-1.04.071-.07.069-.014.069.196-.002.07-.002.158 0 .264.01.426.281.995.281.995s.118.5.323-.664c.296-1.954.018-2.995-.06-3.274C8.28.998 7.944 0 7.157 0Zm15.427 0c-.65 0-.895.997-.972 1.279-.076.278-.357 1.32-.059 3.274.204 1.164.323.664.323.664s.273-.57.281-.995c.002-.106 0-.193 0-.264-.002-.21-.002-.266.068-.195.092.094.255.366.33 1.039.077.67-.134 1.529-.134 1.57 0 .042.032.05.11.035.077-.017.96-.153 1.709-2.15.746-1.997.729-2.61.729-2.61s.027-.254.068-.264c.042-.008.111-.035.128.128a12.22 12.22 0 0 1-.16 3.264c-.316 1.666-.698 2.72-1.055 3.347-.356.631-.392.759-.469 1.02-.076.264-.05.79-.092 1.012-.032.165-.053.376-.032.46.006.028.02.041.05.024.053-.03.39-.374.44-.424.052-.05.35-.32.62-.738.273-.415.495-.707.664-.86.113-.102.356-.313.365-.23.009.086-.066.139-.125.24-.06.1-.359.688-.53 1.114-.169.424-.73 1.579-.866 1.792-.135.21-.494.595-.798.892-.306.296-.756.933-.86 1.113-.1.178-.313.67-.331.782-.023.15-.042.152.103.119.143-.033.9-.299 1.052-.364.132-.06.417-.174.56-.238.055-.024.225.024.08.142-.146.12-1.428.96-1.54 1.038-.11.076-.782.654-.925.84a7.129 7.129 0 0 0-.714 1.207c-.28.589-.519 1.285-.4 2.456.108.659.354 1.004.364 1.023.014.02.038.022.085.009.11-.029.34-.152.434-.197.119-.06.358-.214.39-.196.036.017.102.06-.032.221-.136.161-.45.501-.518.576-.068.077-.112.121-.086.172a.18.18 0 0 1-.035.195c-.06.068-.338.39-.391.46-.05.067-.246.337-.288.449-.042.11-.085.204-.103.332a2.416 2.416 0 0 1-.11.51 1.178 1.178 0 0 1-.237.364c-.095.095-.646.56-.646.56h10.256a.945.945 0 0 0 .936-.947V.937A.937.937 0 0 0 23.064 0ZM8.933 11.49a.078.078 0 0 0-.085.074c-.015.238-.038.422-.053.642-.017.25-.05.531.063.784.113.247.366.661.45.782.09.12.429.604.513.734.086.13.307.533.345.604.04.068.015.068.07.068.033 0 .04-.176.04-.325 0-.084-.003-.158-.003-.187 0-.494.018-.96-.147-1.432a1.266 1.266 0 0 0-.175-.345c-.123-.169-.255-.331-.383-.494-.05-.066-.1-.134-.16-.192-.09-.091-.327-.379-.382-.504-.04-.097-.055-.198-.084-.207a.038.038 0 0 0-.01-.002zm5.915 0a.034.034 0 0 0-.01.002c-.03.009-.044.11-.086.207-.053.125-.29.413-.383.504-.059.058-.107.126-.157.192-.13.163-.261.325-.382.494a1.25 1.25 0 0 0-.176.345c-.165.472-.147.938-.147 1.432 0 .077-.016.512.037.512.055 0 .03 0 .07-.068.037-.07.26-.475.343-.604.083-.13.425-.613.514-.734a7.1 7.1 0 0 0 .45-.782c.065-.143.082-.294.082-.443a4.3 4.3 0 0 0-.017-.34c-.019-.22-.038-.405-.054-.643-.003-.059-.056-.076-.084-.074zM10.7 19.994c-.006 0-.006.007-.006.029 0 .032-.02.16-.01.239.005.082.017.262.03.35.006.053.004.148.002.247v.192c.004.144-.015.412-.137.63 0 0-.034.035-.034.061 0 .03.024.042.05.093.046.087.194.272.249.33.052.057.155.181.272.087.044-.037.057-.095.057-.171 0-.12-.038-.288-.057-.494-.005-.035-.097-.407-.132-.567-.024-.119-.101-.464-.125-.578-.015-.067-.077-.274-.088-.314-.01-.037-.031-.12-.055-.13l-.016-.004zm2.345 0c-.004 0-.01.002-.019.005-.021.008-.04.092-.052.13-.01.039-.072.246-.088.313-.026.114-.1.46-.127.578-.033.16-.125.532-.13.567-.032.335-.114.569 0 .665.114.094.218-.03.273-.088.053-.057.201-.242.248-.33.026-.05.05-.063.05-.092 0-.026-.035-.06-.035-.06a1.277 1.277 0 0 1-.139-.631c.003-.057 0-.123 0-.19a2.476 2.476 0 0 1 .005-.25c.011-.087.022-.268.032-.349.008-.08-.012-.207-.012-.24 0-.021 0-.028-.006-.028z\"/></svg></span><span class=\"ds-word\">DragoToY</span></div>",
+      "css": ".ds-sw{--sw-ground:14 21 19;--sw-surface:22 32 30;--sw-raised:30 44 41;--sw-line:38 52 49;--sw-rim:42 74 53;--sw-ink:244 247 242;--sw-sage:143 168 155;--sw-moss:107 196 138;--sw-fire:255 138 43;--sw-fire-ink:35 16 4;--sw-ember:255 211 78;--sw-alert:255 122 104;background:rgb(var(--sw-ground));color:rgb(var(--sw-ink));font-family:'Nunito Variable', Nunito, ui-rounded, system-ui, sans-serif;padding:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.ds-sw :focus-visible{outline:3px solid rgb(var(--sw-ember));outline-offset:3px;border-radius:10px}.ds-sw ::selection{background:rgb(var(--sw-fire) / 0.45)}.ds-tile{display:grid;place-items:center;width:96px;height:96px;border-radius:1.7rem;background:linear-gradient(140deg,#ffd34e 0%,#ff8a2b 48%,#e0312b 100%);box-shadow:inset 0 1.5px 0 rgb(255 255 255 / 0.5),inset 0 -2px 0 rgb(120 20 10 / 0.25),0 10px 24px -10px rgb(224 49 43 / 0.55)}.ds-tile svg{filter:drop-shadow(0 1.5px 1px rgb(110 20 10 / 0.55))}.ds-word{font:400 2.2rem/1 'Lilita One', 'Nunito Variable', ui-rounded, system-ui, sans-serif;color:rgb(var(--sw-moss))}"
     }
   ],
   "narrative": {
     "northStar": "Tablero de juego",
-    "overview": "Every incoming shipment is a game in progress. The lote is a track of flat, category-coloured board spaces; each saved product fills the next space with its category's colour and the token hops forward toward the sun-yellow goal flag. The rest of the app is the same table seen from other angles: warm off-white card stock on which rounded surfaces rest, a deep teal rail along the edge like the side of the box, flat colour casillas that always mean a category, and figures that never jiggle.\n\nDensity is operational, not playful-loose: the employee is loading fifty products in five minutes with a scanner and the keyboard. Playfulness lives in material and motion (heavy rounded type, flat fills, spring hops, cards dropping onto a stack), never in extra steps or decorative chrome. Controls are standard web controls in board-game clothing.\n\nThe confirmed anti-reference is the category default: a grey data table with one blue accent and a generic progress bar.",
+    "overview": "Every incoming shipment is a game in progress. The lote is a track of flat, category-coloured board spaces; each saved product fills the next space with its category's colour and the token hops forward toward the sun-yellow goal flag. The rest of the app is the same table seen from other angles: warm off-white card stock on which rounded surfaces rest, a deep teal rail along the edge like the side of the box, flat colour casillas that always mean a category, and figures that never jiggle.\n\nDensity is operational, not playful-loose: the employee is loading fifty products in five minutes with a scanner and the keyboard. Playfulness lives in material and motion (heavy rounded type, flat fills, spring hops, cards dropping onto a stack), never in extra steps or decorative chrome. Controls are standard web controls in board-game clothing.\n\nThe confirmed anti-reference is the category default: a grey data table with one blue accent and a generic progress bar.\n\nTwo worlds. This file records two route-scoped visual worlds. Everything from here through the first Do's and Don'ts is the staff panel's \"Tablero de juego\" (inventory, quick-add, suppliers, categories, reports, sign-in). The customer store at /tienda is a second world, \"El valle\", user-pinned on 2026-11-03 and recorded in its own part at the end of this file (tokens prefixed `sw-` and `store-`). Panel rules (The Board Space Rule, The Fixed Board Rule, The Sol Marks Here Rule, The Heavy Ink Rule, The Still Figures Rule, The Table-Top Rule, The One Piece Rule) govern the panel only; El valle has its own rules. The worlds share the logo tile, the Nunito body family, tabular figures (`.num`), and the six category hues, which the store uses only as tint.\n\nLogo. Shared by both worlds: the SiDragonframe dragon in white on a fire-gradient tile that runs gold (logo-gold) to orange (logo-orange) to red (logo-red) at 140deg, with a 1.5px white inner highlight on top, a 2px dark-red inner edge at the bottom, and a small drop shadow under the dragon glyph. The same tile, on a 64-unit square with 15-unit corners and a corner-to-corner diagonal, is the favicon (`public/favicon.svg`). The fire gradient is an identity mark, not a category fill: it appears on the logo tile and nowhere else in either world. Each world sets the tile's outer shadow; El valle's is documented in its Elevation & Depth.",
     "keyCharacteristics": [
       "Warm paper ground (ground) with white rounded surfaces resting on it; deep teal rail as the frame.",
       "Six flat category colours used as board spaces, chips, tags and card bands, always with a dark ink and a pale wash partner.",
@@ -860,37 +1550,44 @@
       {
         "name": "The Board Space Rule",
         "body": "A category colour as a flat fill means exactly one thing: this product belongs to that category. Fills are never gradients, never decorative, never reused for status (status has peligro and the pip ramp).",
-        "section": "colors"
+        "section": "colors",
+        "world": "panel"
       },
       {
         "name": "The Fixed Board Rule",
         "body": "Category fills and sol are the same in light and dark mode; only their ink and wash partners shift. Anything sitting on a fill uses on-fill ink.",
-        "section": "colors"
+        "section": "colors",
+        "world": "panel"
       },
       {
         "name": "The Sol Marks Here Rule",
         "body": "Sun yellow is reserved for current position and goal: active section, the goal flag, the one accent action. If two sol elements compete on screen, one is wrong.",
-        "section": "colors"
+        "section": "colors",
+        "world": "panel"
       },
       {
         "name": "The Heavy Ink Rule",
         "body": "No weight below 600 anywhere. Labels and controls are 800, headings and counts 900.",
-        "section": "typography"
+        "section": "typography",
+        "world": "panel"
       },
       {
         "name": "The Still Figures Rule",
         "body": "Every SKU, stock count, price, goal, pace and time uses tabular figures (`font-variant-numeric: tabular-nums`, letter-spacing 0.01em). Counters that change in place flip digit by digit (FlipNumber) rather than re-rendering.",
-        "section": "typography"
+        "section": "typography",
+        "world": "panel"
       },
       {
         "name": "The Table-Top Rule",
         "body": "Shadows fall down and are tinted by the teal shadow channel; nothing glows, nothing floats sideways except the drawer.",
-        "section": "elevation"
+        "section": "elevation",
+        "world": "panel"
       },
       {
         "name": "The One Piece Rule",
         "body": "A solid zero-blur base shadow belongs to the token, because it is a physical piece standing on a space. Cards and buttons never get a hard offset slab.",
-        "section": "elevation"
+        "section": "elevation",
+        "world": "panel"
       }
     ],
     "dos": [
@@ -909,6 +1606,78 @@
       "Don't set labels in uppercase with letter-spacing or add eyebrow labels above page titles; labels are sentence-case 800.",
       "Don't use a second display face or weights below 600.",
       "Don't let sol mark anything other than current position, goal, or the one accent action."
-    ]
+    ],
+    "scope": "panel",
+    "worlds": {
+      "store": {
+        "northStar": "El valle",
+        "overview": "The store is a toy valley at dusk seen through a vine-framed window. The fire logo tile rises over the hills like the sun, embers drift up from it, toy silhouettes (a bear on the left hill, a block tower and a rocket on the right) stand on the ridges, and the catalog below reads like a game's world index: Lilita One category tabs between hairlines broken by a single dot, and framed card wells that are each a small piece of the valley at their category's hour of day.\n\nThe ground is near-black pine, never white. Light comes from two sources only: the authored dusk scene and fire. Fire is rationed: the gradient belongs to the logo tile, and one flat fire-orange action with dark ink leads each view. Everything else is white ink, sage and moss on pine, with hairline structure instead of boxed sections.\n\nConfirmed rejection: the white e-commerce grid with a banner carousel.",
+        "keyCharacteristics": [
+          "Near-black pine ground with pine surfaces one and two steps lighter; 1px hairlines broken by a single dot.",
+          "Lilita One display in white, moss for inactive tabs and the footer wordmark; Nunito body in sage or ink.",
+          "One flat fire-orange action per view with fire-ink text; the fire gradient only on the logo tile.",
+          "Card image wells with hand-cut organic corners and a 2px moss rim, each holding a per-category valley scene.",
+          "Category colours only as icon tint and small dots, never as fills.",
+          "An authored SVG valley whose hills, vines and grass are anchored to the frame's edges, with pointer parallax and rising embers that stop under reduced motion."
+        ],
+        "rules": [
+          {
+            "name": "The One Fire Rule",
+            "body": "Each view carries exactly one filled fire-orange action with fire-ink text. Other fire on screen (count badge, seal, icon, caret, selection, hover text) points at that same purchase path and is never a second action. A secondary choice beside it is outlined (Comprobante, Volver).",
+            "section": "colors",
+            "world": "store"
+          },
+          {
+            "name": "The Fire Tile Rule",
+            "body": "The gold-orange-red fire gradient lives only on the logo tile and the favicon. Buttons, badges and the seal use flat fire. The valley's own dusk gradients (sky, sun halo, hills) are scene light, not UI fill.",
+            "section": "colors",
+            "world": "store"
+          },
+          {
+            "name": "The Dots and Tints Rule",
+            "body": "On pine, a category colour appears only as the toy icon's tint inside a card well and as the 10px dot on a season pill. It is never a block, band or panel; panel-style category fills do not cross into the store. The shipped sale sticker (a coral disc on discounted cards) is a known divergence from this rule, not a pattern to extend.",
+            "section": "colors",
+            "world": "store"
+          },
+          {
+            "name": "The Two Voices Rule",
+            "body": "Lilita One speaks for whatever a family reads as a name or acts on: titles, tabs, prices, totals, numerals, links and every button label. Nunito carries descriptions, meta, field text and labels. Lilita has one weight; never synthesise bold on it.",
+            "section": "typography",
+            "world": "store"
+          },
+          {
+            "name": "The White, Moss, Sage Rule",
+            "body": "Titles and active states are white ink; inactive tabs, the footer wordmark and footer links are moss; supporting copy is sage. Body Nunito never drops below 600.",
+            "section": "typography",
+            "world": "store"
+          },
+          {
+            "name": "The Glow, Not Slab Rule",
+            "body": "In El valle, anything raised casts a blurred shadow or a warm glow; a hard offset base never appears, including under the logo tile.",
+            "section": "elevation",
+            "world": "store"
+          }
+        ],
+        "dos": [
+          "Do keep the store on pine ground (sw-ground) with pine surface and raised steps; never introduce a white or light surface.",
+          "Do give each view exactly one flat fire-orange action with fire-ink Lilita text, and outline any choice beside it.",
+          "Do separate sections with the rule-dot divider and move the dot between placements rather than adding boxes or borders.",
+          "Do set titles, tabs, prices, links and button labels in Lilita One; descriptions, meta and labels in Nunito 600 to 800.",
+          "Do frame every product image in an organic well with the 2px moss rim, alternating the two organic radii.",
+          "Do show category only as icon tint and small dots, and give photo-less products their category's CardScene.",
+          "Do anchor scene pieces that carry meaning (hills, toys, vines) to the frame's edges so they survive narrow widths, and keep hero text inside the deep-blue band of the sky.",
+          "Do stop parallax, embers and twinkle under reduced motion, and keep the ember focus ring on every focusable element."
+        ],
+        "donts": [
+          "Don't build the white e-commerce grid with a banner carousel.",
+          "Don't use the fire gradient anywhere but the logo tile and favicon.",
+          "Don't put a second filled fire action in the same view, or set text other than fire-ink on fire.",
+          "Don't fill tabs, cards, bands or panels with category colours.",
+          "Don't give anything in the store a hard zero-blur offset shadow, including the logo tile.",
+          "Don't replace the authored valley with a raster or stock image.",
+          "Don't carry panel rules into the store (sol as position marker, category fills, the board-space track); this world has its own."
+        ]
+      }
+    }
   }
 }

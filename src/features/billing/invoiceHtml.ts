@@ -14,11 +14,19 @@ export const paymentLabel = (p: Sale['paymentMethod']) => PAY[p]
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
 
 /** Comprobante imprimible (se abre en una ventana aparte y usa el diálogo de impresión del navegador). */
-export function invoiceHtml(sale: Sale, settings: Settings) {
+export function invoiceHtml(original: Sale, settings: Settings) {
+  // Nota de crédito: se guarda en negativo (para que reste en reportes) pero se imprime en positivo.
+  const credit = !!original.creditFor
+  const sale: Sale = credit
+    ? { ...original, items: original.items.map((i) => ({ ...i, qty: -i.qty })), subtotal: -original.subtotal, discountTotal: -original.discountTotal, total: -original.total, iva: -original.iva }
+    : original
   const b = settings.business
   const rate = settings.ivaRate
   const net = sale.total - sale.iva
   const date = new Date(sale.at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+  // Reserva todavía sin cobrar: no es comprobante de venta, es el resguardo para retirar.
+  const pending = !sale.number && !!sale.reservationCode
+  const until = sale.expiresAt ? new Date(sale.expiresAt).toLocaleString('es-AR', { dateStyle: 'full', timeStyle: 'short' }) : ''
   const rows = sale.items
     .map(
       (i) => `<tr><td>${i.qty}</td><td>${esc(i.name)}<small>${esc(i.sku)}${i.discountPercent ? ` · promo −${i.discountPercent}%` : ''}</small></td>
@@ -44,8 +52,8 @@ export function invoiceHtml(sale: Sale, settings: Settings) {
 ${sale.test ? '<div class="test">PRUEBA</div>' : ''}
 <div class="head">
   <div><h1>${esc(b.name || 'DragoToY')}</h1><small>${esc(b.address || 'Domicilio sin cargar')}</small><small>CUIT ${esc(b.cuit || 'sin cargar')} · ${esc(b.ivaCondition)}</small></div>
-  <div class="type">${sale.invoiceType}</div>
-  <div><strong>${esc(invoiceLabel(sale))}</strong><small>Fecha ${date}</small><small>Canal: ${sale.channel === 'tienda' ? 'tienda online' : 'mostrador'} · Pago: ${PAY[sale.paymentMethod]}</small>
+  <div class="type">${pending ? 'R' : sale.invoiceType}</div>
+  <div><strong>${esc(invoiceLabel(sale))}</strong><small>Fecha ${date}</small>${credit ? `<small><strong>Devolución sobre ${esc(sale.creditForLabel ?? 'la venta original')}</strong></small><small>Se devolvió con: ${PAY[sale.paymentMethod]}</small>${sale.voidReason ? `<small>Motivo: ${esc(sale.voidReason)}</small>` : ''}` : ''}<small>Canal: ${sale.channel === 'tienda' ? 'tienda online' : 'mostrador'} · ${pending ? 'Pagará con' : 'Pago'}: ${PAY[sale.paymentMethod]}</small>${pending && until ? `<small><strong>Guardada hasta el ${until}</strong></small>` : ''}${sale.status === 'cancelada' ? `<small class="void">CANCELADA: ${esc(sale.voidReason ?? '')}</small>` : ''}
   ${sale.status === 'anulada' ? `<small class="void">ANULADA ${new Date(sale.voidedAt!).toLocaleDateString('es-AR')}: ${esc(sale.voidReason ?? '')}</small>` : ''}</div>
 </div>
 <div class="party"><strong>${esc(sale.customer.name)}</strong>
@@ -57,7 +65,7 @@ ${sale.test ? '<div class="test">PRUEBA</div>' : ''}
   <div class="big"><span>Total</span><span>${formatPrice(sale.total)}</span></div>
   ${sale.invoiceType !== 'A' ? `<div><small>IVA contenido (Ley 27.743): ${formatPrice(sale.iva)}</small></div>` : ''}
 </div>
-<p class="warn">Comprobante interno, no válido como factura electrónica. Para emitir facturas ante ARCA (ex AFIP) el sistema necesita un servidor con certificado digital y CAE.</p>
+${pending ? `<p class="warn">Reserva: se paga al retirar en el local mostrando este código. No es un comprobante de venta.</p>` : `<p class="warn">Comprobante interno, no válido como factura electrónica. Para emitir facturas ante ARCA (ex AFIP) el sistema necesita un servidor con certificado digital y CAE.</p>`}
 <script>window.onload=()=>setTimeout(()=>window.print(),200)</script>
 </body></html>`
 }

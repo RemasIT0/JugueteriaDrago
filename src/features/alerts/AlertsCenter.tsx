@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { LuBell as Bell, LuBellRing as BellRing, LuCalendarClock as CalendarClock, LuCheckCheck as CheckCheck, LuPackageX as PackageX, LuX as X } from 'react-icons/lu'
+import { LuBell as Bell, LuBellRing as BellRing, LuCalendarClock as CalendarClock, LuCheckCheck as CheckCheck, LuPackageX as PackageX, LuShoppingBag as ShoppingBag, LuX as X } from 'react-icons/lu'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
@@ -28,7 +28,7 @@ export function AlertsBell({ variant }: { variant: 'rail' | 'header' }) {
     markSeen([a])
     setOpen(false)
     setPopup(false)
-    navigate(a.productId ? `/?producto=${a.productId}` : '/temporadas')
+    navigate(a.to ?? (a.productId ? `/?producto=${a.productId}` : '/temporadas'))
   }
   const dismiss = () => {
     markSeen(unseen)
@@ -119,7 +119,7 @@ export function AlertsBell({ variant }: { variant: 'rail' | 'header' }) {
 }
 
 function AlertRow({ alert: a, seen, onClick }: { alert: Alert; seen?: boolean; onClick: () => void }) {
-  const Icon = a.seasonId ? CalendarClock : PackageX
+  const Icon = a.to ? ShoppingBag : a.seasonId ? CalendarClock : PackageX
   return (
     <li>
       <button onClick={onClick} className={clsx('flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-sunken', seen && 'opacity-60')}>

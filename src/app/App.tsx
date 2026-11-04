@@ -12,6 +12,10 @@ import { useAuth, useCan } from '@/stores/auth'
 import { useInventory } from '@/stores/inventory'
 import { useSales } from '@/stores/sales'
 import { onExternalChange } from '@/services/localDb'
+import { useOrders } from '@/stores/orders'
+import { reservationLabel } from '@/services/commerce'
+import { formatPrice } from '@/lib/format'
+import { toast } from '@/components/ui/Toaster'
 
 // Las secciones de consulta se cargan bajo demanda; Inventario y Cargar productos van en el paquete inicial.
 const SuppliersPage = lazy(() => import('@/features/suppliers/SuppliersPage'))
@@ -22,6 +26,9 @@ const ActivityPage = lazy(() => import('@/features/admin/ActivityPage'))
 const SeasonsPage = lazy(() => import('@/features/seasons/SeasonsPage'))
 const DiscountsPage = lazy(() => import('@/features/discounts/DiscountsPage'))
 const BillingPage = lazy(() => import('@/features/billing/BillingPage'))
+const SellPage = lazy(() => import('@/features/sell/SellPage'))
+const OrdersPage = lazy(() => import('@/features/orders/OrdersPage'))
+const CashPage = lazy(() => import('@/features/cash/CashPage'))
 // La tienda para clientes es un paquete aparte: no carga nada del panel interno.
 const StorePage = lazy(() => import('@/features/store/StorePage'))
 
@@ -45,6 +52,9 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <InventoryPage /> },
       { path: '/carga', element: <QuickAddPage /> },
+      { path: '/vender', element: <Guard p="ventas.crear"><SellPage /></Guard> },
+      { path: '/caja', element: <Guard p="caja.cerrar"><CashPage /></Guard> },
+      { path: '/pedidos', element: <Guard p="pedidos.gestionar"><OrdersPage /></Guard> },
       { path: '/proveedores', element: <Guard p="proveedores.ver"><SuppliersPage /></Guard> },
       { path: '/categorias', element: <Guard p="categorias.ver"><CategoriesPage /></Guard> },
       { path: '/reportes', element: <Guard p="reportes.ver"><ReportsPage /></Guard> },
@@ -57,6 +67,17 @@ const router = createBrowserRouter([
     ],
   },
 ])
+
+/** Recarga los pedidos y avisa si entró uno nuevo desde la tienda. */
+async function refreshOrders() {
+  const before = new Set(useOrders.getState().orders.map((o) => o.id))
+  const wasReady = useOrders.getState().status === 'ready'
+  await useOrders.getState().load(true)
+  if (!wasReady) return
+  for (const o of useOrders.getState().orders)
+    if (!before.has(o.id) && o.status === 'reservada')
+      toast({ tone: 'ok', text: `Nuevo pedido online: ${reservationLabel(o.reservationCode!)} de ${o.customer.name} (${formatPrice(o.total)})` })
+}
 
 function Splash() {
   return (
@@ -84,6 +105,8 @@ function Panel() {
   const load = useInventory((s) => s.load)
   const loadSales = useSales((s) => s.load)
   const canSales = useCan('ventas.ver')
+  const canOrders = useCan('pedidos.gestionar')
+  const loadOrders = useOrders((s) => s.load)
 
   useEffect(() => {
     void boot()
@@ -99,8 +122,15 @@ function Panel() {
     return onExternalChange((table) => {
       if (table === 'products') void useInventory.getState().refreshProducts()
       if (table === 'sales' && canSales) void loadSales(true)
+      if (table === 'sales' && canOrders) void refreshOrders()
     })
-  }, [phase, canSales, loadSales])
+  }, [phase, canSales, canOrders, loadSales])
+
+  // Pedidos de la tienda: el número del menú y el aviso de pedido nuevo, en cualquier sección.
+  useEffect(() => {
+    if (phase === 'in' && canOrders) void loadOrders()
+    if (phase !== 'in') useOrders.getState().reset()
+  }, [phase, canOrders, loadOrders])
 
   // Las ventas alimentan avisos de temporada, reportes y el asistente (solo si el rol las puede ver).
   useEffect(() => {

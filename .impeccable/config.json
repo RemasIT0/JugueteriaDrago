@@ -218,6 +218,11 @@
         ],
         "createdAt": "2026-10-30T06:02:52.040Z",
         "reason": "claude: printable paper invoice (A4 print medium), not an app screen"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "lilita one",
+        "createdAt": "2026-11-04T00:31:15.286Z"
       }
     ]
   }

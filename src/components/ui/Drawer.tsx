@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { LuX as X } from 'react-icons/lu'
 import { useEffect, useRef, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 interface DrawerProps {
   open: boolean
@@ -9,7 +10,11 @@ interface DrawerProps {
   children: ReactNode
 }
 
-/** Panel lateral desde la derecha. La lista sigue visible detrás. */
+/**
+ * Panel lateral desde la derecha. La lista sigue visible detrás.
+ * Se monta al final del <body>: dentro de la página quedaría atrapado en el contexto de apilado
+ * de la animación de cambio de sección (usa transform) y la barra inferior del celular lo taparía.
+ */
 export function Drawer({ open, onClose, title, children }: DrawerProps) {
   const panel = useRef<HTMLDivElement>(null)
 
@@ -25,7 +30,7 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
     }
   }, [open, onClose])
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -43,7 +48,7 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
             aria-modal="true"
             aria-label={title}
             tabIndex={-1}
-            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[460px] flex-col bg-surface text-ink shadow-drawer outline-none sm:rounded-l-3xl"
+            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[460px] flex-col bg-surface pb-[env(safe-area-inset-bottom)] text-ink shadow-drawer outline-none sm:rounded-l-3xl"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -60,6 +65,7 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
           </motion.aside>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

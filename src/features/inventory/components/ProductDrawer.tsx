@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { LuArrowDownRight as ArrowDownRight, LuArrowUpRight as ArrowUpRight, LuImagePlus as ImagePlus, LuLoaderCircle as Loader2, LuSlidersHorizontal as SlidersHorizontal, LuTrash2 as Trash2 } from 'react-icons/lu'
+import { LuArrowDownRight as ArrowDownRight, LuArrowUpRight as ArrowUpRight, LuExternalLink as ExternalLink, LuImagePlus as ImagePlus, LuLoaderCircle as Loader2, LuPencil as Pencil, LuStar as Star, LuPlus as Plus, LuSlidersHorizontal as SlidersHorizontal, LuStore as StoreIcon, LuTrash2 as Trash2, LuX as X } from 'react-icons/lu'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { CategoryTag, StockPips } from '@/components/ui/Board'
@@ -8,12 +8,13 @@ import { Drawer } from '@/components/ui/Drawer'
 import { Shimmer } from '@/components/ui/Skeleton'
 import { toast } from '@/components/ui/Toaster'
 import { formatAge, formatDate, formatPrice, formatTime } from '@/lib/format'
-import { productsApi } from '@/services/api'
+import { DETAILS_LIMITS, productsApi } from '@/services/api'
 import { useCan } from '@/stores/auth'
 import { useInventory } from '@/stores/inventory'
-import type { StockMovement } from '@/types'
+import type { ProductRow, StockMovement } from '@/types'
 import { ProductThumb } from './ProductThumb'
 import { PricingPanel } from './PricingPanel'
+import { EditProductForm } from './EditProductForm'
 
 export function ProductDrawer({ productId, onClose }: { productId: string | null; onClose: () => void }) {
   const product = useInventory((s) => s.products.find((p) => p.id === productId))
@@ -24,8 +25,10 @@ export function ProductDrawer({ productId, onClose }: { productId: string | null
   const [moves, setMoves] = useState<StockMovement[] | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [adjusting, setAdjusting] = useState(false)
+  const [editing, setEditing] = useState(false)
   const canAdjust = useCan('stock.ajustar')
   const canDelete = useCan('productos.eliminar')
+  const canEdit = useCan('productos.crear')
 
   useEffect(() => {
     setMoves(null)
@@ -41,6 +44,8 @@ export function ProductDrawer({ productId, onClose }: { productId: string | null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id, product?.updatedAt])
 
+  useEffect(() => setEditing(false), [productId])
+
   const cat = product && categories.find((c) => c.id === product.categoryId)
   const supplier = product && suppliers.find((s) => s.id === product.supplierId)
 
@@ -50,16 +55,29 @@ export function ProductDrawer({ productId, onClose }: { productId: string | null
       {product && (
         <div className="flex flex-1 flex-col overflow-y-auto">
           <div className="p-5 pt-16 sm:p-6 sm:pt-16">
-            <PhotoGallery productId={product.id} photos={product.photos} disabled={!!product.syncState} fallback={<ProductThumb category={cat} size="xl" />} />
+            <PhotoGallery productId={product.id} photos={product.photos} disabled={!!product.syncState || !canEdit} fallback={<ProductThumb category={cat} size="xl" />} />
           </div>
           <div className="flex flex-col gap-6 px-5 pb-6 sm:px-6">
-            <div className="flex flex-col gap-2">
-              <CategoryTag category={cat} />
-              <h2 className="text-2xl font-black leading-tight tracking-tight">{product.name}</h2>
-              <p className="num text-sm font-semibold text-ink-soft">
-                {product.sku} · {product.brand || 'Sin marca'}
-              </p>
-            </div>
+            <AnimatePresence initial={false} mode="wait">
+              {editing ? (
+                <EditProductForm key="edit" product={product} onDone={() => setEditing(false)} />
+              ) : (
+                <motion.div key="view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-3">
+                  <div className="flex min-w-0 flex-1 flex-col gap-2">
+                    <CategoryTag category={cat} />
+                    <h2 className="text-2xl font-black leading-tight tracking-tight">{product.name}</h2>
+                    <p className="num text-sm font-semibold text-ink-soft">
+                      {product.sku} · {product.brand || 'Sin marca'}
+                    </p>
+                  </div>
+                  {canEdit && !product.syncState && (
+                    <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>
+                      <Pencil className="size-4" aria-hidden /> Editar datos
+                    </Button>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-2 rounded-2xl bg-sunken p-4">
@@ -117,6 +135,8 @@ export function ProductDrawer({ productId, onClose }: { productId: string | null
               ))}
             </dl>
 
+            <StoreDetails key={product.id} product={product} disabled={!canEdit || !!product.syncState} />
+
             <section className="flex flex-col gap-3">
               <div className="flex items-baseline justify-between">
                 <h3 className="font-black">Historial de stock</h3>
@@ -172,9 +192,27 @@ export function ProductDrawer({ productId, onClose }: { productId: string | null
 /** Foto principal, tira de miniaturas y botón para sumar fotos desde la cámara o el disco. */
 function PhotoGallery({ productId, photos, disabled, fallback }: { productId: string; photos: string[]; disabled: boolean; fallback: React.ReactNode }) {
   const addPhoto = useInventory((s) => s.addPhoto)
+  const update = useInventory((s) => s.update)
   const [active, setActive] = useState(0)
   const [busy, setBusy] = useState(false)
-  const main = photos[Math.min(active, photos.length - 1)]
+  const [confirmRemove, setConfirmRemove] = useState(false)
+  const index = Math.min(active, photos.length - 1)
+  const main = photos[index]
+
+  /** La primera foto es la que se ve en la tienda y en el inventario. */
+  const savePhotos = async (next: string[], ok: string, focus: number) => {
+    setBusy(true)
+    try {
+      await update(productId, { photos: next })
+      setActive(focus)
+      setConfirmRemove(false)
+      toast({ tone: 'ok', text: ok })
+    } catch (e) {
+      toast({ tone: 'error', text: e instanceof Error ? e.message : 'No se pudieron guardar las fotos.' })
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const upload = async (file?: File) => {
     if (!file) return
@@ -229,11 +267,40 @@ function PhotoGallery({ productId, photos, disabled, fallback }: { productId: st
           transition={{ duration: 0.18 }}
         />
       </AnimatePresence>
+      {!disabled && (
+        <div className="flex flex-wrap items-center gap-2">
+          {index === 0 ? (
+            <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-ink-soft">
+              <Star className="size-3.5" aria-hidden /> Foto principal (la que se ve en la tienda)
+            </span>
+          ) : (
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => void savePhotos([main, ...photos.filter((_, i) => i !== index)], 'Ahora es la foto principal', 0)}>
+              <Star className="size-4" aria-hidden /> Hacer principal
+            </Button>
+          )}
+          <span className="ml-auto" />
+          {confirmRemove ? (
+            <>
+              <span className="text-sm font-bold">¿Quitar esta foto?</span>
+              <Button size="sm" variant="danger" autoFocus disabled={busy} onClick={() => void savePhotos(photos.filter((_, i) => i !== index), 'Foto quitada', 0)}>
+                Sí, quitar
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setConfirmRemove(false)}>
+                No
+              </Button>
+            </>
+          ) : (
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirmRemove(true)}>
+              <Trash2 className="size-4" aria-hidden /> Quitar foto
+            </Button>
+          )}
+        </div>
+      )}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {photos.map((src, i) => (
           <button
             key={src}
-            onClick={() => setActive(i)}
+            onClick={() => (setActive(i), setConfirmRemove(false))}
             aria-label={`Ver foto ${i + 1}`}
             aria-pressed={i === active}
             className={clsx('size-16 shrink-0 overflow-hidden rounded-xl ring-offset-2 ring-offset-surface', i === active ? 'ring-[3px] ring-turquesa' : 'opacity-80 hover:opacity-100')}
@@ -244,6 +311,176 @@ function PhotoGallery({ productId, photos, disabled, fallback }: { productId: st
         {addButton}
       </div>
     </div>
+  )
+}
+
+/**
+ * Ficha para la tienda: lo que el cliente lee al abrir el juguete.
+ * Se escribe como se habla; las características se suman con Enter
+ * (o pegando una lista: cada renglón es una).
+ */
+function StoreDetails({ product, disabled }: { product: ProductRow; disabled: boolean }) {
+  const saveDetails = useInventory((s) => s.saveDetails)
+  const [desc, setDesc] = useState(product.description ?? '')
+  const [feats, setFeats] = useState<string[]>(product.features ?? [])
+  const [draft, setDraft] = useState('')
+  const [busy, setBusy] = useState(false)
+  const savedDesc = product.description ?? ''
+  const savedFeats = product.features ?? []
+  const dirty = desc.trim() !== savedDesc || feats.join('\n') !== savedFeats.join('\n') || draft.trim() !== ''
+  const full = feats.length >= DETAILS_LIMITS.features
+
+  const addLines = (text: string) => {
+    const lines = text
+      .split(/\r?\n|•/)
+      .map((l) => l.replace(/^[\s\-*·]+/, '').trim().slice(0, DETAILS_LIMITS.feature))
+      .filter(Boolean)
+    if (!lines.length) return
+    setFeats((f) => [...f, ...lines.filter((l) => !f.includes(l))].slice(0, DETAILS_LIMITS.features))
+    setDraft('')
+  }
+
+  const submit = async () => {
+    const all = (draft.trim() ? [...feats, draft.trim()] : feats).slice(0, DETAILS_LIMITS.features)
+    setBusy(true)
+    try {
+      await saveDetails(product.id, desc, all)
+      setFeats(all.map((f) => f.trim()).filter(Boolean))
+      setDesc(desc.trim())
+      setDraft('')
+      toast({ tone: 'ok', text: 'Ficha guardada. Ya se ve en la tienda.' })
+    } catch (e) {
+      toast({ tone: 'error', text: e instanceof Error ? e.message : 'No se pudo guardar la ficha.' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const field =
+    'rounded-xl border-2 border-line bg-surface px-3 font-bold placeholder:font-semibold placeholder:text-ink-soft/80 focus:border-turquesa focus:shadow-focus focus:outline-none disabled:opacity-60'
+
+  return (
+    <section className="flex flex-col gap-4 rounded-2xl border-2 border-line p-4" aria-labelledby="ficha-title">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <StoreIcon className="size-5 text-ink-soft" aria-hidden />
+          <h3 id="ficha-title" className="font-black">
+            Ficha para la tienda
+          </h3>
+        </div>
+        {product.stock > 0 && (
+          <a
+            href={`/tienda/juguete/${product.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-sm font-extrabold text-turquesa-ink underline-offset-2 hover:underline"
+          >
+            Ver en la tienda <ExternalLink className="size-3.5" aria-hidden />
+          </a>
+        )}
+      </div>
+      {product.stock <= 0 && <p className="-mt-2 text-xs font-bold text-ink-soft">Sin stock no aparece en la tienda; la ficha queda guardada para cuando vuelva.</p>}
+
+      <label className="flex flex-col gap-1.5">
+        <span className="flex justify-between text-xs font-extrabold text-ink-soft">
+          <span>Descripción</span>
+          <span className="num">
+            {desc.length}/{DETAILS_LIMITS.description}
+          </span>
+        </span>
+        <textarea
+          value={desc}
+          disabled={disabled}
+          maxLength={DETAILS_LIMITS.description}
+          rows={4}
+          onChange={(e) => setDesc(e.target.value)}
+          placeholder="Ej.: Dinosaurio que camina y ruge. Ideal para jugar en el piso; las pilas vienen incluidas."
+          className={clsx(field, 'resize-y py-2.5 leading-snug')}
+        />
+      </label>
+
+      <div className="flex flex-col gap-2">
+        <span className="flex justify-between text-xs font-extrabold text-ink-soft">
+          <span>Características</span>
+          <span className="num">
+            {feats.length}/{DETAILS_LIMITS.features}
+          </span>
+        </span>
+        {feats.length > 0 && (
+          <ul className="flex flex-wrap gap-2">
+            {feats.map((f, i) => (
+              <li key={f + i} className="inline-flex max-w-full items-center gap-1 rounded-full bg-sunken py-1 pl-3 pr-1 text-sm font-bold">
+                <span className="truncate">{f}</span>
+                {!disabled && (
+                  <button
+                    type="button"
+                    onClick={() => setFeats((all) => all.filter((_, j) => j !== i))}
+                    aria-label={`Quitar «${f}»`}
+                    className="grid size-6 shrink-0 place-items-center rounded-full text-ink-soft hover:bg-line hover:text-ink"
+                  >
+                    <X className="size-3.5" aria-hidden />
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        {!disabled && (
+          <>
+            <div className="flex gap-2">
+              <input
+                value={draft}
+                disabled={full}
+                maxLength={DETAILS_LIMITS.feature}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addLines(draft)
+                  }
+                }}
+                onPaste={(e) => {
+                  const text = e.clipboardData.getData('text')
+                  if (/\n/.test(text)) {
+                    e.preventDefault()
+                    addLines(text)
+                  }
+                }}
+                aria-label="Nueva característica"
+                placeholder={full ? 'Llegaste al máximo' : 'Ej.: Mide 30 cm (Enter para sumar)'}
+                className={clsx(field, 'h-11 min-w-0 flex-1')}
+              />
+              <Button size="sm" className="h-11" disabled={full || !draft.trim()} onClick={() => addLines(draft)}>
+                <Plus className="size-4" aria-hidden /> Sumar
+              </Button>
+            </div>
+            <p className="text-xs font-semibold text-ink-soft">Si pegas una lista, cada renglón se vuelve una característica.</p>
+          </>
+        )}
+        {disabled && !feats.length && <p className="text-sm font-semibold text-ink-soft">Sin características.</p>}
+      </div>
+
+      {!disabled && (
+        <div className="flex flex-wrap gap-2">
+          <Button variant="primary" size="sm" disabled={busy || !dirty} onClick={() => void submit()}>
+            {busy && <Loader2 className="size-4 animate-spin" />} Guardar ficha
+          </Button>
+          {dirty && !busy && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setDesc(savedDesc)
+                setFeats(savedFeats)
+                setDraft('')
+              }}
+            >
+              Descartar cambios
+            </Button>
+          )}
+        </div>
+      )}
+    </section>
   )
 }
 
