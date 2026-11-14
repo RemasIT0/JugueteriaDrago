@@ -70,7 +70,7 @@ export function HowToBuy({ categories, cartCount, address, onOpenCart }: { categ
       onPointerEnter={() => setHover(true)}
       onPointerLeave={() => setHover(false)}
     >
-      <h2 id="como-comprar-titulo" className="mt-14 font-display text-[2.2rem] leading-none sm:text-[2.8rem]">
+      <h2 id="como-comprar-titulo" className="font-medieval mt-14 text-[2.2rem] leading-none sm:text-[2.8rem]">
         Cómo comprar
       </h2>
       <p className="mt-3 font-semibold text-[rgb(var(--sw-sage))]">Toca cada paso para verlo.</p>

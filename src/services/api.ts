@@ -208,6 +208,21 @@ export const productsApi = {
     return structuredClone(p)
   },
 
+  /** Foto desde una dirección web (https). La imagen queda alojada donde está; se guarda solo el enlace. */
+  async addPhotoUrl(id: string, url: string): Promise<Product> {
+    const clean = url.trim()
+    if (!/^https:\/\/\S+$/i.test(clean) || clean.length > 2000) throw new ApiError(400, 'Pega una dirección que empiece con https://')
+    if (cloud) return rpc('product_add_photo', { p_id: id, p_url: clean })
+    requirePermission('productos.fotos')
+    const db = await loadDb()
+    const p = db.products.find((x) => x.id === id)
+    if (!p) throw new ApiError(404, 'El producto ya no existe')
+    if (p.photos.includes(clean)) throw new ApiError(409, 'Esa foto ya está cargada')
+    p.photos = [...p.photos, clean]
+    await save('products')
+    return structuredClone(p)
+  },
+
   /** Ficha para la tienda: descripción y características. Mismos límites que la base en la nube. */
   async setDetails(id: string, description: string, features: string[]): Promise<Product> {
     const desc = description.trim()

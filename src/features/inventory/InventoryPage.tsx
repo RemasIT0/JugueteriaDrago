@@ -121,7 +121,7 @@ export default function InventoryPage() {
                 aria-pressed={level === l}
                 onClick={() => setLevel(level === l ? null : l)}
                 className={clsx(
-                  'num flex h-10 flex-1 items-center justify-center gap-2 rounded-lg px-3 text-sm font-extrabold transition-colors lg:flex-none',
+                  'num flex h-10 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg px-1.5 text-xs font-extrabold transition-colors sm:gap-2 sm:px-3 sm:text-sm lg:flex-none',
                   level === l ? 'bg-surface text-ink shadow-card' : 'text-ink-soft hover:text-ink',
                 )}
               >

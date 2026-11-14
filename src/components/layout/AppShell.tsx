@@ -1,8 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { LuWallet, LuBadgePercent, LuShoppingBag, LuCalendarHeart, LuScanBarcode, LuChartColumn, LuBoxes, LuExternalLink, LuHistory, LuKeyRound as KeyRound, LuLogOut as LogOut, LuMenu as Menu, LuMoon as Moon, LuReceiptText, LuShapes, LuSun as Sun, LuTruck, LuUsers, LuZap } from 'react-icons/lu'
+import { LuCircleHelp as HelpCircle, LuExternalLink, LuKeyRound as KeyRound, LuLogOut as LogOut, LuMenu as Menu, LuMoon as Moon, LuSun as Sun } from 'react-icons/lu'
 import { SiDragonframe } from 'react-icons/si'
-import type { IconType } from 'react-icons'
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { NavLink, useLocation, useNavigate, useOutlet } from 'react-router-dom'
 import clsx from 'clsx'
 import { Button, Kbd } from '@/components/ui/Button'
@@ -10,7 +9,7 @@ import { Drawer } from '@/components/ui/Drawer'
 import { Field } from '@/components/ui/Field'
 import { toast, Toaster } from '@/components/ui/Toaster'
 import { PasswordInput } from '@/features/auth/PasswordInput'
-import { can, ROLE_LABEL, type Permission } from '@/lib/permissions'
+import { can, ROLE_LABEL } from '@/lib/permissions'
 import { changeOwnPassword, validatePassword } from '@/services/auth'
 import { useAuth } from '@/stores/auth'
 import { useHotkeys } from '@/hooks/useHotkeys'
@@ -19,11 +18,13 @@ import { useLoteSpaces } from '@/features/quick-add/useLoteSpaces'
 import { BOARD } from '@/lib/colors'
 import { STORE } from '@/lib/config'
 import { useTheme } from '@/stores/theme'
-import type { BoardColor } from '@/types'
 import { AlertsBell } from '@/features/alerts/AlertsCenter'
 import { AssistantWidget } from '@/features/assistant/AssistantWidget'
 import { AnimatedBackdrop } from './AnimatedBackdrop'
 import { usePendingOrders } from '@/stores/orders'
+import { guideSeen, useGuide } from '@/stores/guide'
+import { Guide } from '@/features/guide/Guide'
+import { NAV, type NavItem } from './nav'
 
 /** Número de pedidos online por retirar, junto a «Pedidos». */
 function OrdersBadge({ className }: { className?: string }) {
@@ -35,25 +36,6 @@ function OrdersBadge({ className }: { className?: string }) {
     </span>
   )
 }
-
-type NavItem = { to: string; label: string; /** Nombre corto para la barra inferior del celular. */ short?: string; icon: IconType; perm: Permission; color: BoardColor; group: string; admin?: boolean }
-
-/** El menú es un tablero: cada sección es una casilla de su color, unidas por un camino. */
-const NAV: NavItem[] = [
-  { to: '/', label: 'Inventario', icon: LuBoxes, perm: 'inventario.ver', color: 'turquesa', group: 'Tienda' },
-  { to: '/vender', label: 'Vender', icon: LuScanBarcode, perm: 'ventas.crear', color: 'hoja', group: 'Tienda' },
-  { to: '/pedidos', label: 'Pedidos online', short: 'Pedidos', icon: LuShoppingBag, perm: 'pedidos.gestionar', color: 'cielo', group: 'Tienda' },
-  { to: '/carga', label: 'Cargar productos', short: 'Cargar', icon: LuZap, perm: 'productos.crear', color: 'sol', group: 'Tienda' },
-  { to: '/temporadas', label: 'Temporadas', icon: LuCalendarHeart, perm: 'temporadas.ver', color: 'coral', group: 'Tienda' },
-  { to: '/caja', label: 'Cierre de caja', short: 'Caja', icon: LuWallet, perm: 'caja.cerrar', color: 'sol', group: 'Negocio' },
-  { to: '/reportes', label: 'Reportes', icon: LuChartColumn, perm: 'reportes.ver', color: 'cielo', group: 'Negocio' },
-  { to: '/facturacion', label: 'Facturación', icon: LuReceiptText, perm: 'facturacion.ver', color: 'hoja', group: 'Negocio' },
-  { to: '/descuentos', label: 'Descuentos', icon: LuBadgePercent, perm: 'descuentos.gestionar', color: 'coral', group: 'Negocio' },
-  { to: '/categorias', label: 'Categorías', icon: LuShapes, perm: 'categorias.ver', color: 'lila', group: 'Catálogo' },
-  { to: '/proveedores', label: 'Proveedores', icon: LuTruck, perm: 'proveedores.ver', color: 'cielo', group: 'Catálogo' },
-  { to: '/usuarios', label: 'Usuarios', icon: LuUsers, perm: 'usuarios.gestionar', color: 'lila', group: 'Administración', admin: true },
-  { to: '/actividad', label: 'Actividad', icon: LuHistory, perm: 'actividad.ver', color: 'turquesa', group: 'Administración', admin: true },
-]
 
 function Logo() {
   return (
@@ -109,6 +91,14 @@ export function AppShell() {
   const { theme, toggle } = useTheme()
   const user = useAuth((s) => s.user)
   const [account, setAccount] = useState(false)
+  const startGuide = useGuide((s) => s.start)
+
+  // La primera vez que cada persona entra, se le ofrece la guía de uso.
+  useEffect(() => {
+    if (!user || guideSeen(user.id)) return
+    const t = setTimeout(startGuide, 700)
+    return () => clearTimeout(t)
+  }, [user, startGuide])
   const items = NAV.filter((n) => can(user?.role, n.perm))
   // En el celular caben 4 secciones; el resto va en «Más».
   const mobileMain = items.filter((n) => !n.admin).slice(0, 4)
@@ -122,7 +112,9 @@ export function AppShell() {
       <aside className="sticky top-0 z-20 hidden h-dvh w-64 shrink-0 flex-col gap-1 overflow-y-auto bg-rail px-3 py-6 text-rail-ink lg:flex">
         <div className="mb-6 flex items-center justify-between pl-3 text-white">
           <Logo />
-          <AlertsBell variant="rail" />
+          <span data-tour="alerts">
+            <AlertsBell variant="rail" />
+          </span>
         </div>
         <nav aria-label="Principal" className="relative flex flex-col">
           {items.map((item, i) => (
@@ -132,6 +124,7 @@ export function AppShell() {
             </Fragment>
           ))}
           <a
+            data-tour="store-link"
             href="/tienda"
             target="_blank"
             rel="noreferrer"
@@ -139,10 +132,18 @@ export function AppShell() {
           >
             <LuExternalLink className="size-4" aria-hidden /> Ver tienda online
           </a>
+          <button
+            data-tour="guide-button"
+            onClick={startGuide}
+            className="flex h-11 items-center gap-3 rounded-xl px-3 text-left text-sm font-extrabold text-rail-ink transition-colors hover:bg-rail-hover hover:text-white"
+          >
+            <HelpCircle className="size-4" aria-hidden /> Guía de uso
+          </button>
         </nav>
         <div className="mt-auto flex flex-col gap-3 pt-6">
           {can(user?.role, 'productos.crear') && <LoteMini />}
           <button
+            data-tour="account"
             onClick={() => setAccount(true)}
             className="mx-1 flex items-center gap-3 rounded-2xl px-2.5 py-2 text-left transition-colors hover:bg-rail-hover"
           >
@@ -161,8 +162,11 @@ export function AppShell() {
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-rail px-4 text-white lg:hidden">
           <Logo />
           <span className="flex items-center gap-1">
-          <AlertsBell variant="header" />
+          <span data-tour="alerts">
+            <AlertsBell variant="header" />
+          </span>
           <button
+            data-tour="account"
             onClick={() => setAccount(true)}
             className="grid size-10 place-items-center rounded-full bg-sol text-sm font-black text-on-fill"
             aria-label="Cuenta y más opciones"
@@ -194,6 +198,7 @@ export function AppShell() {
           {mobileMain.map(({ to, label, short, icon: Icon }) => (
             <NavLink
               key={to}
+              data-tour={`nav:${to}`}
               to={to}
               end={to === '/'}
               className={({ isActive }) =>
@@ -212,6 +217,7 @@ export function AppShell() {
             </NavLink>
           ))}
           <button
+            data-tour="more"
             onClick={() => setAccount(true)}
             className="flex h-16 flex-col items-center justify-center gap-1 text-[0.6875rem] font-extrabold text-ink-soft"
           >
@@ -228,8 +234,10 @@ export function AppShell() {
         extra={items.filter((n) => !mobileMain.includes(n))}
         theme={theme}
         toggleTheme={toggle}
+        onGuide={() => (setAccount(false), startGuide())}
       />
       <AssistantWidget />
+      <Guide />
       <Toaster />
     </div>
   )
@@ -239,7 +247,7 @@ export function AppShell() {
 function BoardLink({ item, pathConnect }: { item: NavItem; pathConnect: boolean }) {
   const { to, label, icon: Icon, color } = item
   return (
-    <NavLink to={to} end={to === '/'} className="group relative flex items-center gap-3 rounded-2xl py-1.5 pl-2 pr-2 font-extrabold">
+    <NavLink to={to} end={to === '/'} data-tour={`nav:${to}`} className="group relative flex items-center gap-3 rounded-2xl py-1.5 pl-2 pr-2 font-extrabold">
       {({ isActive }) => (
         <>
           {pathConnect && <span className="absolute left-[1.55rem] top-[2.6rem] h-[1.2rem] border-l-[3px] border-dotted border-rail-ink/30" aria-hidden />}
@@ -277,12 +285,14 @@ function AccountDrawer({
   extra,
   theme,
   toggleTheme,
+  onGuide,
 }: {
   open: boolean
   onClose: () => void
   extra: NavItem[]
   theme: 'light' | 'dark'
   toggleTheme: () => void
+  onGuide: () => void
 }) {
   const { user, logout } = useAuth()
   const [current, setCurrent] = useState('')
@@ -330,6 +340,10 @@ function AccountDrawer({
             ))}
           </nav>
         )}
+
+        <button onClick={onGuide} className="flex h-12 items-center gap-3 rounded-xl bg-sunken px-4 font-extrabold">
+          <HelpCircle className="size-5" aria-hidden /> Guía de uso
+        </button>
 
         <button onClick={toggleTheme} className="flex h-12 items-center gap-3 rounded-xl bg-sunken px-4 font-extrabold">
           {theme === 'dark' ? <Sun className="size-5" aria-hidden /> : <Moon className="size-5" aria-hidden />}

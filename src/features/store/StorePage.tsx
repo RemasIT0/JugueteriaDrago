@@ -1,5 +1,5 @@
 import { AnimatePresence, MotionConfig, motion, useAnimationControls, useScroll, useTransform } from 'framer-motion'
-import { LuArrowDown, LuArrowRight, LuCalendarHeart, LuCheck, LuLoaderCircle, LuMinus, LuPlus, LuPrinter, LuSearch, LuShoppingBag, LuStore, LuTicket, LuTrash2, LuX } from 'react-icons/lu'
+import { LuArrowDown, LuArrowRight, LuCalendarHeart, LuCheck, LuDownload, LuLoaderCircle, LuMinus, LuPlus, LuSearch, LuShoppingBag, LuStore, LuTicket, LuTrash2, LuX } from 'react-icons/lu'
 import { SiDragonframe } from 'react-icons/si'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
@@ -10,11 +10,12 @@ import { formatAge, formatPrice } from '@/lib/format'
 import { priceFor, round2 } from '@/lib/pricing'
 import { discountsApi, publicCatalog, salesApi, settingsApi } from '@/services/commerce'
 import { categoryIcon } from '@/features/inventory/components/ProductThumb'
-import { printInvoice } from '@/features/billing/invoiceHtml'
+import { downloadInvoicePdf } from '@/features/billing/invoicePdf'
 import type { BoardColor, Category, Discount, InvoiceType, PaymentMethod, Sale, Season } from '@/types'
 import { useCart } from './cart'
 import { HowToBuy } from './HowToBuy'
 import { ToyDetail, toyFromLocation, toyPath } from './ToyDetail'
+import { Battlement, DragonJaw, RuinedCastle, RuinWall, TatteredBanner } from './Castle'
 import { CardScene, Embers, ValleyScene } from './ValleyScene'
 import './store.css'
 
@@ -160,7 +161,7 @@ export default function StorePage() {
     if (!data)
       return (
         <div className="mx-auto grid max-w-[1312px] gap-10 px-4 pt-16 sm:px-8 lg:grid-cols-[1.15fr_1fr] lg:px-0" aria-busy="true" aria-label="Cargando juguete">
-          <div className="organic aspect-[4/3] animate-pulse bg-[rgb(var(--sw-surface))]" />
+          <div className="jaw-window aspect-[4/3] animate-pulse bg-[rgb(var(--sw-surface))]" />
           <div className="flex flex-col gap-4">
             <div className="h-12 w-3/4 animate-pulse rounded-full bg-[rgb(var(--sw-surface))]" />
             <div className="h-10 w-1/3 animate-pulse rounded-full bg-[rgb(var(--sw-surface))]" />
@@ -199,7 +200,7 @@ export default function StorePage() {
           related.length > 0 && (
             <section className="mt-20" aria-labelledby="relacionados">
               <Rule at={0.6} />
-              <h2 id="relacionados" className="mt-10 font-display text-[2rem] leading-none text-[rgb(var(--sw-moss))]">
+              <h2 id="relacionados" className="font-medieval mt-10 text-[2rem] leading-none text-[rgb(var(--sw-moss))]">
                 {related.every((p) => p.categoryId === toy.categoryId) && category ? `Más de ${category.name}` : 'También te puede gustar'}
               </h2>
               <ul className="mt-10 grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-8 lg:grid-cols-3 lg:gap-x-12">
@@ -268,14 +269,21 @@ export default function StorePage() {
       </header>
 
       {toyId ? (
-        renderToy()
+        <div className="store-keep">
+          {renderToy()}
+          <Footer onCart={() => setCartOpen(true)} homeLink={homeLink} />
+        </div>
       ) : (
       <>
       <Hero next={next} />
 
-      <main id="juguetes" className="mx-auto max-w-[1312px] scroll-mt-20 px-4 pb-20 pt-14 sm:px-8 lg:px-0">
-        <Rule at={0.3} />
-        <nav aria-label="Categorías" className="-mx-4 flex gap-8 overflow-x-auto px-4 py-6 sm:mx-0 sm:justify-around sm:px-0">
+      <div className="store-keep">
+      <RuinedCastle />
+      <main id="juguetes" className="mx-auto max-w-[1312px] scroll-mt-20 px-4 pb-20 pt-6 sm:px-8 lg:px-0">
+        {/* Los estandartes cuelgan de una muralla en ruinas. */}
+        <nav aria-label="Categorías" className="relative -mx-4 sm:mx-0">
+          <Battlement seed={3} className="pointer-events-none absolute inset-x-0 top-0" />
+          <div className="relative flex gap-3 overflow-x-auto px-4 pb-4 pt-8 sm:justify-center sm:gap-4 sm:px-0 sm:pt-10">
           <Tab on={!cat} onClick={() => setCat(null)}>
             Todos
           </Tab>
@@ -284,8 +292,8 @@ export default function StorePage() {
               {c.name}
             </Tab>
           ))}
+          </div>
         </nav>
-        <Rule at={1.4} />
 
         {data && (
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
@@ -324,7 +332,7 @@ export default function StorePage() {
             <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-8 lg:grid-cols-3 lg:gap-x-12">
               {Array.from({ length: 6 }, (_, i) => (
                 <div key={i} className="flex flex-col gap-4">
-                  <div className="organic aspect-[16/10] animate-pulse bg-[rgb(var(--sw-surface))]" />
+                  <div className="jaw-window aspect-[4/3] animate-pulse bg-[rgb(var(--sw-surface))]" />
                   <div className="h-6 w-2/3 animate-pulse rounded-full bg-[rgb(var(--sw-surface))]" />
                 </div>
               ))}
@@ -372,9 +380,10 @@ export default function StorePage() {
         <Rule at={0.9} />
       </div>
       <HowToBuy categories={tabs} cartCount={count} address={address} onOpenCart={() => setCartOpen(true)} />
+      <Footer onCart={() => setCartOpen(true)} homeLink={homeLink} />
+      </div>
       </>
       )}
-      <Footer onCart={() => setCartOpen(true)} homeLink={homeLink} />
 
       <CartPanel
         open={cartOpen}
@@ -415,16 +424,9 @@ function scrollToSection(id: string, animated: boolean) {
   return true
 }
 
-/** Separador: línea fina cortada por un punto (at = dónde cae el punto, de 0 a 2). */
-function Rule({ at = 1 }: { at?: number }) {
-  const line = { initial: { scaleX: 0 }, whileInView: { scaleX: 1 }, viewport: { once: true, amount: 1 }, transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] } } as const
-  return (
-    <div className="flex items-center gap-3.5" aria-hidden>
-      <motion.span {...line} className="h-px origin-right bg-[rgb(var(--sw-line))]" style={{ flex: at }} />
-      <motion.span initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ type: 'spring', stiffness: 400, damping: 14 }} className="size-2 shrink-0 rounded-full bg-[rgb(var(--sw-rim))]" />
-      <motion.span {...line} className="h-px origin-left bg-[rgb(var(--sw-line))]" style={{ flex: 2 - at }} />
-    </div>
-  )
+/** Separador: el coronamiento de una muralla vieja, con almenas caídas y musgo. `at` cambia cuáles faltan. */
+function Rule({ at = 1, small = false }: { at?: number; small?: boolean }) {
+  return <Battlement seed={Math.round(at * 10) + 1} className={small ? '!h-5' : undefined} />
 }
 
 /** Brasa que viaja en arco de la tarjeta al carrito. */
@@ -533,21 +535,27 @@ function Hero({ next }: { next: { s: Season; days: number } | null }) {
   )
 }
 
+/** Estandarte de tela vieja colgado de la muralla: el elegido es carmesí y baja un poco, como si pesara. */
 function Tab({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button
+    <motion.button
       onClick={onClick}
       aria-pressed={on}
-      className={clsx('flex shrink-0 items-center gap-3 font-display text-[1.65rem] leading-none transition-colors', on ? 'text-[rgb(var(--sw-ink))]' : 'text-[rgb(var(--sw-moss))] hover:text-[rgb(var(--sw-ink))]')}
+      animate={{ y: on ? 8 : 0 }}
+      whileHover={{ rotate: on ? 0 : -3 }}
+      transition={{ type: 'spring', stiffness: 320, damping: 14 }}
+      style={{ transformOrigin: '50% 0%' }}
+      className={clsx(
+        'font-medieval relative shrink-0 px-5 pb-8 pt-5 text-[1.15rem] leading-none sm:px-6 sm:text-[1.35rem]',
+        on ? 'text-[rgb(var(--sw-ink))]' : 'text-[rgb(var(--sw-moss))] hover:text-[rgb(var(--sw-ink))]',
+      )}
     >
-      <span className="relative size-2" aria-hidden>
-        {on && <motion.span layoutId="tab-dot-l" transition={{ type: 'spring', stiffness: 420, damping: 32 }} className="absolute inset-0 rounded-full bg-current" />}
-      </span>
-      {children}
-      <span className="relative size-2" aria-hidden>
-        {on && <motion.span layoutId="tab-dot-r" transition={{ type: 'spring', stiffness: 420, damping: 32 }} className="absolute inset-0 rounded-full bg-current" />}
-      </span>
-    </button>
+      <TatteredBanner active={on} seed={String(children).length} />
+      {/* cuerdas que lo cuelgan de la muralla */}
+      <span className="absolute left-4 top-[-10px] h-3 w-0.5 bg-[#3A2E22]" aria-hidden />
+      <span className="absolute right-4 top-[-10px] h-3 w-0.5 bg-[#3A2E22]" aria-hidden />
+      <span className="relative whitespace-nowrap">{children}</span>
+    </motion.button>
   )
 }
 
@@ -604,14 +612,15 @@ function ProductCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.94 }}
       transition={{ type: 'spring', stiffness: 220, damping: 24, delay: Math.min(i, 9) * 0.04 }}
-      className="group flex flex-col"
+      className="group relative"
     >
+      <div className="keep-panel relative flex h-full flex-col rounded-[20px] p-3 sm:p-5">
       <a
         href={toyPath(p.id)}
         onClick={open}
         tabIndex={-1}
         aria-hidden
-        className={clsx('relative block aspect-[16/10] overflow-hidden border-2 border-[rgb(var(--sw-rim))] bg-[rgb(var(--sw-raised))] transition-colors group-hover:border-[rgb(var(--sw-moss))]', i % 2 ? 'organic-alt' : 'organic')}
+        className="jaw-window relative block aspect-[4/3] overflow-hidden bg-[rgb(var(--sw-raised))]"
       >
         {p.photos[0] ? (
           <img src={p.photos[0]} alt={p.name} className="size-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
@@ -632,13 +641,18 @@ function ProductCard({
           </div>
         )}
         {price.percent > 0 && (
-          <span className="num absolute right-3 top-3 grid size-14 -rotate-12 place-items-center rounded-full bg-coral text-sm font-black text-on-fill shadow-[0_6px_14px_-6px_rgb(0_0_0/0.6)]">
+          <span className="num absolute right-3 top-[22%] z-10 grid size-14 -rotate-12 place-items-center rounded-full bg-coral text-sm font-black text-on-fill shadow-[0_6px_14px_-6px_rgb(0_0_0/0.6)]">
             −{price.percent}%
           </span>
         )}
-        {p.stock <= 3 && <span className="absolute bottom-3 left-3 rounded-full bg-[rgb(var(--sw-ground)/0.88)] px-3 py-1 text-xs font-black text-[rgb(var(--sw-ember))]">¡Últimas {p.stock}!</span>}
+        {p.stock <= 3 && (
+          <span className="absolute bottom-[18%] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-[rgb(var(--sw-ground)/0.9)] px-3 py-1 text-xs font-black text-[rgb(var(--sw-ember))]">
+            ¡Últimas {p.stock}!
+          </span>
+        )}
+        <DragonJaw seed={i + 3} />
       </a>
-      <h3 className="mt-5 line-clamp-2 font-display text-[1.2rem] leading-tight sm:text-[1.55rem]">
+      <h3 className="font-medieval mt-4 line-clamp-2 text-[1.15rem] leading-tight sm:mt-5 sm:text-[1.5rem]">
         <a href={toyPath(p.id)} onClick={open} className="decoration-[rgb(var(--sw-moss))] decoration-2 underline-offset-4 hover:underline">
           {p.name}
         </a>
@@ -647,8 +661,8 @@ function ProductCard({
         {category?.name ?? 'Juguete'} · {formatAge(p.ageMin)}
         {p.batteries && ' · usa pilas'}
       </p>
-      <p className="mt-3 flex items-baseline gap-2">
-        <span className="num font-display text-[1.45rem] leading-none sm:text-[1.7rem]">{formatPrice(price.final)}</span>
+      <p className="mb-4 mt-3 flex flex-wrap items-baseline gap-x-2">
+        <span className="num font-display text-[1.35rem] leading-none sm:text-[1.65rem]">{formatPrice(price.final)}</span>
         {price.percent > 0 && <span className="num text-sm font-bold text-[rgb(var(--sw-sage))] line-through">{formatPrice(price.list)}</span>}
       </p>
       <motion.button
@@ -661,12 +675,13 @@ function ProductCard({
         initial={pop ? { x: 6 } : false}
         animate={{ x: 0 }}
         transition={{ type: 'spring', stiffness: 500, damping: 14 }}
-        className="mt-5 flex items-center justify-between gap-3 border-t border-[rgb(var(--sw-line))] pt-4 text-left font-display text-[1.05rem] transition-colors hover:text-[rgb(var(--sw-fire))] disabled:cursor-not-allowed disabled:text-[rgb(var(--sw-sage))] sm:text-[1.2rem]"
+        className="mt-auto flex items-center justify-between gap-3 border-t-2 border-dashed border-[rgb(var(--sw-line)/0.6)] pt-4 text-left font-display text-[1rem] transition-colors hover:text-[rgb(var(--sw-fire))] disabled:cursor-not-allowed disabled:text-[rgb(var(--sw-sage))] sm:text-[1.15rem]"
         aria-label={left <= 0 ? `Sin más stock de ${p.name}` : `Agregar ${p.name} al carrito`}
       >
         <span>{left <= 0 ? (inCart ? `Tienes ${inCart} en el carrito` : 'Sin stock') : inCart ? `En el carrito: ${inCart} · sumar otro` : 'Agregar al carrito'}</span>
         {left > 0 && (inCart ? <LuPlus className="size-5 shrink-0" strokeWidth={3} aria-hidden /> : <LuArrowRight className="size-5 shrink-0 transition-transform group-hover:translate-x-1" strokeWidth={3} aria-hidden />)}
       </motion.button>
+      </div>
     </motion.li>
   )
 }
@@ -674,7 +689,8 @@ function ProductCard({
 function Footer({ onCart, homeLink }: { onCart: () => void; homeLink: (anchor?: string) => { href: string; onClick: (e: React.MouseEvent) => void } }) {
   const link = 'font-display text-[1.05rem] text-[rgb(var(--sw-moss))] transition-colors hover:text-[rgb(var(--sw-ink))]'
   return (
-    <footer className="mx-auto max-w-[1312px] px-4 pb-10 sm:px-8 lg:px-0">
+    <footer>
+      <div className="mx-auto max-w-[1312px] px-4 sm:px-8 lg:px-0">
       <Rule at={1} />
       <div className="grid gap-10 py-12 sm:grid-cols-[1.4fr_1fr_1fr]">
         <div className="flex items-center gap-3">
@@ -698,11 +714,9 @@ function Footer({ onCart, homeLink }: { onCart: () => void; homeLink: (anchor?: 
           Juguetería en {STORE.country}. Reservas online y pagas al retirar en el local.
         </p>
       </div>
-      <Rule at={1} />
-      <div className="flex flex-col gap-2 pt-6 text-sm font-semibold text-[rgb(var(--sw-sage))] sm:flex-row sm:justify-between">
-        <p>© {new Date().getFullYear()} {STORE.name}</p>
-        <p></p>
+      <p className="pb-6 text-sm font-semibold text-[rgb(var(--sw-sage))]">© {new Date().getFullYear()} {STORE.name}</p>
       </div>
+      <RuinWall />
     </footer>
   )
 }
@@ -818,13 +832,13 @@ function CartPanel({ open, onClose, catalog, onDone }: { open: boolean; onClose:
           >
             <header className="flex items-center gap-3 px-6 py-5">
               <LuShoppingBag className="size-6 text-[rgb(var(--sw-fire))]" aria-hidden />
-              <h2 className="flex-1 font-display text-[1.7rem] leading-none">{step === 'carrito' ? 'Tu carrito' : 'Tus datos'}</h2>
+              <h2 className="font-medieval flex-1 text-[1.7rem] leading-none">{step === 'carrito' ? 'Tu carrito' : 'Tus datos'}</h2>
               <button onClick={onClose} className="grid size-10 place-items-center rounded-xl text-[rgb(var(--sw-sage))] hover:bg-[rgb(var(--sw-raised))] hover:text-[rgb(var(--sw-ink))]" aria-label="Cerrar carrito">
                 <LuX className="size-5" />
               </button>
             </header>
             <div className="px-6">
-              <Rule at={step === 'carrito' ? 0.4 : 1.6} />
+              <Rule small at={step === 'carrito' ? 0.4 : 1.6} />
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
@@ -1021,7 +1035,24 @@ function StoreField({
 }
 
 function SuccessModal({ sale, onClose, address }: { sale: Sale; onClose: () => void; address: string }) {
-  const print = async () => printInvoice(sale, await settingsApi.get())
+  // El comprobante se descarga solo como PDF al confirmar la reserva; el botón sirve para bajarlo otra vez.
+  const [pdf, setPdf] = useState<'working' | 'done' | 'error'>('working')
+  const download = async () => {
+    setPdf('working')
+    try {
+      await downloadInvoicePdf(sale, await settingsApi.get())
+      setPdf('done')
+    } catch {
+      setPdf('error')
+    }
+  }
+  const started = useRef(false)
+  useEffect(() => {
+    if (started.current) return
+    started.current = true
+    void download()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const until = sale.expiresAt ? new Date(sale.expiresAt).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }) : ''
   return (
     <motion.div className="fixed inset-0 z-[60] grid place-items-center bg-black/70 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -1042,7 +1073,7 @@ function SuccessModal({ sale, onClose, address }: { sale: Sale; onClose: () => v
           </motion.span>
         </div>
         <div className="flex flex-col gap-3 px-6 pb-6">
-          <h2 className="font-display text-[1.9rem] leading-tight">{sale.test ? '¡Reserva de prueba hecha!' : '¡Reserva confirmada!'}</h2>
+          <h2 className="font-medieval text-[1.9rem] leading-tight">{sale.test ? '¡Reserva de prueba hecha!' : '¡Reserva confirmada!'}</h2>
           <div className="rounded-2xl bg-[rgb(var(--sw-ground))] px-4 py-4">
             <p className="text-sm font-extrabold text-[rgb(var(--sw-sage))]">Tu código de retiro</p>
             <p className="num font-display text-[2.6rem] leading-none tracking-wide text-[rgb(var(--sw-ember))]">
@@ -1054,9 +1085,14 @@ function SuccessModal({ sale, onClose, address }: { sale: Sale; onClose: () => v
               ? 'Llegó a Pedidos del panel marcada como prueba.'
               : `Muéstralo en el local${address ? ` (${address})` : ''} para retirar y pagar ${formatPrice(sale.total)}.${until ? ` Lo guardamos hasta el ${until}.` : ''}`}
           </p>
+          <p role="status" className="text-sm font-bold text-[rgb(var(--sw-sage))]">
+            {pdf === 'working' && 'Preparando tu comprobante en PDF…'}
+            {pdf === 'done' && 'Tu comprobante en PDF se descargó.'}
+            {pdf === 'error' && <span className="text-[rgb(var(--sw-alert))]">No pudimos generar el PDF. Prueba con el botón.</span>}
+          </p>
           <div className="mt-1 flex gap-2">
-            <button onClick={() => void print()} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-[rgb(var(--sw-line))] font-display text-lg hover:border-[rgb(var(--sw-sage))]">
-              <LuPrinter className="size-5" aria-hidden /> Guardar reserva
+            <button onClick={() => void download()} disabled={pdf === 'working'} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-[rgb(var(--sw-line))] font-display text-lg hover:border-[rgb(var(--sw-sage))] disabled:opacity-60">
+              {pdf === 'working' ? <LuLoaderCircle className="size-5 animate-spin" aria-hidden /> : <LuDownload className="size-5" aria-hidden />} Descargar PDF
             </button>
             <button onClick={onClose} className="h-12 flex-1 rounded-2xl bg-[rgb(var(--sw-fire))] font-display text-lg text-[rgb(var(--sw-fire-ink))] hover:brightness-105">
               Seguir comprando

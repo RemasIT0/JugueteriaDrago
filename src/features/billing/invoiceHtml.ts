@@ -1,6 +1,7 @@
 import { formatPrice } from '@/lib/format'
 import { invoiceLabel } from '@/services/commerce'
 import type { Sale, Settings } from '@/types'
+import { logoSvg } from './logo'
 
 const PAY: Record<Sale['paymentMethod'], string> = {
   efectivo: 'Efectivo',
@@ -39,6 +40,7 @@ export function invoiceHtml(original: Sale, settings: Settings) {
   *{box-sizing:border-box} body{font-family:system-ui,sans-serif;color:#24303A;margin:32px;font-size:13px}
   .head{display:grid;grid-template-columns:1fr 80px 1fr;border:2px solid #24303A;border-radius:12px;overflow:hidden}
   .head>div{padding:14px 16px} .type{display:grid;place-items:center;border-inline:2px solid #24303A;font-size:40px;font-weight:900}
+  .brand{display:flex;gap:12px;align-items:center} .brand svg{flex:none}
   h1{margin:0;font-size:20px} small{display:block;color:#5A666F;font-size:11px}
   .party{margin:16px 0;padding:12px 16px;border:1px solid #E9E3D6;border-radius:12px}
   table{width:100%;border-collapse:collapse;margin-top:8px} th,td{padding:8px;border-bottom:1px solid #E9E3D6;text-align:left;vertical-align:top}
@@ -51,7 +53,7 @@ export function invoiceHtml(original: Sale, settings: Settings) {
 </style></head><body>
 ${sale.test ? '<div class="test">PRUEBA</div>' : ''}
 <div class="head">
-  <div><h1>${esc(b.name || 'DragoToY')}</h1><small>${esc(b.address || 'Domicilio sin cargar')}</small><small>CUIT ${esc(b.cuit || 'sin cargar')} · ${esc(b.ivaCondition)}</small></div>
+  <div class="brand">${logoSvg('#000000', 52)}<div><h1>${esc(b.name || 'DragoToY')}</h1><small>${esc(b.address || 'Domicilio sin cargar')}</small><small>CUIT ${esc(b.cuit || 'sin cargar')} · ${esc(b.ivaCondition)}</small></div></div>
   <div class="type">${pending ? 'R' : sale.invoiceType}</div>
   <div><strong>${esc(invoiceLabel(sale))}</strong><small>Fecha ${date}</small>${credit ? `<small><strong>Devolución sobre ${esc(sale.creditForLabel ?? 'la venta original')}</strong></small><small>Se devolvió con: ${PAY[sale.paymentMethod]}</small>${sale.voidReason ? `<small>Motivo: ${esc(sale.voidReason)}</small>` : ''}` : ''}<small>Canal: ${sale.channel === 'tienda' ? 'tienda online' : 'mostrador'} · ${pending ? 'Pagará con' : 'Pago'}: ${PAY[sale.paymentMethod]}</small>${pending && until ? `<small><strong>Guardada hasta el ${until}</strong></small>` : ''}${sale.status === 'cancelada' ? `<small class="void">CANCELADA: ${esc(sale.voidReason ?? '')}</small>` : ''}
   ${sale.status === 'anulada' ? `<small class="void">ANULADA ${new Date(sale.voidedAt!).toLocaleDateString('es-AR')}: ${esc(sale.voidReason ?? '')}</small>` : ''}</div>

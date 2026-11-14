@@ -6,11 +6,13 @@ import { isInitialized } from '@/services/localDb'
 import { useInventory } from './inventory'
 import type { PublicUser } from '@/types'
 
-type Phase = 'checking' | 'setup' | 'login' | 'in'
+type Phase = 'checking' | 'setup' | 'login' | 'in' | 'error'
 
 interface AuthState {
   phase: Phase
   user: PublicUser | null
+  /** Motivo por el que no se pudo arrancar (sin conexión, servidor pausado…). */
+  bootError: string | null
   boot: () => Promise<void>
   login: (username: string, password: string) => Promise<void>
   setupDone: (user: PublicUser) => void
@@ -20,14 +22,21 @@ interface AuthState {
 export const useAuth = create<AuthState>((set) => ({
   phase: 'checking',
   user: null,
+  bootError: null,
 
   async boot() {
-    const [hasUsers, initialized] = await Promise.all([auth.hasUsers(), isInitialized()])
-    if (!hasUsers) return set({ phase: 'setup' })
-    // Hay dueño pero la configuración se cortó a mitad: se completa sin datos de ejemplo.
-    if (!initialized) await initializeLocalData({ demo: false })
-    const user = await auth.restoreSession()
-    set(user ? { phase: 'in', user } : { phase: 'login' })
+    set({ phase: 'checking', bootError: null })
+    try {
+      const [hasUsers, initialized] = await Promise.all([auth.hasUsers(), isInitialized()])
+      if (!hasUsers) return set({ phase: 'setup' })
+      // Hay dueño pero la configuración se cortó a mitad: se completa sin datos de ejemplo.
+      if (!initialized) await initializeLocalData({ demo: false })
+      const user = await auth.restoreSession()
+      set(user ? { phase: 'in', user } : { phase: 'login' })
+    } catch (e) {
+      // Sin esto la pantalla quedaba en blanco cuando el servidor no respondía.
+      set({ phase: 'error', bootError: e instanceof Error ? e.message : 'No se pudo iniciar el sistema.' })
+    }
   },
 
   async login(username, password) {

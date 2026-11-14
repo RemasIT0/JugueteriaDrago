@@ -53,7 +53,7 @@ export default function SuppliersPage() {
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {status !== 'ready'
           ? Array.from({ length: 3 }, (_, i) => <Shimmer key={i} className="h-44 rounded-3xl" />)
           : suppliers.map((s) => {

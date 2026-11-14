@@ -115,7 +115,7 @@ export default function ReportsPage() {
 
   if (status !== 'ready' || salesStatus === 'loading')
     return (
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Shimmer className="h-80 rounded-3xl" />
         <Shimmer className="h-80 rounded-3xl" />
       </div>
@@ -195,7 +195,7 @@ export default function ReportsPage() {
       </section>
 
       {/* Indicadores del período */}
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {range ? (
           <>
             <Stat
@@ -248,14 +248,14 @@ export default function ReportsPage() {
 
       <ProfitCard {...profit} />
 
-      <div className="grid items-start gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
         <Ranking title="Más vendidos" icon={TrendingUp} rows={ranking.top} empty="Sin ventas en el rango." />
         <Ranking title="Menos vendidos" icon={TrendingDown} rows={ranking.bottom} empty="Sin productos." muted />
       </div>
 
       <BreakEvenCard be={be} month={month} />
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <StockValue />
         <section className="flex flex-col gap-3 rounded-3xl bg-surface p-5 shadow-card sm:p-6">
           <h2 className="flex items-center gap-2 font-black">
@@ -383,7 +383,7 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
   }
 
   return (
-    <section className="grid gap-5 rounded-3xl bg-surface p-5 shadow-card sm:p-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+    <section className="grid grid-cols-1 gap-5 rounded-3xl bg-surface p-5 shadow-card sm:p-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
       <div className="flex min-w-0 flex-col gap-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="flex items-center gap-2 font-black">

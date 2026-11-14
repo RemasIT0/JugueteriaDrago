@@ -87,6 +87,22 @@ function Splash() {
   )
 }
 
+/** No se pudo arrancar (por ejemplo, el servidor está pausado o no hay internet): se explica y se ofrece reintentar. */
+function BootError({ message, retry }: { message: string; retry: () => void }) {
+  return (
+    <div className="grid min-h-dvh place-items-center bg-rail px-6 text-center text-rail-ink">
+      <div className="flex max-w-md flex-col items-center gap-4">
+        <span className="size-3 rounded-full bg-sol" aria-hidden />
+        <h1 className="text-2xl font-black">No pudimos conectar con el sistema</h1>
+        <p className="text-sm font-semibold">{message}</p>
+        <button onClick={retry} className="h-11 rounded-xl bg-sol px-6 font-black text-on-fill">
+          Reintentar
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const isStore = () => window.location.pathname.startsWith('/tienda')
 
 export default function App() {
@@ -101,7 +117,7 @@ export default function App() {
 
 /** Panel interno: pide ingreso y carga los datos según el rol. */
 function Panel() {
-  const { phase, boot } = useAuth()
+  const { phase, boot, bootError } = useAuth()
   const load = useInventory((s) => s.load)
   const loadSales = useSales((s) => s.load)
   const canSales = useCan('ventas.ver')
@@ -138,6 +154,7 @@ function Panel() {
   }, [phase, canSales, loadSales])
 
   if (phase === 'checking') return <Splash />
+  if (phase === 'error') return <BootError message={bootError ?? ''} retry={() => void boot()} />
   if (phase === 'setup') return <SetupPage />
   if (phase === 'login') return <LoginPage />
   return <RouterProvider router={router} />

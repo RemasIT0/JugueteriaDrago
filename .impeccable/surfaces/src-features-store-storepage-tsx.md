@@ -2,27 +2,27 @@
 version: 1
 slug: "src-features-store-storepage-tsx"
 primary_target: "src/features/store/StorePage.tsx"
-related_targets: []
+related_targets: ["src/features/store/HowToBuy.tsx","src/features/store/ToyDetail.tsx","src/features/store/store.css","src/features/store/Castle.tsx"]
 ---
 
 ## Scope
 
-Customer-facing online store at /tienda (Persuade mode). Public, no login. Reads live inventory from Supabase (only in-stock products, no costs), applies promotions, validates coupons server-side, cart + checkout that registers a sale: reservation paid at pickup, or a test purchase. Argentina, ARS, IVA 21% included. Only this route changes world; the staff panel keeps the board-game system. Code-led (no image generation): the hero scene is authored SVG.
+Customer-facing online store at /tienda (Persuade mode). Public, no login. Reads live inventory from Supabase (only in-stock products, no costs), applies promotions, validates coupons server-side, cart + checkout that creates a reservation paid at pickup (or a test reservation). Argentina, ARS, IVA 21% included. The hero (dusk valley with the fire tile) stays as built; everything below it, plus the toy page, cart drawer and confirmation, moves into the old castle ruins under the same night. The staff panel keeps the board-game system. Code-led: no image generation; ornaments (ruins, fangs, banners) are authored SVG, product imagery is real photos by URL.
 
 ## Direction contract
 
-THESIS: The store is a toy valley at dusk seen through a vine-framed window: the DragoToY fire tile rises over the hills like the sun, toys peek over the ridge, and the catalog below reads like a game's world index, with category tabs and framed cards. Refuses the white e-commerce grid with a banner carousel.
+THESIS: Below the dusk valley the same night continues into the ruins of an old dragon's castle: weathered dark stone, broken battlements, moss, a few windows still lit by embers. Every toy sits in an arched ruin window set in the dragon's jaw, fangs along its edges. Refuses both the flat equal-box grid and a bright fairy-tale daytime castle (rejected by the user for breaking with the hero).
 
-OWN-WORLD: Near-black pine ground (#0E1513), pine surfaces (#16201E), 1px hairlines (#263431) broken by a single dot. Display in Lilita One (white for titles, moss green #6BC48A for inactive tabs and the footer wordmark), body Nunito in sage (#8FA89B). Fire gradient lives only on the logo tile; the one accent action is fire orange (#FF8A2B) with dark ink. Category fills appear only as small dots and icon tint. Cards: image wells with irregular rounded corners and a 2px dark-moss rim; actions read as "Agregar al carrito →" rows.
+OWN-WORLD: The hero's own tokens: pine ground #0E1513, pine surfaces #16201E / #1E2C29, moss rim #2A4A35, sage text, moss tabs, fire orange #FF8A2B as the one action. Added material only: dark weathered stone (#2B3431 to #3A4440) with cracks, ember-lit window glow (#FFB45A), bone fangs (#E6DAC0 with pine ink), tattered banners (crimson #7E2A20 active). Almendra for tabs, section titles and toy names; Lilita stays for prices and actions; Nunito for reading. No flowers, no light ground.
 
-STORY: A family lands, sees the logo glowing over a dusk valley with rising embers, reads "Juguetes con fuego de dragón" and the next-season countdown, follows "Ver juguetes", switches category tabs, adds toys, reviews a dark cart with coupon, reserves for pickup or makes a test purchase, and prints the receipt.
+STORY: A family scrolls from the dusk valley into the castle ruins without the light changing, picks a tattered banner (category), browses toys in fanged ruin windows with real photos, opens one, reserves, and gets the reservation sealed with its pickup code.
 
-FIRST VIEWPORT: Dark top bar: logo tile + Lilita wordmark left, search pill, outlined cart pill right. Below, a framed illustration panel inset from the edges with a vine silhouette across its top edge: dusk sky, stars, three mountain ranges, pines, a grassy hill with toy silhouettes. Centered: 96px fire tile with a warm halo and ember canvas (the sun over the valley), Lilita headline ~3.6rem white, one ink line, "Ver juguetes ↓" as a fire-orange pill with dark ink (changed from a white text link for contrast: the sky behind it measured 2.7:1), countdown chip. The sky stays deep blue behind the text band; the dusk light sits on the ranges. Primary action reachable without scrolling.
+FIRST VIEWPORT: Unchanged dusk-valley hero with the fire "Ver juguetes" action. Directly below, under the same night sky, the silhouette of the old castle: broken towers, a collapsed wall and a ruined bridge, rim-lit warm toward the center like the hero's ranges, a few ember-lit windows; then the tattered banners hanging from a crumbling battlement.
 
-FORM: user-pinned. The user fixed the direction themselves: the logo replaces the old dragon, in the style of their dark game-site reference image. No concept roll was run, so there is no seed reference to record.
+FORM: user-pinned and user-corrected. The user rejected the bright dawn rendition and asked for colors close to the hero, an old castle, no flowers and dragon teeth on the boxes. No concept roll was run. seed: none (unavailable)
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
 ## Unresolved
 
-No payment gateway: online sales are reserved and paid at pickup, or flagged as test purchases. No newsletter or social links until the store has real accounts (user decision).
+Product photos are hotlinked from Wikimedia Commons (free licenses, some CC BY-SA requiring attribution) as sample imagery; the owner replaces them with real shots. No payment gateway. No newsletter or social links until the store has real accounts.

@@ -44,6 +44,8 @@ interface InventoryState {
   /** Al cerrar sesión: el siguiente usuario vuelve a cargar con sus permisos. */
   reset: () => void
   addPhoto: (id: string, file: File) => Promise<void>
+  /** Foto por dirección web (https). */
+  addPhotoUrl: (id: string, url: string) => Promise<void>
   /** Cambio de precios masivo (todo o nada). */
   setPrices: (items: { id: string; price: number; cost?: number | null }[], note: string) => Promise<void>
   /** Ficha para la tienda (descripción y características). */
@@ -225,6 +227,11 @@ export const useInventory = create<InventoryState>((set, get) => {
       const fresh = await productsApi.list()
       // Se conservan las filas que todavía se están guardando en segundo plano.
       set((s) => ({ products: [...s.products.filter((p) => p.syncState), ...fresh.filter((f) => !s.products.some((p) => p.syncState && p.sku === f.sku))] }))
+    },
+
+    async addPhotoUrl(id, url) {
+      const saved = await productsApi.addPhotoUrl(id, url)
+      set((s) => ({ products: s.products.map((p) => (p.id === id ? saved : p)) }))
     },
 
     async addPhoto(id, file) {

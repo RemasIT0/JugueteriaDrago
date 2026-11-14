@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import { Drawer } from '@/components/ui/Drawer'
 import { useInventory } from '@/stores/inventory'
+import { useGuide } from '@/stores/guide'
 import { useAlerts, type Alert } from './useAlerts'
 
 /** Campana con contador + aviso emergente cuando hay algo nuevo para revisar. */
@@ -13,6 +14,8 @@ export function AlertsBell({ variant }: { variant: 'rail' | 'header' }) {
   const ready = useInventory((s) => s.status === 'ready')
   const [open, setOpen] = useState(false)
   const [popup, setPopup] = useState(false)
+  // Mientras se recorre la guía de uso, el aviso emergente espera para no taparla.
+  const guideOpen = useGuide((s) => s.open)
   const navigate = useNavigate()
 
   // Aviso emergente: aparece si hay avisos sin ver; al cerrarlo quedan vistos.
@@ -56,7 +59,7 @@ export function AlertsBell({ variant }: { variant: 'rail' | 'header' }) {
       </button>
 
       <AnimatePresence>
-        {popup && (
+        {popup && !guideOpen && (
           <motion.div
             role="alertdialog"
             aria-label="Avisos para revisar"

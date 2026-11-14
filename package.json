@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/almendra": "^5.3.0",
     "@fontsource/lilita-one": "^5.3.0",
     "@hookform/resolvers": "^6.0.2",
     "@supabase/supabase-js": "^2.118.0",
@@ -19,6 +20,7 @@
     "exceljs": "^4.4.0",
     "framer-motion": "^14.8.0",
     "idb-keyval": "^6.2.1",
+    "jspdf": "^3.0.4",
     "papaparse": "^5.7.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

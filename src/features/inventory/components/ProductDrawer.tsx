@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { LuArrowDownRight as ArrowDownRight, LuArrowUpRight as ArrowUpRight, LuExternalLink as ExternalLink, LuImagePlus as ImagePlus, LuLoaderCircle as Loader2, LuPencil as Pencil, LuStar as Star, LuPlus as Plus, LuSlidersHorizontal as SlidersHorizontal, LuStore as StoreIcon, LuTrash2 as Trash2, LuX as X } from 'react-icons/lu'
+import { LuArrowDownRight as ArrowDownRight, LuArrowUpRight as ArrowUpRight, LuExternalLink as ExternalLink, LuImagePlus as ImagePlus, LuLink as LinkIcon, LuLoaderCircle as Loader2, LuPencil as Pencil, LuStar as Star, LuPlus as Plus, LuSlidersHorizontal as SlidersHorizontal, LuStore as StoreIcon, LuTrash2 as Trash2, LuX as X } from 'react-icons/lu'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { CategoryTag, StockPips } from '@/components/ui/Board'
@@ -242,6 +242,8 @@ function PhotoGallery({ productId, photos, disabled, fallback }: { productId: st
     </label>
   )
 
+  const urlForm = !disabled && <PhotoUrlForm productId={productId} onAdded={() => setActive(photos.length)} />
+
   if (!photos.length)
     return (
       <div className="flex flex-col gap-3">
@@ -250,6 +252,7 @@ function PhotoGallery({ productId, photos, disabled, fallback }: { productId: st
           <span className="absolute bottom-3 left-3 rounded-full bg-surface/90 px-2.5 py-1 text-xs font-extrabold text-ink-soft">Sin foto</span>
         </div>
         {addButton}
+        {urlForm}
       </div>
     )
 
@@ -310,7 +313,85 @@ function PhotoGallery({ productId, photos, disabled, fallback }: { productId: st
         ))}
         {addButton}
       </div>
+      {urlForm}
     </div>
+  )
+}
+
+/** Comprueba que la dirección cargue una imagen antes de guardarla (máximo 8 s). */
+function loadsAsImage(url: string) {
+  return new Promise<boolean>((resolve) => {
+    const img = new Image()
+    const t = setTimeout(() => resolve(false), 8000)
+    img.onload = () => (clearTimeout(t), resolve(img.naturalWidth > 0))
+    img.onerror = () => (clearTimeout(t), resolve(false))
+    img.referrerPolicy = 'no-referrer'
+    img.src = url
+  })
+}
+
+/** Agregar una foto pegando su dirección web, sin descargarla. */
+function PhotoUrlForm({ productId, onAdded }: { productId: string; onAdded: () => void }) {
+  const addPhotoUrl = useInventory((s) => s.addPhotoUrl)
+  const [open, setOpen] = useState(false)
+  const [url, setUrl] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const submit = async () => {
+    const clean = url.trim()
+    setError(null)
+    if (!/^https:\/\/\S+$/i.test(clean)) return setError('Pega una dirección que empiece con https://')
+    setBusy(true)
+    try {
+      if (!(await loadsAsImage(clean))) return setError('Esa dirección no muestra una imagen. Copia la dirección de la imagen, no la de la página.')
+      await addPhotoUrl(productId, clean)
+      toast({ tone: 'ok', text: 'Foto agregada. Ya se ve en la tienda.' })
+      setUrl('')
+      setOpen(false)
+      onAdded()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo guardar la foto.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (!open)
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-1.5 self-start text-sm font-extrabold text-turquesa-ink underline-offset-2 hover:underline">
+        <LinkIcon className="size-4" aria-hidden /> Agregar foto desde una dirección web
+      </button>
+    )
+  return (
+    <form onSubmit={(e) => (e.preventDefault(), void submit())} className="flex flex-col gap-2 rounded-2xl border-2 border-line p-3">
+      <label htmlFor={`url-${productId}`} className="text-xs font-extrabold text-ink-soft">
+        Dirección de la imagen (clic derecho en la foto → «Copiar dirección de imagen»)
+      </label>
+      <div className="flex gap-2">
+        <input
+          id={`url-${productId}`}
+          autoFocus
+          inputMode="url"
+          value={url}
+          onChange={(e) => (setUrl(e.target.value), setError(null))}
+          placeholder="https://…"
+          aria-invalid={!!error}
+          className="h-11 min-w-0 flex-1 rounded-xl border-2 border-line bg-surface px-3 font-bold placeholder:font-semibold placeholder:text-ink-soft/80 focus:border-turquesa focus:shadow-focus focus:outline-none"
+        />
+        <Button type="submit" size="sm" variant="primary" className="h-11" disabled={busy || !url.trim()}>
+          {busy ? <Loader2 className="size-4 animate-spin" /> : 'Agregar'}
+        </Button>
+        <Button size="sm" variant="ghost" className="h-11" onClick={() => (setOpen(false), setUrl(''), setError(null))}>
+          Cancelar
+        </Button>
+      </div>
+      {error && (
+        <p role="alert" className="text-sm font-bold text-peligro">
+          {error}
+        </p>
+      )}
+    </form>
   )
 }
 

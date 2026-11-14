@@ -9,6 +9,7 @@ import type { publicCatalog } from '@/services/commerce'
 import { categoryIcon } from '@/features/inventory/components/ProductThumb'
 import type { BoardColor, Category, Discount } from '@/types'
 import { CardScene } from './ValleyScene'
+import { DragonJaw } from './Castle'
 
 type Item = Awaited<ReturnType<typeof publicCatalog>>['products'][number]
 
@@ -82,7 +83,7 @@ export function ToyDetail({
             </p>
           </Reveal>
           <Reveal>
-            <h1 className="mt-3 font-display text-[2.4rem] leading-[1.02] sm:text-[3.2rem]" style={{ textWrap: 'balance' }}>
+            <h1 className="font-medieval mt-3 text-[2.4rem] leading-[1.02] sm:text-[3.2rem]" style={{ textWrap: 'balance' }}>
               {p.name}
             </h1>
           </Reveal>
@@ -143,7 +144,7 @@ export function ToyDetail({
           {description && (
             <Reveal>
               <div className="mt-8">
-                <h2 className="font-display text-2xl text-[rgb(var(--sw-moss))]">Sobre este juguete</h2>
+                <h2 className="font-medieval text-2xl text-[rgb(var(--sw-moss))]">Sobre este juguete</h2>
                 <p className="mt-3 whitespace-pre-line text-lg font-semibold leading-relaxed text-[rgb(var(--sw-ink)/0.92)]">{description}</p>
               </div>
             </Reveal>
@@ -152,7 +153,7 @@ export function ToyDetail({
           {features.length > 0 && (
             <Reveal>
               <div className="mt-8">
-                <h2 className="font-display text-2xl text-[rgb(var(--sw-moss))]">Características</h2>
+                <h2 className="font-medieval text-2xl text-[rgb(var(--sw-moss))]">Características</h2>
                 <ul className="mt-4 flex flex-col gap-3">
                   {features.map((f, i) => (
                     <motion.li
@@ -203,7 +204,7 @@ function Gallery({ p, color, percent, Icon }: { p: Item; color: BoardColor; perc
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="organic relative aspect-[4/3] overflow-hidden border-2 border-[rgb(var(--sw-rim))] bg-[rgb(var(--sw-raised))]">
+      <div className="jaw-window relative aspect-[4/3] overflow-hidden bg-[rgb(var(--sw-raised))]">
         {main ? (
           <AnimatePresence mode="wait" initial={false}>
             <motion.img
@@ -231,10 +232,11 @@ function Gallery({ p, color, percent, Icon }: { p: Item; color: BoardColor; perc
           </div>
         )}
         {percent > 0 && (
-          <span className="num absolute right-4 top-4 grid size-16 -rotate-12 place-items-center rounded-full bg-coral font-black text-on-fill shadow-[0_6px_14px_-6px_rgb(0_0_0/0.6)]">
+          <span className="num absolute right-4 top-[24%] z-10 grid size-16 -rotate-12 place-items-center rounded-full bg-coral font-black text-on-fill shadow-[0_6px_14px_-6px_rgb(0_0_0/0.6)]">
             −{percent}%
           </span>
         )}
+        <DragonJaw seed={p.name.length} />
       </div>
       {photos.length > 1 && (
         <div className="flex gap-3 overflow-x-auto pb-1" role="group" aria-label="Fotos del juguete">
