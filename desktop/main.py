@@ -127,6 +127,22 @@ def start_server(web_root: Path, ports=PREFERRED_PORTS) -> ThreadingHTTPServer:
     return server
 
 
+def remote_available(base: str, timeout: float = 4.0) -> bool:
+    """
+    ¿Responde la versión publicada y ya trae la actualización automática? Se prueba su /version.json
+    (es chico). Ojo: Vercel devuelve la página principal ante cualquier dirección que no existe,
+    así que no alcanza con un 200: tiene que venir un JSON con el número de versión.
+    """
+    import urllib.request
+
+    try:
+        with urllib.request.urlopen(f"{base}/version.json", timeout=timeout) as res:
+            data = json.loads(res.read(4096).decode("utf-8"))
+            return res.status == 200 and isinstance(data, dict) and isinstance(data.get("id"), str)
+    except Exception:  # noqa: BLE001 — sin red, sitio caído o respuesta rara: se usa la copia interna
+        return False
+
+
 def main() -> None:
     logging.basicConfig(
         filename=data_dir() / "dragotoy.log",
@@ -140,7 +156,16 @@ def main() -> None:
 
     server = start_server(web_root)
     url = f"http://127.0.0.1:{server.server_address[1]}/"
-    logging.info("Panel servido en %s", url)
+    logging.info("Copia interna del panel en %s", url)
+
+    # Versión conectada: abre el panel publicado (siempre la última versión, sin cambiar el .exe).
+    # Si no se llega a tiempo (sin internet, sitio caído), usa la copia que viene dentro del programa.
+    remote = (MODE.get("remote_url") or "").rstrip("/")
+    if remote and remote_available(remote):
+        url = f"{remote}/?desktop=1"
+        logging.info("Abriendo la versión publicada: %s", url)
+    elif remote:
+        logging.warning("No se pudo llegar a %s: se usa la copia interna", remote)
 
     # Descargas (PDF, copias de seguridad, Excel): se pregunta dónde guardarlas.
     webview.settings["ALLOW_DOWNLOADS"] = True

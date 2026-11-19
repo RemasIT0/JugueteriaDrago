@@ -1,10 +1,10 @@
-import { LuTriangleAlert as AlertTriangle, LuArrowDownRight as ArrowDownRight, LuArrowUpRight as ArrowUpRight, LuCalendarRange as CalendarRange, LuWallet as Wallet, LuLoaderCircle as Loader2, LuPlus as Plus, LuTable2 as Table2, LuTarget as Target, LuTrash2 as Trash2, LuTrendingDown as TrendingDown, LuTrendingUp as TrendingUp } from 'react-icons/lu'
+import { LuTriangleAlert as AlertTriangle, LuArrowDownRight as ArrowDownRight, LuArrowUpRight as ArrowUpRight, LuCalendarRange as CalendarRange, LuWallet as Wallet, LuLoaderCircle as Loader2, LuPlus as Plus, LuReceiptText as Receipt, LuTable2 as Table2, LuTarget as Target, LuTrash2 as Trash2, LuTrendingDown as TrendingDown, LuTrendingUp as TrendingUp } from 'react-icons/lu'
 import { useEffect, useMemo, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import clsx from 'clsx'
 import { CategoryTag, StockPips } from '@/components/ui/Board'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Field'
+import { Field, Input } from '@/components/ui/Field'
 import { Shimmer } from '@/components/ui/Skeleton'
 import { toast } from '@/components/ui/Toaster'
 import { BOARD } from '@/lib/colors'
@@ -358,23 +358,40 @@ function Ranking({ title, icon: Icon, rows, empty, muted }: { title: string; ico
   )
 }
 
+/** Ideas de gastos fijos para cargar con un toque. */
+const FIXED_COST_IDEAS = ['Alquiler', 'Sueldos', 'Luz', 'Internet', 'Agua', 'Impuestos', 'Contador']
+
 function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month: ReturnType<typeof balance> }) {
   const { settings, updateSettings } = useInventory()
   const c = useChartColors()
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')
   const [busy, setBusy] = useState(false)
+  const [tried, setTried] = useState(false)
   const costs = settings?.fixedCosts ?? []
   const monthName = new Date().toLocaleDateString('es-AR', { month: 'long' })
+  const parsed = Number(amount.replace(/\./g, '').replace(',', '.'))
+  const nameErr = tried && !name.trim() ? 'Escribe qué gasto es.' : undefined
+  const amountErr = tried && !(parsed > 0) ? 'Escribe cuánto pagas por mes (solo números).' : undefined
+  // Atajos para los gastos más comunes que todavía no se cargaron.
+  const suggestions = FIXED_COST_IDEAS.filter((idea) => !costs.some((c) => c.name.toLocaleLowerCase('es') === idea.toLocaleLowerCase('es')))
+  const pick = (idea: string) => {
+    setName(idea)
+    setTried(false)
+    document.getElementById('fc-amount')?.focus()
+  }
 
   const addCost = async () => {
-    const n = Number(amount.replace(/\./g, '').replace(',', '.'))
+    const n = parsed
+    setTried(true)
     if (!name.trim() || !(n > 0)) return
     setBusy(true)
     try {
       await updateSettings({ fixedCosts: [...costs, { id: uid('gf'), name: name.trim(), amount: n }] })
       setName('')
       setAmount('')
+      setTried(false)
+      toast({ tone: 'ok', text: `Gasto «${name.trim()}» agregado` })
     } catch (e) {
       toast({ tone: 'error', text: e instanceof Error ? e.message : 'No se pudo guardar.' })
     } finally {
@@ -455,40 +472,89 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
         )}
       </div>
 
-      <div className="flex flex-col gap-3">
-        <h3 className="font-black">Gastos fijos del mes</h3>
-        <ul className="divide-y divide-line rounded-2xl border-2 border-line">
-          {costs.length === 0 && <li className="px-4 py-4 text-sm font-semibold text-ink-soft">Alquiler, sueldos, luz, internet…</li>}
-          {costs.map((fc) => (
-            <li key={fc.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-              <span className="flex-1 font-bold">{fc.name}</span>
-              <span className="num font-black">{formatPrice(fc.amount)}</span>
-              <button
-                onClick={() => void updateSettings({ fixedCosts: costs.filter((x) => x.id !== fc.id) })}
-                className="grid size-8 place-items-center rounded-lg text-ink-soft hover:bg-peligro-wash hover:text-peligro"
-                aria-label={`Quitar ${fc.name}`}
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </li>
-          ))}
-          {costs.length > 0 && (
-            <li className="flex items-center justify-between px-4 py-2.5 text-sm font-black">
-              Total <span className="num">{formatPrice(be.fixed)}</span>
-            </li>
-          )}
-        </ul>
+      <div className="flex flex-col gap-4 rounded-2xl border-2 border-line p-4 sm:p-5">
+        <div>
+          <h3 className="flex items-center gap-2 font-black">
+            <Receipt className="size-5 text-coral-ink" aria-hidden /> Gastos fijos del mes
+          </h3>
+          <p className="mt-1 text-sm font-semibold text-ink-soft">
+            Lo que pagas todos los meses aunque no vendas nada. Con esto se calcula cuánto necesitas vender para no perder plata.
+          </p>
+        </div>
+
+        {costs.length === 0 ? (
+          <p className="rounded-xl border-2 border-dashed border-line px-4 py-4 text-center text-sm font-semibold text-ink-soft">
+            Todavía no cargaste gastos. Empieza tocando uno de abajo o escribe el tuyo.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <ul className="divide-y divide-line rounded-xl bg-sunken" aria-label="Gastos cargados">
+              {costs.map((fc) => (
+                <li key={fc.id} className="flex items-center gap-3 px-3.5 py-2.5 text-sm">
+                  <span className="min-w-0 flex-1 truncate font-bold">{fc.name}</span>
+                  <span className="num shrink-0 font-black">{formatPrice(fc.amount)}</span>
+                  <button
+                    onClick={() => confirm(`¿Quitar «${fc.name}» de los gastos fijos?`) && void updateSettings({ fixedCosts: costs.filter((x) => x.id !== fc.id) })}
+                    className="grid size-8 shrink-0 place-items-center rounded-lg text-ink-soft hover:bg-peligro-wash hover:text-peligro"
+                    aria-label={`Quitar ${fc.name}`}
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-end justify-between gap-3 rounded-xl bg-ink px-4 py-3 text-ground">
+              <div>
+                <p className="text-xs font-extrabold opacity-80">Total por mes</p>
+                <p className="num text-2xl font-black leading-tight">{formatPrice(be.fixed)}</p>
+              </div>
+              <p className="num pb-1 text-right text-xs font-bold opacity-80">≈ {formatPrice(be.fixed / 30)} por día</p>
+            </div>
+          </div>
+        )}
+
         <form
+          noValidate
           onSubmit={(e) => {
             e.preventDefault()
             void addCost()
           }}
-          className="grid grid-cols-[minmax(0,1fr)_7.5rem_auto] gap-2"
+          className="flex flex-col gap-3 border-t-2 border-line pt-4"
         >
-          <Input aria-label="Concepto" placeholder="Concepto" value={name} onChange={(e) => setName(e.target.value)} className="h-10" />
-          <Input aria-label="Monto mensual" placeholder="Monto" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className="num h-10" />
-          <Button type="submit" size="sm" variant="primary" className="h-10" disabled={busy} aria-label="Agregar gasto">
-            {busy ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+          <p className="text-sm font-black">Agregar un gasto</p>
+          {suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Gastos comunes">
+              {suggestions.map((idea) => (
+                <button
+                  key={idea}
+                  type="button"
+                  onClick={() => pick(idea)}
+                  aria-pressed={name === idea}
+                  className={clsx(
+                    'h-8 rounded-full px-3 text-xs font-extrabold transition-colors',
+                    name === idea ? 'bg-ink text-ground' : 'bg-sunken text-ink-soft hover:text-ink',
+                  )}
+                >
+                  + {idea}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_10rem] xl:grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_10rem]">
+            <Field label="¿Qué gasto es?" htmlFor="fc-name" error={nameErr}>
+              <Input id="fc-name" placeholder="Ej.: Alquiler del local" value={name} onChange={(e) => setName(e.target.value)} aria-invalid={!!nameErr} className="h-11" />
+            </Field>
+            <Field label="¿Cuánto por mes?" htmlFor="fc-amount" error={amountErr}>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-ink-soft" aria-hidden>
+                  $
+                </span>
+                <Input id="fc-amount" placeholder="150.000" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} aria-invalid={!!amountErr} className="num h-11 pl-8" />
+              </div>
+            </Field>
+          </div>
+          <Button type="submit" variant="primary" disabled={busy} className="w-full">
+            {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Plus className="size-4" aria-hidden />} Agregar gasto
           </Button>
         </form>
       </div>

@@ -1,3 +1,4 @@
+import { formatDate } from './format'
 import type { Category, Discount, Product, Settings } from '@/types'
 
 /** Precio de venta recomendado: costo + margen objetivo, redondeado hacia arriba a $10. */
@@ -46,3 +47,11 @@ export function findCoupon(code: string, discounts: Discount[], now = Date.now()
 export const ivaContained = (total: number, rate: number) => round2(total - total / (1 + rate / 100))
 
 export const round2 = (n: number) => Math.round(n * 100) / 100
+
+/** Texto de vigencia de una promoción: «del 1-dic al 24-dic», «hasta el 24-dic», «sin fecha de fin». */
+export function promoWindow(d: Pick<Discount, 'startsAt' | 'endsAt'>) {
+  if (d.startsAt && d.endsAt) return `del ${formatDate(d.startsAt)} al ${formatDate(d.endsAt)}`
+  if (d.endsAt) return `hasta el ${formatDate(d.endsAt)}`
+  if (d.startsAt) return `desde el ${formatDate(d.startsAt)}, sin fecha de fin`
+  return 'sin fecha de fin'
+}

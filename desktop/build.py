@@ -39,6 +39,8 @@ MODE = (
         "title": "DragoToY · Gestión",
         "offline": False,
         "ports": [47615, 47616, 47617, 47618],
+        # Abre el panel publicado (se actualiza solo); si no hay conexión, la copia interna.
+        "remote_url": STORE_URL,
     }
 )
 
@@ -49,7 +51,8 @@ def run(cmd: list[str], **kw) -> None:
 
 
 def build_web() -> None:
-    env = {**os.environ, "VITE_DESKTOP": "1", "VITE_STORE_URL": "" if OFFLINE else STORE_URL}
+    # VITE_UPDATE_URL: dónde mirar si hay una versión más nueva publicada.
+    env = {**os.environ, "VITE_DESKTOP": "1", "VITE_STORE_URL": "" if OFFLINE else STORE_URL, "VITE_UPDATE_URL": STORE_URL}
     if OFFLINE:
         # Vacías ganan sobre .env.local: el panel queda en modo local (datos en esta computadora).
         env.update({"VITE_SUPABASE_URL": "", "VITE_SUPABASE_PUBLISHABLE_KEY": ""})

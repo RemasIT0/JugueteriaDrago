@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { LuPackageSearch as PackageSearch, LuSearch as Search, LuTrendingUp as TrendingUp, LuZap as Zap } from 'react-icons/lu'
+import { LuPackageSearch as PackageSearch, LuSearch as Search, LuTag as Tag, LuTrendingUp as TrendingUp, LuZap as Zap } from 'react-icons/lu'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import clsx from 'clsx'
@@ -7,6 +7,7 @@ import { Button, Kbd } from '@/components/ui/Button'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { BOARD } from '@/lib/colors'
 import { STOCK_LABEL, stockLevel } from '@/lib/format'
+import { bestDiscount } from '@/lib/pricing'
 import { useInventory } from '@/stores/inventory'
 import type { StockLevel } from '@/types'
 import { useHotkeys } from '@/hooks/useHotkeys'
@@ -24,13 +25,14 @@ export default function InventoryPage() {
   // Cambiar precios en masa es decisión del dueño (mismo permiso que editar precios).
   const canPrices = useCan('categorias.editar')
   const [raising, setRaising] = useState(false)
-  const { status, error, products, categories, seasons } = useInventory()
+  const { status, error, products, categories, seasons, discounts } = useInventory()
   const [query, setQuery] = useState('')
   const [cat, setCat] = useState<string | null>(null)
   const [level, setLevel] = useState<StockLevel | null>(null)
   // Por defecto, lo más urgente arriba: primero el stock bajo, luego el que está más cerca de su mínimo.
   const [sort, setSort] = useState<Sort>({ key: 'urgencia', dir: 'asc' })
   const [season, setSeason] = useState<string | null>(null)
+  const [promo, setPromo] = useState(false)
   const [open, setOpen] = useState<string | null>(null)
   const search = useRef<HTMLInputElement>(null)
   const [params, setParams] = useSearchParams()
@@ -52,10 +54,14 @@ export default function InventoryPage() {
     return byLevel
   }, [products])
 
+  // Juguetes con una promoción vigente hoy (producto, categoría o temporada).
+  const onPromo = useMemo(() => new Set(products.filter((p) => bestDiscount(p, discounts)).map((p) => p.id)), [products, discounts])
+
   const rows = useMemo(() => {
     const q = norm(query.trim())
     const out = products.filter(
       (p) =>
+        (!promo || onPromo.has(p.id)) &&
         (!cat || p.categoryId === cat) &&
         (!season || p.seasons.includes(season)) &&
         (!level || stockLevel(p) === level) &&
@@ -69,12 +75,12 @@ export default function InventoryPage() {
       const y = b[key]
       return (typeof x === 'string' ? x.localeCompare(y as string, 'es') : (x as number) - (y as number)) * dir
     })
-  }, [products, query, cat, level, season, sort])
+  }, [products, query, cat, level, season, sort, promo, onPromo])
 
   const onSort = (key: SortKey) =>
     setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: key === 'name' ? 'asc' : 'desc' }))
 
-  const filtered = !!(query || cat || level || season)
+  const filtered = !!(query || cat || level || season || promo)
 
   return (
     <div className="flex flex-col gap-5">
@@ -82,7 +88,7 @@ export default function InventoryPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Inventario</h1>
           <p className="num mt-1 text-sm font-semibold text-ink-soft">
-            {status === 'ready' ? `${products.length} productos · ${counts.bajo} con stock bajo` : 'Cargando…'}
+            {status === 'ready' ? `${products.length} productos · ${counts.bajo} con stock bajo${onPromo.size ? ` · ${onPromo.size} en promoción` : ''}` : 'Cargando…'}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -132,6 +138,18 @@ export default function InventoryPage() {
           </div>
         </div>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Filtrar por categoría">
+          {onPromo.size > 0 && (
+            <button
+              aria-pressed={promo}
+              onClick={() => setPromo(!promo)}
+              className={clsx(
+                'flex h-9 shrink-0 items-center gap-1.5 rounded-full border-2 px-3.5 text-sm font-extrabold transition-colors',
+                promo ? 'border-coral bg-coral text-on-fill' : 'border-coral/50 bg-coral-wash text-coral-ink hover:border-coral',
+              )}
+            >
+              <Tag className="size-4" aria-hidden /> En promoción <span className="num">{onPromo.size}</span>
+            </button>
+          )}
           <FilterChip on={!cat} onClick={() => setCat(null)}>
             Todas
           </FilterChip>
@@ -166,13 +184,13 @@ export default function InventoryPage() {
               {filtered ? 'Prueba con otra categoría o borra la búsqueda.' : 'Carga el primer lote desde Cargar productos.'}
             </p>
             {filtered && (
-              <Button variant="secondary" onClick={() => (setQuery(''), setCat(null), setLevel(null), setSeason(null))}>
+              <Button variant="secondary" onClick={() => (setQuery(''), setCat(null), setLevel(null), setSeason(null), setPromo(false))}>
                 Quitar filtros
               </Button>
             )}
           </div>
         ) : (
-          <InventoryTable rows={rows} categories={categories} sort={sort} onSort={onSort} onOpen={setOpen} selectedId={open} />
+          <InventoryTable rows={rows} categories={categories} discounts={discounts} sort={sort} onSort={onSort} onOpen={setOpen} selectedId={open} />
         )}
       </section>
 

@@ -2,9 +2,10 @@ import { motion } from 'framer-motion'
 import { LuArrowDown as ArrowDown, LuArrowUp as ArrowUp, LuChevronsUpDown as ChevronsUpDown, LuCloudOff as CloudOff, LuLoaderCircle as Loader2 } from 'react-icons/lu'
 import clsx from 'clsx'
 import { CategoryTag, StockPips } from '@/components/ui/Board'
-import { formatDate, formatPrice } from '@/lib/format'
-import type { Category, ProductRow } from '@/types'
+import { formatDate } from '@/lib/format'
+import type { Category, Discount, ProductRow } from '@/types'
 import { ProductThumb } from './ProductThumb'
+import { PromoPrice } from './PromoPrice'
 
 export type SortKey = 'name' | 'stock' | 'price' | 'updatedAt' | 'urgencia'
 export type Sort = { key: SortKey; dir: 'asc' | 'desc' }
@@ -12,6 +13,7 @@ export type Sort = { key: SortKey; dir: 'asc' | 'desc' }
 interface Props {
   rows: ProductRow[]
   categories: Category[]
+  discounts: Discount[]
   sort: Sort
   onSort: (key: SortKey) => void
   onOpen: (id: string) => void
@@ -20,7 +22,7 @@ interface Props {
 
 const COLS = 'md:grid-cols-[minmax(0,2.6fr)_minmax(0,1.3fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.8fr)]'
 
-export function InventoryTable({ rows, categories, sort, onSort, onOpen, selectedId }: Props) {
+export function InventoryTable({ rows, categories, discounts, sort, onSort, onOpen, selectedId }: Props) {
   const header = (key: SortKey | null, label: string, align: 'left' | 'right' = 'left') => {
     const active = key && sort.key === key
     const Icon = !active ? ChevronsUpDown : sort.dir === 'asc' ? ArrowUp : ArrowDown
@@ -95,7 +97,7 @@ export function InventoryTable({ rows, categories, sort, onSort, onOpen, selecte
                 <StockPips product={p} />
               </div>
               <div role="cell" className="num col-start-2 text-sm font-bold text-ink-soft md:col-start-auto md:text-right md:text-[0.9375rem] md:text-ink">
-                {formatPrice(p.price)}
+                <PromoPrice product={p} discounts={discounts} />
               </div>
               <div role="cell" className="num hidden text-right text-sm font-semibold text-ink-soft md:block">
                 {formatDate(p.updatedAt)}

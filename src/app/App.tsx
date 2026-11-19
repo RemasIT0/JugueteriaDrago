@@ -16,6 +16,7 @@ import { useOrders } from '@/stores/orders'
 import { reservationLabel } from '@/services/commerce'
 import { formatPrice } from '@/lib/format'
 import { toast } from '@/components/ui/Toaster'
+import { UpdateBanner } from '@/components/layout/UpdateBanner'
 
 // Las secciones de consulta se cargan bajo demanda; Inventario y Cargar productos van en el paquete inicial.
 const SuppliersPage = lazy(() => import('@/features/suppliers/SuppliersPage'))
@@ -153,9 +154,16 @@ function Panel() {
     if (phase === 'in' && canSales) void loadSales()
   }, [phase, canSales, loadSales])
 
-  if (phase === 'checking') return <Splash />
-  if (phase === 'error') return <BootError message={bootError ?? ''} retry={() => void boot()} />
-  if (phase === 'setup') return <SetupPage />
-  if (phase === 'login') return <LoginPage />
-  return <RouterProvider router={router} />
+  const screen =
+    phase === 'checking' ? <Splash />
+    : phase === 'error' ? <BootError message={bootError ?? ''} retry={() => void boot()} />
+    : phase === 'setup' ? <SetupPage />
+    : phase === 'login' ? <LoginPage />
+    : <RouterProvider router={router} />
+  return (
+    <>
+      {screen}
+      <UpdateBanner />
+    </>
+  )
 }

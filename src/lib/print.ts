@@ -1,8 +1,27 @@
-/** ¿Corre dentro de la aplicación de escritorio (carpeta desktop/)? */
-export const isDesktop = import.meta.env.VITE_DESKTOP === '1'
+/**
+ * ¿Corre dentro de la aplicación de escritorio (carpeta desktop/)?
+ * - Armado para escritorio (VITE_DESKTOP=1): el panel que viene dentro del .exe.
+ * - O el panel publicado en Vercel abierto por el .exe conectado, que agrega ?desktop=1 a la dirección
+ *   (se recuerda en la sesión para las recargas y la navegación).
+ */
+function openedByDesktop() {
+  try {
+    const q = new URLSearchParams(window.location.search)
+    if (q.get('desktop') === '1') {
+      sessionStorage.setItem('dragotoy-desktop', '1')
+      q.delete('desktop')
+      const rest = q.toString()
+      window.history.replaceState(null, '', window.location.pathname + (rest ? `?${rest}` : '') + window.location.hash)
+    }
+    return sessionStorage.getItem('dragotoy-desktop') === '1'
+  } catch {
+    return false
+  }
+}
+export const isDesktop = import.meta.env.VITE_DESKTOP === '1' || openedByDesktop()
 
-/** ¿Hay tienda online a la que enlazar? La versión de escritorio sin conexión no la tiene. */
-export const hasStore = !isDesktop || !!import.meta.env.VITE_STORE_URL
+/** ¿Hay tienda online a la que enlazar? Solo la versión de escritorio sin conexión no la tiene. */
+export const hasStore = !(import.meta.env.VITE_DESKTOP === '1' && !import.meta.env.VITE_STORE_URL)
 
 /**
  * Enlace a la tienda online. En la web es la misma página (/tienda…); en el escritorio la tienda
