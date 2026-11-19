@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import { Button } from '@/components/ui/Button'
 import { NAV } from '@/components/layout/nav'
+import { hasStore } from '@/lib/print'
 import { BOARD } from '@/lib/colors'
 import { can, ROLE_LABEL } from '@/lib/permissions'
 import { useAuth } from '@/stores/auth'
@@ -102,13 +103,13 @@ function useSteps(): Step[] {
         icon: Bell,
         color: 'coral',
       },
-      {
+      ...(hasStore ? [{
         target: 'store-link',
         title: 'La tienda online',
         body: 'Abre en otra pestaña la tienda que ven tus clientes. Ahí eligen juguetes, reservan sin pagar y retiran en el local con su código.',
         icon: ExternalLink,
-        color: 'cielo',
-      },
+        color: 'cielo' as BoardColor,
+      }] : []),
       {
         target: 'account',
         title: 'Tu cuenta',

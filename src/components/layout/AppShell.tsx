@@ -25,6 +25,7 @@ import { usePendingOrders } from '@/stores/orders'
 import { guideSeen, useGuide } from '@/stores/guide'
 import { Guide } from '@/features/guide/Guide'
 import { NAV, type NavItem } from './nav'
+import { hasStore, storeHref } from '@/lib/print'
 
 /** Número de pedidos online por retirar, junto a «Pedidos». */
 function OrdersBadge({ className }: { className?: string }) {
@@ -123,15 +124,17 @@ export function AppShell() {
               <BoardLink item={item} pathConnect={item.group === items[i + 1]?.group} />
             </Fragment>
           ))}
+          {hasStore && (
           <a
             data-tour="store-link"
-            href="/tienda"
+            href={storeHref('/tienda')}
             target="_blank"
             rel="noreferrer"
             className="mt-4 flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-extrabold text-rail-ink transition-colors hover:bg-rail-hover hover:text-white"
           >
             <LuExternalLink className="size-4" aria-hidden /> Ver tienda online
           </a>
+          )}
           <button
             data-tour="guide-button"
             onClick={startGuide}

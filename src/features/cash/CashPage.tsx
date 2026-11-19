@@ -14,6 +14,7 @@ import { onExternalChange } from '@/services/localDb'
 import { useCan } from '@/stores/auth'
 import { useInventory } from '@/stores/inventory'
 import type { CashClosing, CashStatus } from '@/types'
+import { openPrintable } from '@/lib/print'
 
 /** "12.500,50" o "12500.5" → número; vacío o inválido → NaN. */
 const money = (v: string) => {
@@ -87,10 +88,8 @@ export default function CashPage() {
   }
 
   const print = (c: CashClosing) => {
-    const w = window.open('', '_blank', 'width=560,height=760')
-    if (!w) return toast({ tone: 'error', text: 'El navegador bloqueó la ventana de impresión. Permite ventanas emergentes.' })
-    w.document.write(closingHtml(c, settings?.business.name || 'DragoToY'))
-    w.document.close()
+    if (!openPrintable(closingHtml(c, settings?.business.name || 'DragoToY'), 'width=560,height=760'))
+      toast({ tone: 'error', text: 'El navegador bloqueó la ventana de impresión. Permite ventanas emergentes.' })
   }
 
   return (

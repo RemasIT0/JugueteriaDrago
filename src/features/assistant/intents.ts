@@ -9,7 +9,10 @@ import { can, type Permission } from '@/lib/permissions'
 import { realMargin } from '@/lib/pricing'
 import { breakEven, completed, productRanking } from '@/lib/salesStats'
 import { productsApi } from '@/services/api'
+import { listAudit } from '@/services/audit'
 import { userNames } from '@/services/auth'
+import { cloud } from '@/services/supabase'
+import { useAuth } from '@/stores/auth'
 import type { Product, Role, Sale, Season, Settings } from '@/types'
 
 export interface Answer {
@@ -36,7 +39,51 @@ export interface Intent {
 const DAY = 86_400_000
 const plural = (n: number, s: string, p = `${s}s`) => `${n} ${n === 1 ? s : p}`
 
+const MOVE_LABEL: Record<string, string> = { alta: 'producto nuevo', ingreso: 'reposición', venta: 'venta', ajuste: 'ajuste' }
+
+/** Dónde quedan guardados los cambios según cómo se armó el programa. */
+const WHERE = cloud ? 'en la nube' : 'solo en esta computadora'
+
 export const INTENTS: Intent[] = [
+  {
+    id: 'conexion',
+    question: '¿Lo que hice quedó en la nube o solo en esta PC?',
+    keywords: ['conexion', 'internet', 'offline', 'online', 'sin conexion', 'nube', 'sincroniz', 'guardado', 'se guardo', 'esta pc', 'red'],
+    perm: 'inventario.ver',
+    async answer({ products }) {
+      const online = navigator.onLine
+      const mode = cloud
+        ? online
+          ? 'Estás conectado: todo lo que hagas se guarda en la nube y lo ven la web, la tienda online y los otros equipos al instante.'
+          : 'Ahora no hay internet. Esta versión trabaja con la nube, así que mientras no vuelva la conexión no se puede guardar ni consultar nada nuevo. Lo que hiciste antes del corte ya quedó guardado.'
+        : `Esta es la versión sin conexión: funciona sin internet${online ? ' (aunque ahora sí hay)' : ' (y ahora no hay)'} y guarda todo solo en esta computadora. Esos cambios no llegan a la tienda online ni a otros equipos. Descarga una copia de seguridad seguido desde Usuarios.`
+      if (cloud && !online) return { text: mode }
+
+      // Qué se hizo últimamente y dónde quedó: el registro de Actividad (dueño) o los movimientos de stock.
+      const since = Date.now() - 7 * DAY
+      try {
+        if (!can(useAuth.getState().user?.role, 'actividad.ver')) throw new Error('sin permiso')
+        const log = (await listAudit()).filter((e) => Date.parse(e.at) >= since).sort((a, b) => b.at.localeCompare(a.at))
+        const backup = log.find((e) => e.action === 'Copia de seguridad descargada')
+        return {
+          text: `${mode}${!cloud ? (backup ? ` Última copia de seguridad: ${formatDate(backup.at)} ${formatTime(backup.at)}.` : ' No descargaste ninguna copia de seguridad esta semana.') : ''}${log.length ? ` Lo último que se hizo (guardado ${WHERE}):` : ' En los últimos 7 días no hubo cambios.'}`,
+          items: log.slice(0, 8).map((e) => ({ label: `${e.action} · ${e.userName}`, value: `${formatDate(e.at)} ${formatTime(e.at)}` })),
+          link: { to: '/actividad', label: 'Ver actividad completa' },
+        }
+      } catch {
+        // Sin permiso para Actividad (vendedor): se muestran los movimientos de stock.
+        const moves = (await productsApi.recentMovements(7)).sort((a, b) => b.date.localeCompare(a.date))
+        return {
+          text: `${mode}${moves.length ? ` Movimientos de stock de esta semana (guardados ${WHERE}):` : ' Esta semana no hubo movimientos de stock.'}`,
+          items: moves.slice(0, 8).map((m) => ({
+            label: `${products.find((p) => p.id === m.productId)?.name ?? 'Producto eliminado'} · ${MOVE_LABEL[m.reason] ?? m.reason}`,
+            value: `${m.delta > 0 ? '+' : ''}${m.delta} u · ${formatDate(m.date)}`,
+            productId: m.productId,
+          })),
+        }
+      }
+    },
+  },
   {
     id: 'quien-bajo',
     question: '¿Quién bajó el stock esta semana?',

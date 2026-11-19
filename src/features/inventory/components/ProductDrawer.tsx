@@ -15,6 +15,7 @@ import type { ProductRow, StockMovement } from '@/types'
 import { ProductThumb } from './ProductThumb'
 import { PricingPanel } from './PricingPanel'
 import { EditProductForm } from './EditProductForm'
+import { hasStore, storeHref } from '@/lib/print'
 
 export function ProductDrawer({ productId, onClose }: { productId: string | null; onClose: () => void }) {
   const product = useInventory((s) => s.products.find((p) => p.id === productId))
@@ -449,9 +450,9 @@ function StoreDetails({ product, disabled }: { product: ProductRow; disabled: bo
             Ficha para la tienda
           </h3>
         </div>
-        {product.stock > 0 && (
+        {product.stock > 0 && hasStore && (
           <a
-            href={`/tienda/juguete/${product.id}`}
+            href={storeHref(`/tienda/juguete/${product.id}`)}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 text-sm font-extrabold text-turquesa-ink underline-offset-2 hover:underline"

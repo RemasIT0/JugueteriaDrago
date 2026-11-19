@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Programa de escritorio (se generan con desktop/build.py)
+desktop/.venv
+desktop/web
+desktop/build
+desktop/dist
+desktop/web-offline
+desktop/__pycache__

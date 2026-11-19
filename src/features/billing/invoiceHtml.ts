@@ -1,6 +1,7 @@
 import { formatPrice } from '@/lib/format'
 import { invoiceLabel } from '@/services/commerce'
 import type { Sale, Settings } from '@/types'
+import { openPrintable } from '@/lib/print'
 import { logoSvg } from './logo'
 
 const PAY: Record<Sale['paymentMethod'], string> = {
@@ -73,9 +74,5 @@ ${pending ? `<p class="warn">Reserva: se paga al retirar en el local mostrando e
 }
 
 export function printInvoice(sale: Sale, settings: Settings) {
-  const w = window.open('', '_blank', 'width=820,height=900')
-  if (!w) return false
-  w.document.write(invoiceHtml(sale, settings))
-  w.document.close()
-  return true
+  return openPrintable(invoiceHtml(sale, settings))
 }

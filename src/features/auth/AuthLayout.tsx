@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import { BOARD } from '@/lib/colors'
 import { STORE } from '@/lib/config'
 import type { BoardColor } from '@/types'
+import { cloud } from '@/services/supabase'
 
 const PATH: BoardColor[] = ['sol', 'coral', 'turquesa', 'lila', 'hoja', 'cielo', 'cielo', 'hoja', 'lila', 'turquesa', 'coral', 'sol']
 // Recorrido en zigzag: la fila de abajo se lee de derecha a izquierda.
@@ -100,7 +101,7 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
           </motion.p>
           <HoppingBoard />
         </div>
-        <p className="relative text-sm font-semibold text-rail-ink">Los datos se guardan en este equipo.</p>
+        <p className="relative text-sm font-semibold text-rail-ink">{cloud ? 'Los datos se guardan en la nube y se comparten entre tus equipos.' : 'Los datos se guardan en este equipo.'}</p>
       </aside>
 
       <main className="flex flex-col items-center justify-center px-4 py-10 sm:px-8">
