@@ -271,6 +271,8 @@ export function breakEven(sales: Sale[], products: Product[], settings: Settings
     remainingProfit,
     remainingSales,
     progress: target ? (remainingProfit === 0 ? 1 : soldThisMonth / target) : null,
+    /** Días que quedan del mes, contando hoy. */
+    daysLeft: days - now.getDate() + 1,
     daily,
     belowCost,
   }

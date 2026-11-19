@@ -370,8 +370,14 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
   const [tried, setTried] = useState(false)
   const costs = settings?.fixedCosts ?? []
   const monthName = new Date().toLocaleDateString('es-AR', { month: 'long' })
-  // Margen con un decimal cuando es chico (0,5 % no es lo mismo que 1 %).
-  const pctText = (r: number) => `${(r * 100).toLocaleString('es-AR', { maximumFractionDigits: Math.abs(r) < 0.1 ? 1 : 0 })} %`
+  const ivaRate = (settings?.ivaRate ?? 21) / 100
+  // «De cada $100 que cobras»: cuánto es IVA, cuánto paga la mercadería y cuánto te queda.
+  const per100 = be.ratio !== null ? { iva: 100 - 100 / (1 + ivaRate), keep: (be.ratio * 100) / (1 + ivaRate), goods: ((1 - be.ratio) * 100) / (1 + ivaRate) } : null
+  const daysLeft = be.daysLeft
+  const perDay = be.remainingSales !== null ? be.remainingSales / daysLeft : null
+  const reached = (be.progress ?? 0) >= 1
+  // En esta tarjeta los montos van redondeados: para una meta del mes los centavos no aportan.
+  const money = (n: number) => formatPrice(Math.round(n)).replace(/,00$/, '')
   const lowMargin = be.ratio !== null && be.ratio < 0.1
   const losers = be.belowCost.slice(0, 3)
   // El objetivo se dibuja si entra razonablemente en el gráfico; si no, se avisa.
@@ -409,100 +415,171 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
   return (
     <section className="grid grid-cols-1 gap-5 rounded-3xl bg-surface p-5 shadow-card sm:p-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
       <div className="flex min-w-0 flex-col gap-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="flex items-center gap-2 font-black">
-            <Target className="size-5 text-coral-ink" aria-hidden /> Punto de equilibrio · {monthName}
+        <div>
+          <h2 className="flex items-center gap-2 text-lg font-black">
+            <Target className="size-5 text-coral-ink" aria-hidden /> ¿Cuánto me falta vender este mes?
           </h2>
-          {be.target !== null && <p className="num text-sm font-bold text-ink-soft">Objetivo {formatPrice(be.target)}</p>}
+          <p className="mt-1 text-sm font-semibold text-ink-soft">Para pagar tus gastos fijos de {monthName} (alquiler, sueldos, servicios…) sin perder plata.</p>
         </div>
+
         {be.target === null ? (
           <Empty
             text={
               be.fixed === 0
-                ? 'Carga tus gastos fijos del mes (a la derecha) para calcular cuánto necesitas vender para no perder plata.'
+                ? 'Primero carga tus gastos fijos del mes en el recuadro de al lado. Con eso te digo cuánto tienes que vender.'
                 : be.ratio !== null && be.ratio <= 0
-                  ? `Tus precios no dejan ganancia (margen ${pctText(be.ratio)}): la mercadería cuesta más de lo que se cobra sin IVA. Así no hay punto de equilibrio posible; revisa precios de venta y de compra.`
-                  : 'Falta el precio de compra de los productos para calcular el margen. Cárgalo en Cargar productos o en el cajón del producto.'
+                  ? 'Con tus precios actuales no te queda ganancia: lo que te cuesta la mercadería es más de lo que cobras sin IVA. Revisa los precios de venta y de compra de tus productos.'
+                  : 'Me falta saber cuánto te cuestan los productos. Carga el precio de compra en Cargar productos o tocando cada producto en Inventario.'
             }
           />
         ) : (
           <>
-            <div className="flex flex-col gap-2">
-              <div className="h-4 overflow-hidden rounded-full bg-sunken">
-                <div className={clsx('h-full rounded-full', (be.progress ?? 0) >= 1 ? 'bg-turquesa' : 'bg-sol')} style={{ width: `${Math.min(100, (be.progress ?? 0) * 100)}%` }} />
+            {/* La respuesta, en una frase */}
+            <div className={clsx('flex flex-col gap-1 rounded-2xl p-4 sm:p-5', reached ? 'bg-turquesa-wash text-turquesa-ink' : 'bg-sol-wash text-sol-ink')}>
+              {reached ? (
+                <>
+                  <p className="text-xl font-black leading-tight">¡Ya cubriste los gastos fijos de {monthName}!</p>
+                  <p className="text-sm font-bold">Todo lo que vendas desde ahora es ganancia.</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-extrabold">Te falta vender</p>
+                  <p className="num text-3xl font-black leading-tight text-ink">{money(be.remainingSales ?? 0)}</p>
+                  <p className="text-sm font-bold">
+                    Son unos <span className="num font-black text-ink">{money(perDay ?? 0)}</span> por día durante {daysLeft === 1 ? 'el último día' : `los ${daysLeft} días`} que quedan del mes.
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* Avance: vendido contra la meta */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-end justify-between gap-3 text-sm">
+                <span className="flex flex-col font-bold text-ink-soft sm:flex-row sm:gap-1">
+                  Vendido: <span className="num whitespace-nowrap font-black text-ink">{money(be.soldThisMonth)}</span>
+                </span>
+                <span className="flex flex-col text-right font-bold text-ink-soft sm:flex-row sm:gap-1">
+                  Meta del mes: <span className="num whitespace-nowrap font-black text-ink">{money(be.target)}</span>
+                </span>
               </div>
-              <p className="num text-sm font-extrabold">
-                {formatPrice(be.soldThisMonth)} vendidos · {((be.progress ?? 0) * 100).toFixed(0)}% del equilibrio
-                {(be.progress ?? 0) >= 1 ? ' · ¡ya cubriste los gastos fijos!' : ` · faltan ${formatPrice(be.remainingSales ?? 0)} en ventas`}
-              </p>
-              {/* La cuenta, en palabras */}
-              <dl className="grid grid-cols-1 gap-2 rounded-2xl border-2 border-line p-3 text-sm sm:grid-cols-3">
-                <div>
-                  <dt className="text-xs font-extrabold text-ink-soft">Ya ganaste este mes</dt>
-                  <dd className={clsx('num font-black', be.monthProfit < 0 && 'text-peligro')}>{formatPrice(be.monthProfit)}</dd>
+              <div className="h-4 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-label="Avance hacia la meta del mes" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, (be.progress ?? 0) * 100))}>
+                <div className={clsx('h-full rounded-full', reached ? 'bg-turquesa' : 'bg-sol')} style={{ width: `${Math.min(100, (be.progress ?? 0) * 100)}%` }} />
+              </div>
+              <p className="num text-xs font-bold text-ink-soft">Llevas el {Math.min(100, (be.progress ?? 0) * 100).toFixed(0)}% de la meta.</p>
+            </div>
+
+            {/* Cómo se llega a ese número */}
+            <div className="flex flex-col gap-3 rounded-2xl border-2 border-line p-4">
+              <p className="text-sm font-black">¿De dónde sale este número?</p>
+              <div className="grid grid-cols-1 items-stretch gap-2 sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
+                <div className="rounded-xl bg-sunken p-3">
+                  <p className="text-xs font-extrabold text-ink-soft">Tus gastos fijos</p>
+                  <p className="num whitespace-nowrap text-lg font-black">{money(be.fixed)}</p>
+                  <p className="text-xs font-semibold text-ink-soft">lo que pagas por mes</p>
                 </div>
-                <div>
-                  <dt className="text-xs font-extrabold text-ink-soft">Te falta ganar</dt>
-                  <dd className="num font-black">{formatPrice(be.remainingProfit)}</dd>
+                <span className="grid place-items-center text-2xl font-black text-ink-soft" aria-hidden>−</span>
+                <div className="rounded-xl bg-sunken p-3">
+                  <p className="text-xs font-extrabold text-ink-soft">Ya ganaste</p>
+                  <p className={clsx('num whitespace-nowrap text-lg font-black', be.monthProfit < 0 && 'text-peligro')}>{money(be.monthProfit)}</p>
+                  <p className="text-xs font-semibold text-ink-soft">con lo vendido este mes</p>
                 </div>
-                <div>
-                  <dt className="text-xs font-extrabold text-ink-soft">Eso son, en ventas</dt>
-                  <dd className="num font-black">{formatPrice(be.remainingSales ?? 0)}</dd>
+                <span className="grid place-items-center text-2xl font-black text-ink-soft" aria-hidden>=</span>
+                <div className="rounded-xl bg-ink p-3 text-ground">
+                  <p className="text-xs font-extrabold opacity-80">Te falta ganar</p>
+                  <p className="num whitespace-nowrap text-lg font-black">{money(be.remainingProfit)}</p>
+                  <p className="text-xs font-semibold opacity-80">para no perder plata</p>
                 </div>
-              </dl>
+              </div>
+
+              {per100 && per100.keep > 0 && (
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm font-bold">
+                    Pero de cada <span className="num font-black">$100</span> que cobras, solo te quedan <span className="num font-black text-turquesa-ink">${Math.round(per100.keep)}</span> de ganancia:
+                  </p>
+                  <div className="flex h-9 overflow-hidden rounded-xl text-xs font-black" aria-hidden>
+                    <div className="grid place-items-center bg-line text-ink-soft" style={{ width: `${per100.iva}%` }}>
+                      <span>
+                        <span className="hidden sm:inline">IVA </span>${Math.round(per100.iva)}
+                      </span>
+                    </div>
+                    <div className="grid place-items-center bg-cielo-wash text-cielo-ink" style={{ width: `${per100.goods}%` }}>
+                      <span>
+                        <span className="hidden sm:inline">Mercadería </span>${Math.round(per100.goods)}
+                      </span>
+                    </div>
+                    <div className="grid min-w-[2.75rem] place-items-center bg-turquesa text-on-fill sm:min-w-[4.5rem]" style={{ width: `${per100.keep}%` }}>
+                      <span>
+                        <span className="hidden sm:inline">Te queda </span>${Math.round(per100.keep)}
+                      </span>
+                    </div>
+                  </div>
+                  {/* En el celular las etiquetas no entran en la barra: van debajo */}
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-bold sm:hidden" aria-hidden>
+                    <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-line" />IVA</span>
+                    <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-cielo-wash ring-1 ring-cielo-ink/40" />Mercadería</span>
+                    <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-turquesa" />Te queda</span>
+                  </div>
+                  <p className="text-sm font-semibold text-ink-soft">
+                    Por eso, para ganar los <span className="num font-black text-ink">{money(be.remainingProfit)}</span> que faltan, tienes que vender{' '}
+                    <span className="num font-black text-ink">{money(be.remainingSales ?? 0)}</span>.
+                    <span className="sr-only">
+                      {' '}De cada $100 cobrados: ${Math.round(per100.iva)} son IVA, ${Math.round(per100.goods)} pagan la mercadería y ${Math.round(per100.keep)} te quedan.
+                    </span>
+                  </p>
+                  <p className="text-xs font-semibold text-ink-soft">
+                    {be.source === 'ventas' ? 'Calculado con tus ventas de los últimos 90 días.' : 'Estimado con los precios y costos de tus productos (todavía no hay ventas suficientes).'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Cómo viene el mes */}
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-black">Cómo vienes en el mes</p>
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={be.daily} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+                    <CartesianGrid vertical={false} stroke={c.grid} />
+                    <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fill: c.axis, fontSize: 12, fontWeight: 700 }} />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      width={56}
+                      domain={targetFits ? [0, (max: number) => Math.max(max, be.target ?? 0) * 1.08] : [0, 'auto']}
+                      tick={{ fill: c.axis, fontSize: 12, fontWeight: 700 }}
+                      tickFormatter={(v: number) => `$${compact.format(v)}`}
+                    />
+                    <Tooltip
+                      cursor={{ stroke: c.axis, strokeDasharray: '3 3' }}
+                      formatter={(v: number) => [money(v), 'Vendido hasta ese día']}
+                      labelFormatter={(d) => `Día ${d}`}
+                      contentStyle={{ background: c.ink, border: 'none', borderRadius: 12, color: c.surface, fontWeight: 700 }}
+                      itemStyle={{ color: c.surface }}
+                      labelStyle={{ color: c.surface }}
+                    />
+                    {targetFits && <ReferenceLine y={be.target} stroke={c.target} strokeDasharray="6 4" strokeWidth={2} label={{ value: 'Meta', position: 'insideTopRight', fill: c.target, fontSize: 12, fontWeight: 800 }} />}
+                    <Line type="monotone" dataKey="acumulado" stroke={c.series} strokeWidth={2} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: c.surface }} connectNulls={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
               <p className="text-xs font-semibold text-ink-soft">
-                Gastos fijos {formatPrice(be.fixed)} − lo que ya ganaste = lo que falta ganar. Con tu margen habitual del {pctText(be.ratio ?? 0)} (de cada $100 vendidos sin IVA te quedan{' '}
-                {formatPrice((be.ratio ?? 0) * 100)} después de pagar la mercadería
-                {be.source === 'ventas' ? ', según tus ventas de los últimos 90 días' : ', estimado con precios y costos del catálogo'}), eso es lo que falta vender con IVA.
+                {targetFits ? 'La línea sube con cada venta; cuando cruza la línea punteada «Meta», cubriste los gastos.' : `La línea sube con cada venta. La meta (${money(be.target)}) está muy por encima, por eso no se ve en el gráfico.`}
               </p>
             </div>
-            <div className="h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={be.daily} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
-                  <CartesianGrid vertical={false} stroke={c.grid} />
-                  <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fill: c.axis, fontSize: 12, fontWeight: 700 }} />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    width={56}
-                    domain={targetFits ? [0, (max: number) => Math.max(max, be.target ?? 0) * 1.08] : [0, 'auto']}
-                    tick={{ fill: c.axis, fontSize: 12, fontWeight: 700 }}
-                    tickFormatter={(v: number) => `$${compact.format(v)}`}
-                  />
-                  <Tooltip
-                    cursor={{ stroke: c.axis, strokeDasharray: '3 3' }}
-                    formatter={(v: number) => [formatPrice(v), 'Vendido acumulado']}
-                    labelFormatter={(d) => `Día ${d}`}
-                    contentStyle={{ background: c.ink, border: 'none', borderRadius: 12, color: c.surface, fontWeight: 700 }}
-                    itemStyle={{ color: c.surface }}
-                    labelStyle={{ color: c.surface }}
-                  />
-                  {targetFits && <ReferenceLine y={be.target} stroke={c.target} strokeDasharray="6 4" strokeWidth={2} label={{ value: 'Equilibrio', position: 'insideTopRight', fill: c.target, fontSize: 12, fontWeight: 800 }} />}
-                  <Line type="monotone" dataKey="acumulado" stroke={c.series} strokeWidth={2} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: c.surface }} connectNulls={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            {!targetFits && (
-              <p className="-mt-2 text-xs font-bold text-ink-soft">El objetivo ({formatPrice(be.target)}) queda muy por encima de lo vendido, por eso no entra en el gráfico.</p>
-            )}
           </>
         )}
 
-        {lowMargin && (
+        {lowMargin && per100 && (
           <div role="note" className="flex flex-col gap-2 rounded-2xl border-2 border-sol/60 bg-sol-wash p-4 text-sol-ink">
             <p className="flex items-center gap-2 font-black">
               <AlertTriangle className="size-4 shrink-0" aria-hidden />
-              {(be.ratio ?? 0) <= 0 ? `Tus precios están dejando pérdida (margen ${pctText(be.ratio ?? 0)})` : `Tus precios dejan muy poca ganancia (margen habitual ${pctText(be.ratio ?? 0)})`}
+              {(be.ratio ?? 0) <= 0 ? 'Con tus precios estás perdiendo plata en cada venta' : `Tus ventas dejan muy poca ganancia: $${per100.keep.toLocaleString('es-AR', { maximumFractionDigits: 1 })} de cada $100`}
             </p>
-            <p className="text-sm font-semibold">
-              {(be.ratio ?? 0) <= 0
-                ? 'La mercadería cuesta más de lo que se cobra sin IVA: cuanto más se vende así, más se pierde. Suele pasar por:'
-                : 'Con un margen así hay que vender muchísimo para cubrir cada peso de gastos fijos. Suele pasar por:'}
-            </p>
+            <p className="text-sm font-semibold">Revisa:</p>
             <ul className="list-disc pl-5 text-sm font-semibold">
-              <li>precios de venta bajos para lo que cuesta la mercadería,</li>
-              <li>precios de compra cargados mal (más altos de lo real),</li>
-              <li>compras de prueba incluidas (destilda «Incluir compras de prueba» arriba).</li>
+              <li>que los precios de venta no sean muy bajos para lo que cuesta la mercadería,</li>
+              <li>que el precio de compra de los productos esté bien cargado,</li>
+              <li>si hay compras de prueba incluidas (destilda «Incluir compras de prueba» arriba).</li>
             </ul>
           </div>
         )}
@@ -510,45 +587,56 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
         {losers.length > 0 && (
           <div role="note" className="flex flex-col gap-2 rounded-2xl border-2 border-coral/50 bg-coral-wash p-4 text-coral-ink">
             <p className="flex items-center gap-2 font-black">
-              <AlertTriangle className="size-4 shrink-0" aria-hidden /> Vendiste productos por debajo de lo que te costaron
+              <AlertTriangle className="size-4 shrink-0" aria-hidden /> Vendiste algo por menos de lo que te costó
             </p>
             <p className="text-sm font-semibold">
-              {be.monthLoss > 0
-                ? `Este mes eso te hizo perder ${formatPrice(be.monthLoss)}. Ya está descontado de lo que ganaste: se paga una sola vez y no cambia tu margen habitual.`
-                : 'Ya está descontado de la ganancia de esos meses y no cambia tu margen habitual.'}{' '}
-              Si fue una prueba, anula esa venta en Facturación.
+              {be.monthLoss > 0 ? `Este mes perdiste ${money(be.monthLoss)} con eso. Ya está restado de lo que ganaste.` : 'Ya está restado de lo que ganaste esos meses.'} Si fue una prueba, anula esa
+              venta en Facturación.
             </p>
             <div className="flex flex-col gap-1 rounded-xl bg-surface/70 p-3 text-ink">
-              <p className="text-xs font-extrabold text-ink-soft">Últimos 90 días</p>
               {losers.map((l) => (
                 <p key={l.name} className="flex items-baseline justify-between gap-3 text-sm">
                   <span className="min-w-0 truncate font-bold">
                     {l.name} <span className="num font-semibold text-ink-soft">· {l.qty} u</span>
                   </span>
-                  <span className="num shrink-0 font-black text-peligro">−{formatPrice(l.loss)}</span>
+                  <span className="num shrink-0 font-black text-peligro">−{money(l.loss)}</span>
                 </p>
               ))}
             </div>
           </div>
         )}
 
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl bg-sunken p-4 text-sm sm:grid-cols-3">
-          {[
-            ['Ventas con IVA', month.gross],
-            ['IVA contenido', month.iva],
-            ['Ventas netas', month.net],
-            ['Costo de lo vendido', month.cogs],
-            ['Margen bruto', month.margin],
-            ['Resultado (− gastos fijos)', month.result],
-          ].map(([k, v]) => (
-            <div key={k as string}>
-              <dt className="text-xs font-extrabold text-ink-soft">{k}</dt>
-              <dd className={clsx('num font-black', k === 'Resultado (− gastos fijos)' && ((v as number) >= 0 ? 'text-turquesa-ink' : 'text-peligro'))}>{formatPrice(v as number)}</dd>
-            </div>
-          ))}
-        </dl>
+        {/* Los números del mes, con nombres comunes; plegados para no abrumar */}
+        <details className="group rounded-2xl bg-sunken">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-2xl px-4 py-3 text-sm font-black hover:bg-line/50">
+            Ver los números del mes
+            <span className="text-ink-soft transition-transform group-open:rotate-180" aria-hidden>
+              ▾
+            </span>
+          </summary>
+          <dl className="grid grid-cols-1 gap-x-4 gap-y-3 px-4 pb-4 text-sm sm:grid-cols-2">
+            {(
+              [
+                ['Cobraste', month.gross, 'Todo lo que entró por ventas, con IVA.'],
+                ['De eso, IVA', month.iva, 'Es del Estado, no es tuyo.'],
+                ['Cobraste sin IVA', month.net, 'Lo que es tuyo de verdad.'],
+                ['Te costó la mercadería', month.cogs, 'Lo que pagaste por lo que vendiste.'],
+                ['Ganancia de las ventas', month.margin, 'Sin IVA y menos la mercadería.'],
+                ['Ganancia final del mes', month.result, 'Después de pagar los gastos fijos.'],
+              ] as const
+            ).map(([k, v, hint]) => (
+              <div key={k}>
+                <dt className="text-xs font-extrabold text-ink-soft">{k}</dt>
+                <dd className={clsx('num font-black', k === 'Ganancia final del mes' && (v >= 0 ? 'text-turquesa-ink' : 'text-peligro'))}>{formatPrice(v)}</dd>
+                <p className="text-xs font-semibold text-ink-soft">{hint}</p>
+              </div>
+            ))}
+          </dl>
+        </details>
         {month.netWithoutCost > 0 && (
-          <p className="text-xs font-bold text-sol-ink">{formatPrice(month.netWithoutCost)} de ventas netas son de productos sin precio de compra: no entran en el margen.</p>
+          <p className="text-xs font-bold text-sol-ink">
+            Hay {formatPrice(month.netWithoutCost)} vendidos (sin IVA) de productos que no tienen cargado el precio de compra: no se puede saber cuánto ganaste con ellos, así que no se cuentan.
+          </p>
         )}
       </div>
 
