@@ -2,6 +2,7 @@ import { formatPrice } from '@/lib/format'
 import { invoiceLabel } from '@/services/commerce'
 import type { Sale, Settings } from '@/types'
 import { openPrintable } from '@/lib/print'
+import { invoiceNumbers } from './invoiceMath'
 import { logoSvg } from './logo'
 
 const PAY: Record<Sale['paymentMethod'], string> = {
@@ -24,16 +25,17 @@ export function invoiceHtml(original: Sale, settings: Settings) {
     : original
   const b = settings.business
   const rate = settings.ivaRate
-  const net = sale.total - sale.iva
   const date = new Date(sale.at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
   // Reserva todavía sin cobrar: no es comprobante de venta, es el resguardo para retirar.
   const pending = !sale.number && !!sale.reservationCode
   const until = sale.expiresAt ? new Date(sale.expiresAt).toLocaleString('es-AR', { dateStyle: 'full', timeStyle: 'short' }) : ''
-  const rows = sale.items
+  // Renglones a precio de lista; los descuentos van abajo, así la cuenta cierra en el papel.
+  const n = invoiceNumbers(sale, rate)
+  const rows = n.lines
     .map(
-      (i) => `<tr><td>${i.qty}</td><td>${esc(i.name)}<small>${esc(i.sku)}${i.discountPercent ? ` · promo −${i.discountPercent}%` : ''}</small></td>
-      <td class="r">${formatPrice(sale.invoiceType === 'A' ? i.unitFinal / (1 + rate / 100) : i.unitFinal)}</td>
-      <td class="r">${formatPrice((sale.invoiceType === 'A' ? i.unitFinal / (1 + rate / 100) : i.unitFinal) * i.qty)}</td></tr>`,
+      (l) => `<tr><td>${l.qty}</td><td>${esc(l.name)}<small>${esc(l.sku)}${l.promo ? ` · <span class="promo">promoción −${l.promo}%</span>` : ''}</small></td>
+      <td class="r">${formatPrice(l.unit)}</td>
+      <td class="r">${formatPrice(l.amount)}</td></tr>`,
     )
     .join('')
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${esc(invoiceLabel(sale))}</title>
@@ -50,6 +52,7 @@ export function invoiceHtml(original: Sale, settings: Settings) {
   .warn{margin-top:24px;padding:10px 14px;border-radius:10px;background:#FFF4CF;color:#7A5700;font-weight:700;font-size:11px}
   .test{position:fixed;top:40%;left:0;right:0;text-align:center;font-size:90px;font-weight:900;color:rgba(205,64,52,.12);transform:rotate(-18deg)}
   .void{color:#CD4034;font-weight:900}
+  .promo{color:#A63B2C;font-weight:700} .tot .disc{color:#A63B2C} .tot .sep{border-top:1px solid #E9E3D6;margin-top:4px;padding-top:6px}
   @media print{body{margin:12mm}}
 </style></head><body>
 ${sale.test ? '<div class="test">PRUEBA</div>' : ''}
@@ -63,8 +66,10 @@ ${sale.test ? '<div class="test">PRUEBA</div>' : ''}
   <small>${sale.customer.docType ? `${sale.customer.docType} ${esc(sale.customer.doc)}` : 'Consumidor final'}${sale.customer.email ? ` · ${esc(sale.customer.email)}` : ''}</small></div>
 <table><thead><tr><th>Cant.</th><th>Producto</th><th class="r">${sale.invoiceType === 'A' ? 'P. unit. neto' : 'P. unitario'}</th><th class="r">Importe</th></tr></thead><tbody>${rows}</tbody></table>
 <div class="tot">
-  ${sale.discountTotal > 0 ? `<div><span>Descuentos${sale.couponCode ? ` (cupón ${esc(sale.couponCode)} −${sale.couponPercent}%)` : ''}</span><span>−${formatPrice(sale.discountTotal)}</span></div>` : ''}
-  ${sale.invoiceType === 'A' ? `<div><span>Neto gravado</span><span>${formatPrice(net)}</span></div><div><span>IVA ${rate}%</span><span>${formatPrice(sale.iva)}</span></div>` : ''}
+  ${n.promos > 0 || n.coupon > 0 ? `<div><span>Subtotal${n.isA ? ' neto' : ''}</span><span>${formatPrice(n.subtotal)}</span></div>` : ''}
+  ${n.promos > 0 ? `<div class="disc"><span>Promociones</span><span>−${formatPrice(n.promos)}</span></div>` : ''}
+  ${n.coupon > 0 ? `<div class="disc"><span>Cupón ${esc(sale.couponCode ?? '')}${sale.couponPercent ? ` (−${sale.couponPercent}%)` : ''}</span><span>−${formatPrice(n.coupon)}</span></div>` : ''}
+  ${n.isA ? `<div class="sep"><span>Neto gravado</span><span>${formatPrice(n.net)}</span></div><div><span>IVA ${rate}%</span><span>${formatPrice(n.iva)}</span></div>` : ''}
   <div class="big"><span>Total</span><span>${formatPrice(sale.total)}</span></div>
   ${sale.invoiceType !== 'A' ? `<div><small>IVA contenido (Ley 27.743): ${formatPrice(sale.iva)}</small></div>` : ''}
 </div>

@@ -183,11 +183,52 @@ export function previousRange(from: Date, to: Date): [Date, Date] {
  * Usa el margen de contribución real de los últimos 90 días; si todavía no hay ventas con costo,
  * usa el margen promedio del catálogo (precio vs costo).
  */
+/**
+ * Punto de equilibrio del mes: cuánto falta vender para que la ganancia cubra los gastos fijos.
+ *
+ * 1. Ganancia del mes = ventas sin IVA − lo que costó la mercadería vendida (incluye cualquier
+ *    venta a pérdida: ese pozo se descuenta una sola vez).
+ * 2. Falta ganar = gastos fijos − ganancia del mes.
+ * 3. Margen habitual = cuánto deja normalmente cada venta (últimos 90 días), SIN contar las ventas
+ *    hechas por debajo del costo: una liquidación puntual no dice cuánto van a dejar las próximas.
+ *    Si no hay ventas con costo, se estima con los precios y costos del catálogo.
+ * 4. Falta vender (con IVA) = falta ganar ÷ margen habitual × (1 + IVA).
+ * Objetivo del mes = lo vendido + lo que falta vender.
+ */
 export function breakEven(sales: Sale[], products: Product[], settings: Settings | undefined, now = new Date()) {
   const rate = (settings?.ivaRate ?? 21) / 100
   const fixed = settings?.fixedCosts.reduce((a, c) => a + c.amount, 0) ?? 0
-  const recent = balance(sales, settings, now.getTime() - 90 * DAY, now.getTime() + 1, 0)
-  let ratio = recent.contribution
+  const since = now.getTime() - 90 * DAY
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  // Recorre las ventas de 90 días: separa lo habitual de lo vendido por debajo del costo.
+  let okNet = 0
+  let okCost = 0
+  const losses = new Map<string, { name: string; qty: number; loss: number }>()
+  let monthLoss = 0
+  for (const s of sales) {
+    const t = new Date(s.at).getTime()
+    if (t < since) continue
+    const factor = 1 - s.couponPercent / 100
+    for (const i of s.items) {
+      if (i.unitCost === null || i.qty <= 0) continue
+      const netUnit = (i.unitFinal * factor) / (1 + rate)
+      if (netUnit >= i.unitCost) {
+        okNet += netUnit * i.qty
+        okCost += i.unitCost * i.qty
+        continue
+      }
+      const loss = (i.unitCost - netUnit) * i.qty
+      const row = losses.get(i.productId) ?? { name: i.name, qty: 0, loss: 0 }
+      row.qty += i.qty
+      row.loss += loss
+      losses.set(i.productId, row)
+      if (t >= monthStart.getTime()) monthLoss += loss
+    }
+  }
+  const belowCost = [...losses.values()].sort((a, b) => b.loss - a.loss)
+
+  let ratio: number | null = okNet > 0 ? (okNet - okCost) / okNet : null
   let source: 'ventas' | 'catalogo' | null = ratio !== null ? 'ventas' : null
   if (ratio === null) {
     const withCost = products.filter((p) => p.cost !== null && p.price > 0)
@@ -198,11 +239,15 @@ export function breakEven(sales: Sale[], products: Product[], settings: Settings
       source = 'catalogo'
     }
   }
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+
   const monthSales = sales.filter((s) => new Date(s.at) >= monthStart)
   const soldThisMonth = monthSales.reduce((a, s) => a + s.total, 0)
+  // Ganancia del mes (ya con las ventas a pérdida restadas).
+  const monthProfit = balance(sales, settings, monthStart.getTime(), now.getTime() + 1, 0).margin
+  const remainingProfit = Math.max(0, fixed - monthProfit)
+  const remainingSales = ratio && ratio > 0 ? (remainingProfit / ratio) * (1 + rate) : null
   // Sin gastos fijos cargados no hay objetivo que alcanzar.
-  const target = fixed > 0 && ratio && ratio > 0 ? (fixed / ratio) * (1 + rate) : null
+  const target = fixed > 0 && remainingSales !== null ? soldThisMonth + remainingSales : null
   // Acumulado por día del mes, para la línea contra el objetivo.
   const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
   let acc = 0
@@ -215,5 +260,18 @@ export function breakEven(sales: Sale[], products: Product[], settings: Settings
     }).reduce((a, s) => a + s.total, 0)
     return { day: i + 1, acumulado: d0 <= now.getTime() ? Math.round(acc) : null }
   })
-  return { fixed, ratio, source, target, soldThisMonth, progress: target ? soldThisMonth / target : null, daily }
+  return {
+    fixed,
+    ratio,
+    source,
+    target,
+    soldThisMonth,
+    monthProfit,
+    monthLoss,
+    remainingProfit,
+    remainingSales,
+    progress: target ? (remainingProfit === 0 ? 1 : soldThisMonth / target) : null,
+    daily,
+    belowCost,
+  }
 }

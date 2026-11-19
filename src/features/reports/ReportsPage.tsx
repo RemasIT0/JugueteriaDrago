@@ -370,6 +370,13 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
   const [tried, setTried] = useState(false)
   const costs = settings?.fixedCosts ?? []
   const monthName = new Date().toLocaleDateString('es-AR', { month: 'long' })
+  // Margen con un decimal cuando es chico (0,5 % no es lo mismo que 1 %).
+  const pctText = (r: number) => `${(r * 100).toLocaleString('es-AR', { maximumFractionDigits: Math.abs(r) < 0.1 ? 1 : 0 })} %`
+  const lowMargin = be.ratio !== null && be.ratio < 0.1
+  const losers = be.belowCost.slice(0, 3)
+  // El objetivo se dibuja si entra razonablemente en el gráfico; si no, se avisa.
+  const maxSold = Math.max(0, ...be.daily.map((d) => d.acumulado ?? 0))
+  const targetFits = be.target !== null && be.target <= Math.max(maxSold, 1) * 8
   const parsed = Number(amount.replace(/\./g, '').replace(',', '.'))
   const nameErr = tried && !name.trim() ? 'Escribe qué gasto es.' : undefined
   const amountErr = tried && !(parsed > 0) ? 'Escribe cuánto pagas por mes (solo números).' : undefined
@@ -413,7 +420,9 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
             text={
               be.fixed === 0
                 ? 'Carga tus gastos fijos del mes (a la derecha) para calcular cuánto necesitas vender para no perder plata.'
-                : 'Falta el precio de compra de los productos para calcular el margen. Cárgalo en Cargar productos o en el cajón del producto.'
+                : be.ratio !== null && be.ratio <= 0
+                  ? `Tus precios no dejan ganancia (margen ${pctText(be.ratio)}): la mercadería cuesta más de lo que se cobra sin IVA. Así no hay punto de equilibrio posible; revisa precios de venta y de compra.`
+                  : 'Falta el precio de compra de los productos para calcular el margen. Cárgalo en Cargar productos o en el cajón del producto.'
             }
           />
         ) : (
@@ -424,10 +433,27 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
               </div>
               <p className="num text-sm font-extrabold">
                 {formatPrice(be.soldThisMonth)} vendidos · {((be.progress ?? 0) * 100).toFixed(0)}% del equilibrio
-                {(be.progress ?? 0) >= 1 ? ' · ¡ya cubriste los gastos fijos!' : ` · faltan ${formatPrice(be.target - be.soldThisMonth)}`}
+                {(be.progress ?? 0) >= 1 ? ' · ¡ya cubriste los gastos fijos!' : ` · faltan ${formatPrice(be.remainingSales ?? 0)} en ventas`}
               </p>
+              {/* La cuenta, en palabras */}
+              <dl className="grid grid-cols-1 gap-2 rounded-2xl border-2 border-line p-3 text-sm sm:grid-cols-3">
+                <div>
+                  <dt className="text-xs font-extrabold text-ink-soft">Ya ganaste este mes</dt>
+                  <dd className={clsx('num font-black', be.monthProfit < 0 && 'text-peligro')}>{formatPrice(be.monthProfit)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-extrabold text-ink-soft">Te falta ganar</dt>
+                  <dd className="num font-black">{formatPrice(be.remainingProfit)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-extrabold text-ink-soft">Eso son, en ventas</dt>
+                  <dd className="num font-black">{formatPrice(be.remainingSales ?? 0)}</dd>
+                </div>
+              </dl>
               <p className="text-xs font-semibold text-ink-soft">
-                Margen de contribución {((be.ratio ?? 0) * 100).toFixed(0)}% ({be.source === 'ventas' ? 'según ventas de los últimos 90 días' : 'estimado con precios y costos del catálogo'}).
+                Gastos fijos {formatPrice(be.fixed)} − lo que ya ganaste = lo que falta ganar. Con tu margen habitual del {pctText(be.ratio ?? 0)} (de cada $100 vendidos sin IVA te quedan{' '}
+                {formatPrice((be.ratio ?? 0) * 100)} después de pagar la mercadería
+                {be.source === 'ventas' ? ', según tus ventas de los últimos 90 días' : ', estimado con precios y costos del catálogo'}), eso es lo que falta vender con IVA.
               </p>
             </div>
             <div className="h-56">
@@ -435,7 +461,14 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
                 <LineChart data={be.daily} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
                   <CartesianGrid vertical={false} stroke={c.grid} />
                   <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fill: c.axis, fontSize: 12, fontWeight: 700 }} />
-                  <YAxis tickLine={false} axisLine={false} width={56} tick={{ fill: c.axis, fontSize: 12, fontWeight: 700 }} tickFormatter={(v: number) => `$${compact.format(v)}`} />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    width={56}
+                    domain={targetFits ? [0, (max: number) => Math.max(max, be.target ?? 0) * 1.08] : [0, 'auto']}
+                    tick={{ fill: c.axis, fontSize: 12, fontWeight: 700 }}
+                    tickFormatter={(v: number) => `$${compact.format(v)}`}
+                  />
                   <Tooltip
                     cursor={{ stroke: c.axis, strokeDasharray: '3 3' }}
                     formatter={(v: number) => [formatPrice(v), 'Vendido acumulado']}
@@ -444,12 +477,59 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
                     itemStyle={{ color: c.surface }}
                     labelStyle={{ color: c.surface }}
                   />
-                  <ReferenceLine y={be.target} stroke={c.target} strokeDasharray="6 4" strokeWidth={2} label={{ value: 'Equilibrio', position: 'insideTopRight', fill: c.target, fontSize: 12, fontWeight: 800 }} />
+                  {targetFits && <ReferenceLine y={be.target} stroke={c.target} strokeDasharray="6 4" strokeWidth={2} label={{ value: 'Equilibrio', position: 'insideTopRight', fill: c.target, fontSize: 12, fontWeight: 800 }} />}
                   <Line type="monotone" dataKey="acumulado" stroke={c.series} strokeWidth={2} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: c.surface }} connectNulls={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
+            {!targetFits && (
+              <p className="-mt-2 text-xs font-bold text-ink-soft">El objetivo ({formatPrice(be.target)}) queda muy por encima de lo vendido, por eso no entra en el gráfico.</p>
+            )}
           </>
+        )}
+
+        {lowMargin && (
+          <div role="note" className="flex flex-col gap-2 rounded-2xl border-2 border-sol/60 bg-sol-wash p-4 text-sol-ink">
+            <p className="flex items-center gap-2 font-black">
+              <AlertTriangle className="size-4 shrink-0" aria-hidden />
+              {(be.ratio ?? 0) <= 0 ? `Tus precios están dejando pérdida (margen ${pctText(be.ratio ?? 0)})` : `Tus precios dejan muy poca ganancia (margen habitual ${pctText(be.ratio ?? 0)})`}
+            </p>
+            <p className="text-sm font-semibold">
+              {(be.ratio ?? 0) <= 0
+                ? 'La mercadería cuesta más de lo que se cobra sin IVA: cuanto más se vende así, más se pierde. Suele pasar por:'
+                : 'Con un margen así hay que vender muchísimo para cubrir cada peso de gastos fijos. Suele pasar por:'}
+            </p>
+            <ul className="list-disc pl-5 text-sm font-semibold">
+              <li>precios de venta bajos para lo que cuesta la mercadería,</li>
+              <li>precios de compra cargados mal (más altos de lo real),</li>
+              <li>compras de prueba incluidas (destilda «Incluir compras de prueba» arriba).</li>
+            </ul>
+          </div>
+        )}
+
+        {losers.length > 0 && (
+          <div role="note" className="flex flex-col gap-2 rounded-2xl border-2 border-coral/50 bg-coral-wash p-4 text-coral-ink">
+            <p className="flex items-center gap-2 font-black">
+              <AlertTriangle className="size-4 shrink-0" aria-hidden /> Vendiste productos por debajo de lo que te costaron
+            </p>
+            <p className="text-sm font-semibold">
+              {be.monthLoss > 0
+                ? `Este mes eso te hizo perder ${formatPrice(be.monthLoss)}. Ya está descontado de lo que ganaste: se paga una sola vez y no cambia tu margen habitual.`
+                : 'Ya está descontado de la ganancia de esos meses y no cambia tu margen habitual.'}{' '}
+              Si fue una prueba, anula esa venta en Facturación.
+            </p>
+            <div className="flex flex-col gap-1 rounded-xl bg-surface/70 p-3 text-ink">
+              <p className="text-xs font-extrabold text-ink-soft">Últimos 90 días</p>
+              {losers.map((l) => (
+                <p key={l.name} className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="min-w-0 truncate font-bold">
+                    {l.name} <span className="num font-semibold text-ink-soft">· {l.qty} u</span>
+                  </span>
+                  <span className="num shrink-0 font-black text-peligro">−{formatPrice(l.loss)}</span>
+                </p>
+              ))}
+            </div>
+          </div>
         )}
 
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl bg-sunken p-4 text-sm sm:grid-cols-3">

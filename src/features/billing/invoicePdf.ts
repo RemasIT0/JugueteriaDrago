@@ -2,6 +2,7 @@ import { formatPrice } from '@/lib/format'
 import { invoiceLabel } from '@/services/commerce'
 import type { Sale, Settings } from '@/types'
 import { paymentLabel } from './invoiceHtml'
+import { invoiceNumbers } from './invoiceMath'
 import { logoPng } from './logo'
 
 /** Las fuentes estándar del PDF solo tienen Latin-1: se reemplazan los signos que no traen. */
@@ -33,8 +34,9 @@ export async function invoicePdf(original: Sale, settings: Settings): Promise<Bl
   const b = settings.business
   const rate = settings.ivaRate
   const pending = !sale.number && !!sale.reservationCode
-  const isA = sale.invoiceType === 'A'
-  const unit = (p: number) => (isA ? p / (1 + rate / 100) : p)
+  // Renglones a precio de lista y descuentos abajo (mismos números que la hoja imprimible).
+  const num = invoiceNumbers(sale, rate)
+  const isA = num.isA
   const money = (n: number) => t(formatPrice(n))
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: true })
@@ -137,7 +139,7 @@ export async function invoicePdf(original: Sale, settings: Settings): Promise<Bl
     y += 5
   }
   header()
-  for (const i of sale.items) {
+  for (const i of num.lines) {
     const name = doc.splitTextToSize(t(i.name), cols.unit - cols.name - 26) as string[]
     const rowH = name.length * 4 + 5
     if (y + rowH > 270) {
@@ -149,11 +151,11 @@ export async function invoicePdf(original: Sale, settings: Settings): Promise<Bl
     doc.setFontSize(9)
     doc.text(String(i.qty), cols.qty, y)
     doc.text(name, cols.name, y)
-    doc.text(money(unit(i.unitFinal)), cols.unit, y, { align: 'right' })
-    doc.text(money(unit(i.unitFinal) * i.qty), cols.amount, y, { align: 'right' })
+    doc.text(money(i.unit), cols.unit, y, { align: 'right' })
+    doc.text(money(i.amount), cols.amount, y, { align: 'right' })
     doc.setFontSize(7)
     doc.setTextColor(...SOFT)
-    doc.text(t(`${i.sku}${i.discountPercent ? ` · promo -${i.discountPercent}%` : ''}`), cols.name, y + name.length * 4)
+    doc.text(t(`${i.sku}${i.promo ? ` · promoción -${i.promo}%` : ''}`), cols.name, y + name.length * 4)
     doc.setTextColor(...INK)
     y += rowH
     doc.setDrawColor(...LINE)
@@ -175,10 +177,12 @@ export async function invoicePdf(original: Sale, settings: Settings): Promise<Bl
     y += big ? 7 : 5.5
   }
   y += 3
-  if (sale.discountTotal > 0) totalRow(`Descuentos${sale.couponCode ? ` (cupón ${sale.couponCode} -${sale.couponPercent}%)` : ''}`, '-' + money(sale.discountTotal))
+  if (num.promos > 0 || num.coupon > 0) totalRow(`Subtotal${isA ? ' neto' : ''}`, money(num.subtotal))
+  if (num.promos > 0) totalRow('Promociones', '-' + money(num.promos))
+  if (num.coupon > 0) totalRow(`Cupón ${sale.couponCode ?? ''}${sale.couponPercent ? ` (-${sale.couponPercent}%)` : ''}`, '-' + money(num.coupon))
   if (isA) {
-    totalRow('Neto gravado', money(sale.total - sale.iva))
-    totalRow(`IVA ${rate}%`, money(sale.iva))
+    totalRow('Neto gravado', money(num.net))
+    totalRow(`IVA ${rate}%`, money(num.iva))
   }
   doc.setDrawColor(...INK)
   doc.setLineWidth(0.6)

@@ -223,13 +223,14 @@ export const INTENTS: Intent[] = [
     answer({ sales, products, settings }) {
       const be = breakEven(completed(sales, false), products, settings)
       if (be.fixed === 0) return { text: 'Todavía no cargaste gastos fijos. Agrégalos en Reportes para calcular el punto de equilibrio.', link: { to: '/reportes', label: 'Ir a Reportes' } }
-      if (be.target === null) return { text: 'Falta el precio de compra de los productos para calcular el margen.' }
+      if (be.target === null)
+        return { text: be.ratio !== null && be.ratio <= 0 ? 'Con tus precios actuales la mercadería cuesta más de lo que se cobra: así no hay punto de equilibrio. Revisa precios de venta y de compra.' : 'Falta el precio de compra de los productos para calcular el margen.' }
       const p = (be.progress ?? 0) * 100
       return {
         text:
           p >= 100
             ? `¡Sí! Ya vendiste ${formatPrice(be.soldThisMonth)} y el equilibrio es ${formatPrice(be.target)}. Todo lo que vendas de acá en más es ganancia.`
-            : `Vas ${p.toFixed(0)}%: vendiste ${formatPrice(be.soldThisMonth)} de ${formatPrice(be.target)}. Faltan ${formatPrice(be.target - be.soldThisMonth)} para cubrir los gastos fijos.`,
+            : `Vas ${p.toFixed(0)}%. Este mes ya ganaste ${formatPrice(be.monthProfit)} y te falta ganar ${formatPrice(be.remainingProfit)} para cubrir los gastos fijos: con tu margen habitual, eso son ${formatPrice(be.remainingSales ?? 0)} más en ventas.`,
         link: { to: '/reportes', label: 'Ver gráfico' },
       }
     },
