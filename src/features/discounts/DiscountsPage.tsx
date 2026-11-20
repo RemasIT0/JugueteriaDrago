@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { toast } from '@/components/ui/Toaster'
 import { formatDate, formatPrice } from '@/lib/format'
+import { bestDiscount } from '@/lib/pricing'
 import { ProductThumb } from '@/features/inventory/components/ProductThumb'
 import type { DiscountInput } from '@/services/commerce'
 import { useInventory } from '@/stores/inventory'
@@ -89,7 +90,7 @@ export default function DiscountsPage() {
           <p className="max-w-sm text-sm font-semibold text-ink-soft">Crea uno para que la tienda muestre el precio tachado y el nuevo precio.</p>
         </div>
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {discounts.map((d) => {
             const st = statusOf(d)
             const Icon = d.kind === 'cupon' ? Ticket : Tag
@@ -137,7 +138,7 @@ export default function DiscountsPage() {
 }
 
 function DiscountForm({ onSave, onCancel }: { onSave: (v: DiscountInput) => Promise<void>; onCancel: () => void }) {
-  const { products, categories, seasons } = useInventory()
+  const { products, categories, seasons, discounts } = useInventory()
   const [kind, setKind] = useState<Discount['kind']>('producto')
   const [name, setName] = useState('')
   const [targetId, setTargetId] = useState('')
@@ -154,6 +155,9 @@ function DiscountForm({ onSave, onCancel }: { onSave: (v: DiscountInput) => Prom
   const [fAge, setFAge] = useState('')
   const [fStock, setFStock] = useState(false)
   const [onlyChosen, setOnlyChosen] = useState(false)
+  // Por defecto solo se ofrecen juguetes que todavía no tienen una promoción vigente (los cupones no cuentan).
+  const [onlyFree, setOnlyFree] = useState(true)
+  const onPromo = useMemo(() => new Set(products.filter((p) => bestDiscount(p, discounts)).map((p) => p.id)), [products, discounts])
 
   const targets = useMemo(() => {
     if (kind === 'categoria') return categories.map((c) => ({ id: c.id, name: c.name }))
@@ -172,10 +176,11 @@ function DiscountForm({ onSave, onCancel }: { onSave: (v: DiscountInput) => Prom
           (!fSeason || p.seasons.includes(fSeason)) &&
           (!age || age.test(p.ageMin)) &&
           (!fStock || p.stock > 0) &&
-          (!onlyChosen || productIds.includes(p.id)),
+          (!onlyChosen || productIds.includes(p.id)) &&
+          (!onlyFree || !onPromo.has(p.id) || productIds.includes(p.id)),
       )
       .sort((a, b) => a.name.localeCompare(b.name, 'es'))
-  }, [products, q, fCat, fSeason, fAge, fStock, onlyChosen, productIds])
+  }, [products, q, fCat, fSeason, fAge, fStock, onlyChosen, onlyFree, onPromo, productIds])
   const anyFilter = !!(q || fCat || fSeason || fAge || fStock || onlyChosen)
   const clearFilters = () => (setQ(''), setFCat(''), setFSeason(''), setFAge(''), setFStock(false), setOnlyChosen(false))
   const toggle = (id: string) => setProductIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]))
@@ -227,7 +232,7 @@ function DiscountForm({ onSave, onCancel }: { onSave: (v: DiscountInput) => Prom
         ))}
       </div>
       <p className="-mt-2 text-sm font-semibold text-ink-soft">{KIND_HINT[kind]}</p>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Nombre interno" htmlFor="df-name">
           <Input id="df-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej.: Peluches de invierno" />
         </Field>
@@ -285,6 +290,10 @@ function DiscountForm({ onSave, onCancel }: { onSave: (v: DiscountInput) => Prom
                 <label className="flex cursor-pointer items-center gap-2 text-sm font-bold">
                   <input type="checkbox" className="size-4 accent-coral" checked={onlyChosen} onChange={(e) => setOnlyChosen(e.target.checked)} disabled={productIds.length === 0} /> Ver solo los elegidos
                 </label>
+                <label className="flex cursor-pointer flex-wrap items-center gap-x-2 text-sm font-bold">
+                  <input type="checkbox" className="size-4 accent-coral" checked={onlyFree} onChange={(e) => setOnlyFree(e.target.checked)} /> Solo sin descuento
+                  {onPromo.size > 0 && <span className="num text-xs font-semibold text-ink-soft">({onPromo.size} ya en promoción{onlyFree ? ', ocultos' : ''})</span>}
+                </label>
                 {anyFilter && (
                   <button type="button" onClick={clearFilters} className="text-sm font-extrabold text-ink-soft underline hover:text-ink">
                     Quitar filtros
@@ -314,16 +323,26 @@ function DiscountForm({ onSave, onCancel }: { onSave: (v: DiscountInput) => Prom
               {matches.map((p) => {
                 const on = productIds.includes(p.id)
                 const cat = categories.find((c) => c.id === p.categoryId)
+                const promo = onPromo.has(p.id) ? bestDiscount(p, discounts) : null
                 const after = Math.round(p.price * (1 - (pct > 0 && pct <= 90 ? pct : 0) / 100) * 100) / 100
                 return (
                   <li key={p.id}>
                     <label className={clsx('flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2', on ? 'bg-coral-wash' : 'hover:bg-sunken')}>
                       <input type="checkbox" className="size-4 shrink-0 accent-coral" checked={on} onChange={() => toggle(p.id)} />
-                      <ProductThumb category={cat} imageUrl={p.photos[0]} />
+                      {/* En celulares muy angostos la foto se oculta para que entre el nombre */}
+                      <span className="hidden shrink-0 min-[380px]:block">
+                        <ProductThumb category={cat} imageUrl={p.photos[0]} />
+                      </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-bold">{p.name}</span>
                         <span className="block truncate text-xs font-semibold text-ink-soft">
                           {cat?.name ?? 'Sin categoría'} · <span className="num">{p.sku}</span> · {p.stock > 0 ? `${p.stock} en stock` : 'sin stock'}
+                          {promo && (
+                            <span className="font-extrabold text-coral-ink">
+                              {' '}
+                              · ya en «{promo.name}» −{promo.percent}%
+                            </span>
+                          )}
                         </span>
                       </span>
                       <span className="num shrink-0 text-right text-xs font-bold leading-tight">

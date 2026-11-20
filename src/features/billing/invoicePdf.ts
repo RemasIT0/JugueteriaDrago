@@ -75,8 +75,12 @@ export async function invoicePdf(original: Sale, settings: Settings): Promise<Bl
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(...SOFT)
-  doc.text(t(b.address || 'Domicilio sin cargar'), M + 23, top + 16, { maxWidth: midX - M - 26 })
-  doc.text(t(`CUIT ${b.cuit || 'sin cargar'} · ${b.ivaCondition}`), M + 23, top + 21, { maxWidth: midX - M - 26 })
+  // El domicilio y el CUIT pueden ocupar varias líneas: cada bloque empieza debajo del anterior.
+  const leftW = midX - M - 26
+  const address = doc.splitTextToSize(t(b.address || 'Domicilio sin cargar'), leftW) as string[]
+  doc.text(address, M + 23, top + 16)
+  const cuitY = top + 16 + address.length * 3.6 + 1.4
+  doc.text(doc.splitTextToSize(t(`CUIT ${b.cuit || 'sin cargar'} · ${b.ivaCondition}`), leftW) as string[], M + 23, cuitY)
   doc.setTextColor(...INK)
 
   doc.setFont('helvetica', 'bold')
