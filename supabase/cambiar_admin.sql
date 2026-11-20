@@ -1,7 +1,7 @@
 -- Cambia el acceso de la cuenta del dueño a:  usuario «admin»  ·  contraseña «admin123»
 -- Uso: Supabase → SQL Editor → pegar todo → Run. Se corre una sola vez (no es una migración).
 --
--- Toca la cuenta de dueño más antigua (la que se creó al configurar el sistema).
+-- Toca la cuenta Admin (o, si todavía no corriste la migración 0007, la de dueño más antigua).
 -- La app arma el correo interno de Supabase Auth a partir del usuario: «admin» → u61646d696e@usuarios.dragotoy.app
 -- (ver emailFor en src/services/supabase.ts), así que también se actualiza ese correo.
 
@@ -10,7 +10,7 @@ declare
   v_id uuid;
   v_email constant text := 'u61646d696e@usuarios.dragotoy.app';
 begin
-  select id into v_id from public.profiles where role = 'dueno' order by created_at limit 1;
+  select id into v_id from public.profiles where role in ('admin', 'dueno') order by (role = 'admin') desc, created_at limit 1;
   if v_id is null then
     raise exception 'No hay ninguna cuenta de dueño. Abre la app y crea la cuenta inicial con usuario admin y contraseña admin123.';
   end if;

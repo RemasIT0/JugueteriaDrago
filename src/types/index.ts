@@ -71,7 +71,11 @@ export interface StockMovement {
 
 // ── Usuarios, permisos y auditoría ──────────────────────────────────────────────
 
-export type Role = 'dueno' | 'vendedor'
+/**
+ * admin: la cuenta que creó el sistema. Puede todo y nadie le puede quitar el rol, desactivarla ni
+ * cambiarle la contraseña. dueno y vendedor son los perfiles que el Admin (o un dueño) asigna.
+ */
+export type Role = 'admin' | 'dueno' | 'vendedor'
 
 export interface User {
   id: string

@@ -434,43 +434,62 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
           />
         ) : (
           <>
-            {/* La respuesta, en una frase */}
-            <div className={clsx('flex flex-col gap-1 rounded-2xl p-4 sm:p-5', reached ? 'bg-turquesa-wash text-turquesa-ink' : 'bg-sol-wash text-sol-ink')}>
-              {reached ? (
-                <>
-                  <p className="text-xl font-black leading-tight">¡Ya cubriste los gastos fijos de {monthName}!</p>
-                  <p className="text-sm font-bold">Todo lo que vendas desde ahora es ganancia.</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm font-extrabold">Te falta vender</p>
-                  <p className="num text-3xl font-black leading-tight text-ink">{money(be.remainingSales ?? 0)}</p>
-                  <p className="text-sm font-bold">
-                    Son unos <span className="num font-black text-ink">{money(perDay ?? 0)}</span> por día durante {daysLeft === 1 ? 'el último día' : `los ${daysLeft} días`} que quedan del mes.
+            {/* Tarjeta principal: la respuesta en un número */}
+            <div className="flex flex-col gap-4 rounded-3xl border-2 border-line bg-sunken p-4 sm:p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-wider text-ink-soft">{reached ? 'Gastos del mes cubiertos' : 'Te falta vender'}</p>
+                  {reached ? (
+                    <p className="text-3xl font-black leading-tight text-turquesa-ink">¡Listo!</p>
+                  ) : (
+                    <p className="flex flex-wrap items-baseline gap-x-2">
+                      <span className="num text-4xl font-black leading-tight text-turquesa-ink sm:text-5xl">{money(be.remainingSales ?? 0)}</span>
+                      {be.remainingUnits !== null && <span className="num text-lg font-black">≈ {be.remainingUnits.toLocaleString('es-AR')} juguetes</span>}
+                    </p>
+                  )}
+                  <p className="mt-1 max-w-md text-sm font-semibold text-ink-soft">
+                    {reached
+                      ? 'Ya pagaste los gastos fijos de este mes: desde ahora, cada venta es ganancia.'
+                      : `Cuando lo vendas, cubriste los gastos fijos de ${monthName}. Desde ahí, cada venta es ganancia. Son unos ${money(perDay ?? 0)} por día.`}
                   </p>
-                </>
-              )}
-            </div>
-
-            {/* Avance: vendido contra la meta */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-end justify-between gap-3 text-sm">
-                <span className="flex flex-col font-bold text-ink-soft sm:flex-row sm:gap-1">
-                  Vendido: <span className="num whitespace-nowrap font-black text-ink">{money(be.soldThisMonth)}</span>
-                </span>
-                <span className="flex flex-col text-right font-bold text-ink-soft sm:flex-row sm:gap-1">
-                  Meta del mes: <span className="num whitespace-nowrap font-black text-ink">{money(be.target)}</span>
+                </div>
+                <span className={clsx('num shrink-0 rounded-full px-4 py-2 text-sm font-black', reached ? 'bg-turquesa text-on-fill' : 'bg-turquesa-wash text-turquesa-ink')}>
+                  {Math.min(100, (be.progress ?? 0) * 100).toFixed(0)}% cubierto
                 </span>
               </div>
-              <div className="h-4 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-label="Avance hacia la meta del mes" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, (be.progress ?? 0) * 100))}>
-                <div className={clsx('h-full rounded-full', reached ? 'bg-turquesa' : 'bg-sol')} style={{ width: `${Math.min(100, (be.progress ?? 0) * 100)}%` }} />
+              <div className="h-2.5 overflow-hidden rounded-full bg-surface" role="progressbar" aria-label="Avance hacia los gastos del mes" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, (be.progress ?? 0) * 100))}>
+                <div className="h-full rounded-full bg-turquesa" style={{ width: `${Math.min(100, (be.progress ?? 0) * 100)}%` }} />
               </div>
-              <p className="num text-xs font-bold text-ink-soft">Llevas el {Math.min(100, (be.progress ?? 0) * 100).toFixed(0)}% de la meta.</p>
             </div>
 
-            {/* Cómo se llega a ese número */}
-            <div className="flex flex-col gap-3 rounded-2xl border-2 border-line p-4">
-              <p className="text-sm font-black">¿De dónde sale este número?</p>
+            {/* Tres datos clave */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl bg-sunken p-4">
+                <p className="text-xs font-black uppercase tracking-wider text-ink-soft">Ganas por cada $100</p>
+                <p className="num mt-1 text-2xl font-black">{per100 ? money(per100.keep) : '—'}</p>
+                <p className="text-xs font-semibold text-ink-soft">lo demás es IVA y mercadería</p>
+              </div>
+              <div className="rounded-2xl bg-sunken p-4">
+                <p className="text-xs font-black uppercase tracking-wider text-ink-soft">Gastos fijos del mes</p>
+                <p className="num mt-1 text-2xl font-black">{money(be.fixed)}</p>
+                <p className="text-xs font-semibold text-ink-soft">alquiler, sueldos, servicios…</p>
+              </div>
+              <div className={clsx('rounded-2xl p-4', be.monthProfit >= 0 ? 'bg-turquesa-wash text-turquesa-ink' : 'bg-peligro-wash text-peligro')}>
+                <p className="text-xs font-black uppercase tracking-wider">Ya ganaste este mes</p>
+                <p className="num mt-1 text-2xl font-black">{money(be.monthProfit)}</p>
+                <p className="text-xs font-semibold opacity-80">después de pagar la mercadería</p>
+              </div>
+            </div>
+
+            {/* El detalle, para quien lo quiera ver */}
+            <details className="group rounded-2xl border-2 border-line">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-2xl px-4 py-3 text-sm font-black hover:bg-sunken">
+                ¿Cómo se calcula?
+                <span className="text-ink-soft transition-transform group-open:rotate-180" aria-hidden>
+                  ▾
+                </span>
+              </summary>
+              <div className="flex flex-col gap-4 px-4 pb-4">
               <div className="grid grid-cols-1 items-stretch gap-2 sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
                 <div className="rounded-xl bg-sunken p-3">
                   <p className="text-xs font-extrabold text-ink-soft">Tus gastos fijos</p>
@@ -531,11 +550,8 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
                   </p>
                 </div>
               )}
-            </div>
-
-            {/* Cómo viene el mes */}
-            <div className="flex flex-col gap-1">
-              <p className="text-sm font-black">Cómo vienes en el mes</p>
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-black">Cómo vienes en el mes</p>
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={be.daily} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
@@ -565,7 +581,9 @@ function BreakEvenCard({ be, month }: { be: ReturnType<typeof breakEven>; month:
               <p className="text-xs font-semibold text-ink-soft">
                 {targetFits ? 'La línea sube con cada venta; cuando cruza la línea punteada «Meta», cubriste los gastos.' : `La línea sube con cada venta. La meta (${money(be.target)}) está muy por encima, por eso no se ve en el gráfico.`}
               </p>
-            </div>
+                </div>
+              </div>
+            </details>
           </>
         )}
 

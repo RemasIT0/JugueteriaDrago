@@ -42,6 +42,11 @@ const MATRIX = {
 
 export type Permission = keyof typeof MATRIX
 
-export const can = (role: Role | undefined, p: Permission) => !!role && (MATRIX[p] as readonly Role[]).includes(role)
+/** El Admin puede todo; el resto, lo que diga la matriz. */
+export const can = (role: Role | undefined, p: Permission) => role === 'admin' || (!!role && (MATRIX[p] as readonly Role[]).includes(role))
 
-export const ROLE_LABEL: Record<Role, string> = { dueno: 'Dueño', vendedor: 'Vendedor' }
+export const ROLE_LABEL: Record<Role, string> = { admin: 'Admin', dueno: 'Dueño', vendedor: 'Vendedor' }
+
+/** Roles que se pueden dar a otros usuarios. El de Admin no se asigna: es de la cuenta que creó el sistema. */
+export const ASSIGNABLE_ROLES = ['dueno', 'vendedor'] as const satisfies readonly Role[]
+export type AssignableRole = (typeof ASSIGNABLE_ROLES)[number]

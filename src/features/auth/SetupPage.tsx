@@ -30,7 +30,7 @@ const schema = z
   .refine((v) => v.password === v.confirm, { path: ['confirm'], error: 'Las contraseñas no coinciden' })
 type Values = z.infer<typeof schema>
 
-/** Primer uso: se crea la cuenta del dueño. Solo aparece si el sistema no tiene ningún usuario. */
+/** Primer uso: se crea la cuenta Admin. Solo aparece si el sistema no tiene ningún usuario. */
 export default function SetupPage() {
   const setupDone = useAuth((s) => s.setupDone)
   const [error, setError] = useState<string | null>(null)
@@ -52,7 +52,7 @@ export default function SetupPage() {
   })
 
   return (
-    <AuthLayout title="Configurar la tienda" subtitle="Crea la cuenta del dueño. Con ella vas a poder dar de alta a los vendedores.">
+    <AuthLayout title="Configurar la tienda" subtitle="Crea la cuenta Admin, la principal de la tienda: puede todo y nadie se la puede quitar. Con ella das de alta a los dueños y vendedores.">
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         {error && (
           <p role="alert" className="flex items-start gap-2 rounded-2xl bg-peligro-wash px-4 py-3 text-sm font-bold text-peligro">

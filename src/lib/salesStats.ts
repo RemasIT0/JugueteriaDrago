@@ -204,6 +204,7 @@ export function breakEven(sales: Sale[], products: Product[], settings: Settings
   // Recorre las ventas de 90 días: separa lo habitual de lo vendido por debajo del costo.
   let okNet = 0
   let okCost = 0
+  let okUnits = 0
   const losses = new Map<string, { name: string; qty: number; loss: number }>()
   let monthLoss = 0
   for (const s of sales) {
@@ -216,6 +217,7 @@ export function breakEven(sales: Sale[], products: Product[], settings: Settings
       if (netUnit >= i.unitCost) {
         okNet += netUnit * i.qty
         okCost += i.unitCost * i.qty
+        okUnits += i.qty
         continue
       }
       const loss = (i.unitCost - netUnit) * i.qty
@@ -230,12 +232,15 @@ export function breakEven(sales: Sale[], products: Product[], settings: Settings
 
   let ratio: number | null = okNet > 0 ? (okNet - okCost) / okNet : null
   let source: 'ventas' | 'catalogo' | null = ratio !== null ? 'ventas' : null
+  // Ganancia promedio por juguete vendido (para decir «te faltan ~N juguetes»).
+  let profitPerUnit: number | null = okUnits > 0 ? (okNet - okCost) / okUnits : null
   if (ratio === null) {
     const withCost = products.filter((p) => p.cost !== null && p.price > 0)
     if (withCost.length) {
       const net = withCost.reduce((a, p) => a + p.price / (1 + rate), 0)
       const cost = withCost.reduce((a, p) => a + (p.cost ?? 0), 0)
       ratio = net > 0 ? (net - cost) / net : null
+      profitPerUnit = (net - cost) / withCost.length
       source = 'catalogo'
     }
   }
@@ -270,6 +275,8 @@ export function breakEven(sales: Sale[], products: Product[], settings: Settings
     monthLoss,
     remainingProfit,
     remainingSales,
+    /** Juguetes que faltan vender, aproximado con la ganancia promedio por unidad. */
+    remainingUnits: profitPerUnit && profitPerUnit > 0 ? Math.ceil(remainingProfit / profitPerUnit) : null,
     progress: target ? (remainingProfit === 0 ? 1 : soldThisMonth / target) : null,
     /** Días que quedan del mes, contando hoy. */
     daysLeft: days - now.getDate() + 1,

@@ -63,6 +63,15 @@ async function migrate(db: Tables) {
     db.products = db.products.map((p) => ({ ...p, cost: p.cost ?? null, seasons: p.seasons ?? [] }))
     await save('products')
   }
+  // Siempre: el sistema tiene un Admin. En datos anteriores al rol, lo es el dueño más antiguo.
+  if (db.users.length && !db.users.some((u) => u.role === 'admin')) {
+    const first = [...db.users].filter((u) => u.role === 'dueno').sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0]
+    if (first) {
+      first.role = 'admin'
+      first.active = true
+      await save('users')
+    }
+  }
   // Siempre: que existan las temporadas y la configuración base (no pisa lo que ya hay).
   if (!db.seasons.length) {
     db.seasons = defaultSeasons()

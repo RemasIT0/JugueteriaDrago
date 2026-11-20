@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, motion } from 'framer-motion'
-import { LuDatabaseBackup as DatabaseBackup, LuDownload as Download, LuKeyRound as KeyRound, LuLoaderCircle as Loader2, LuUpload as Upload, LuUserPlus as UserPlus, LuUserRoundCheck as UserRoundCheck, LuUserRoundX as UserRoundX } from 'react-icons/lu'
+import { LuCrown as Crown, LuDatabaseBackup as DatabaseBackup, LuLock as Lock, LuDownload as Download, LuKeyRound as KeyRound, LuLoaderCircle as Loader2, LuUpload as Upload, LuUserPlus as UserPlus, LuUserRoundCheck as UserRoundCheck, LuUserRoundX as UserRoundX } from 'react-icons/lu'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -11,13 +11,13 @@ import { Shimmer } from '@/components/ui/Skeleton'
 import { toast } from '@/components/ui/Toaster'
 import { PasswordInput } from '@/features/auth/PasswordInput'
 import { formatDate, formatTime } from '@/lib/format'
-import { ROLE_LABEL } from '@/lib/permissions'
+import { ASSIGNABLE_ROLES, ROLE_LABEL, type AssignableRole } from '@/lib/permissions'
 import { audit } from '@/services/audit'
 import { createUser, listUsers, resetPassword, setUserActive, setUserRole, validatePassword } from '@/services/auth'
 import { exportBackup, importBackup } from '@/services/localDb'
 import { cloud } from '@/services/supabase'
 import { useAuth } from '@/stores/auth'
-import type { PublicUser, Role } from '@/types'
+import type { PublicUser } from '@/types'
 
 const passwordRule = z.string().superRefine((v, ctx) => {
   const p = validatePassword(v)
@@ -33,7 +33,7 @@ const newUserSchema = z.object({
     .max(30)
     .regex(/^[\p{L}\p{N}._-]+$/u, { error: 'Solo letras (con ñ y tildes), números, punto, guion y guion bajo' }),
   password: passwordRule,
-  role: z.enum(['dueno', 'vendedor']),
+  role: z.enum(ASSIGNABLE_ROLES),
 })
 type NewUser = z.infer<typeof newUserSchema>
 
@@ -45,7 +45,8 @@ export default function UsersPage() {
   const [creating, setCreating] = useState(false)
   const [resetFor, setResetFor] = useState<string | null>(null)
 
-  const refresh = useCallback(() => listUsers().then(setUsers), [])
+  // El Admin siempre primero; después, en el orden en que se crearon.
+  const refresh = useCallback(() => listUsers().then((list) => setUsers([...list].sort((a, b) => Number(b.role === 'admin') - Number(a.role === 'admin')))), [])
   useEffect(() => {
     void refresh()
   }, [refresh])
@@ -85,11 +86,16 @@ export default function UsersPage() {
         ) : (
           <ul className="divide-y divide-line">
             {users.map((u) => (
-              <li key={u.id} className={clsx('flex flex-col gap-3 px-5 py-4', !u.active && 'bg-sunken/50')}>
+              <li key={u.id} className={clsx('flex flex-col gap-3 px-5 py-4', !u.active && 'bg-sunken/50', u.role === 'admin' && 'bg-sol-wash/40')}>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 font-extrabold">
                       {u.name}
+                      {u.role === 'admin' && (
+                        <span className="logo-tile inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-black">
+                          <Crown className="size-3.5" aria-hidden /> Admin
+                        </span>
+                      )}
                       {u.id === me?.id && <span className="rounded-full bg-turquesa-wash px-2 py-0.5 text-2xs font-black text-turquesa-ink">Tú</span>}
                       {!u.active && <span className="rounded-full bg-peligro-wash px-2 py-0.5 text-2xs font-black text-peligro">Desactivado</span>}
                     </p>
@@ -97,23 +103,36 @@ export default function UsersPage() {
                       @{u.username} · {u.lastLoginAt ? `último ingreso ${formatDate(u.lastLoginAt)} ${formatTime(u.lastLoginAt)}` : 'nunca ingresó'}
                     </p>
                   </div>
-                  <label className="flex items-center gap-2 text-xs font-extrabold text-ink-soft">
-                    Rol
-                    <Select
-                      value={u.role}
-                      disabled={u.id === me?.id}
-                      onChange={(e) => void run(() => setUserRole(u.id, e.target.value as Role), 'Rol actualizado')}
-                      className="h-10 w-36 text-sm"
-                      title={u.id === me?.id ? 'No puedes cambiar tu propio rol' : undefined}
-                    >
-                      <option value="vendedor">{ROLE_LABEL.vendedor}</option>
-                      <option value="dueno">{ROLE_LABEL.dueno}</option>
-                    </Select>
-                  </label>
-                  <Button size="sm" variant="ghost" onClick={() => setResetFor(resetFor === u.id ? null : u.id)}>
-                    <KeyRound className="size-4" aria-hidden /> Nueva contraseña
-                  </Button>
+                  {u.role === 'admin' ? (
+                    // El Admin no se toca: ni rol, ni desactivar, ni contraseña (salvo él mismo).
+                    <span className="flex items-center gap-1.5 rounded-xl bg-sunken px-3 py-2 text-xs font-extrabold text-ink-soft" title="El Admin es la cuenta que creó el sistema: no se le puede quitar el rol ni desactivar.">
+                      <Lock className="size-3.5" aria-hidden /> Protegido
+                    </span>
+                  ) : (
+                    <label className="flex items-center gap-2 text-xs font-extrabold text-ink-soft">
+                      Rol
+                      <Select
+                        value={u.role}
+                        disabled={u.id === me?.id}
+                        onChange={(e) => void run(() => setUserRole(u.id, e.target.value as AssignableRole), 'Rol actualizado')}
+                        className="h-10 w-36 text-sm"
+                        title={u.id === me?.id ? 'No puedes cambiar tu propio rol' : undefined}
+                      >
+                        {ASSIGNABLE_ROLES.map((r) => (
+                          <option key={r} value={r}>
+                            {ROLE_LABEL[r]}
+                          </option>
+                        ))}
+                      </Select>
+                    </label>
+                  )}
+                  {(u.role !== 'admin' || u.id === me?.id) && (
+                    <Button size="sm" variant="ghost" onClick={() => setResetFor(resetFor === u.id ? null : u.id)}>
+                      <KeyRound className="size-4" aria-hidden /> Nueva contraseña
+                    </Button>
+                  )}
                   {u.id !== me?.id &&
+                    u.role !== 'admin' &&
                     (u.active ? (
                       <Button
                         size="sm"
@@ -188,8 +207,11 @@ function NewUserCard({ onDone }: { onDone: () => void }) {
         </Field>
         <Field label="Rol" htmlFor="nu-role">
           <Select id="nu-role" {...register('role')}>
-            <option value="vendedor">{ROLE_LABEL.vendedor}</option>
-            <option value="dueno">{ROLE_LABEL.dueno}</option>
+            {ASSIGNABLE_ROLES.map((r) => (
+              <option key={r} value={r}>
+                {ROLE_LABEL[r]}
+              </option>
+            ))}
           </Select>
         </Field>
       </div>
@@ -237,15 +259,23 @@ function ResetPasswordRow({ user, submit, onDone }: { user: PublicUser; submit: 
 
 function RoleLegend() {
   return (
-    <section className="grid gap-3 sm:grid-cols-2">
+    <section className="grid gap-3 sm:grid-cols-3">
       {(
         [
+          ['admin', 'La cuenta que creó el sistema. Puede todo, y nadie le puede quitar el rol, desactivarla ni cambiarle la contraseña. Hay uno solo.'],
           ['dueno', 'Todo: inventario, carga, importar archivos, ajustar o borrar stock, reportes, usuarios, actividad y copias de seguridad.'],
           ['vendedor', 'Ver inventario, cargar productos nuevos, reponer stock y subir fotos. No puede ajustar ni borrar stock, ni ver reportes.'],
         ] as const
       ).map(([role, text]) => (
-        <div key={role} className="rounded-2xl bg-sunken p-4">
-          <p className="font-black">{ROLE_LABEL[role]}</p>
+        <div key={role} className={clsx('rounded-2xl p-4', role === 'admin' ? 'border-2 border-sol/60 bg-sol-wash/50' : 'bg-sunken')}>
+          <p className="flex items-center gap-2 font-black">
+            {role === 'admin' && (
+              <span className="logo-tile grid size-6 place-items-center rounded-lg" aria-hidden>
+                <Crown className="size-3.5" />
+              </span>
+            )}
+            {ROLE_LABEL[role]}
+          </p>
           <p className="mt-1 text-sm font-semibold text-ink-soft">{text}</p>
         </div>
       ))}

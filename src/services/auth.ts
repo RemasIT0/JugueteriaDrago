@@ -3,7 +3,7 @@
  * En modo local las contraseñas se guardan como hash PBKDF2 con sal propia: eso ordena el
  * acceso y deja rastro, pero no es una barrera ante alguien con acceso técnico al equipo.
  */
-import { can, type Permission } from '@/lib/permissions'
+import { can, ROLE_LABEL, type Permission } from '@/lib/permissions'
 import { uid } from '@/lib/format'
 import type { PublicUser, Role, User } from '@/types'
 import { audit } from './audit'
@@ -90,7 +90,8 @@ export async function setupOwner(input: { name: string; username: string; passwo
   }
   const db = await loadDb()
   if (db.users.length) throw new ApiError(409, 'El sistema ya tiene usuarios. Ingresa con tu cuenta.')
-  const user = await buildUser({ ...input, role: 'dueno' })
+  // La cuenta que crea el sistema es el Admin.
+  const user = await buildUser({ ...input, role: 'admin' })
   user.lastLoginAt = new Date().toISOString()
   db.users.push(user)
   await save('users')
@@ -226,14 +227,15 @@ export async function createUser(input: { name: string; username: string; passwo
   }
   const db = await loadDb()
   if (db.users.some((u) => u.username === normalize(input.username))) throw new ApiError(409, 'Ya existe un usuario con ese nombre de ingreso.')
+  if (input.role === 'admin') throw new ApiError(400, 'El rol Admin no se puede asignar.')
   const user = await buildUser(input)
   db.users.push(user)
   await save('users')
-  await audit('Usuario creado', `«${user.username}» como ${input.role === 'dueno' ? 'Dueño' : 'Vendedor'}`)
+  await audit('Usuario creado', `«${user.username}» como ${ROLE_LABEL[input.role]}`)
   return toPublic(user)
 }
 
-const activeOwners = (users: User[]) => users.filter((u) => u.role === 'dueno' && u.active)
+const activeOwners = (users: User[]) => users.filter((u) => (u.role === 'dueno' || u.role === 'admin') && u.active)
 
 export async function setUserActive(id: string, active: boolean) {
   requirePermission('usuarios.gestionar')
@@ -242,6 +244,7 @@ export async function setUserActive(id: string, active: boolean) {
   const user = db.users.find((u) => u.id === id)
   if (!user) throw new ApiError(404, 'El usuario ya no existe')
   if (user.id === currentUser()?.id) throw new ApiError(400, 'No puedes desactivar tu propio usuario.')
+  if (user.role === 'admin') throw new ApiError(400, 'El Admin no se puede desactivar.')
   if (!active && user.role === 'dueno' && activeOwners(db.users).length <= 1) throw new ApiError(400, 'Debe quedar al menos un dueño activo.')
   user.active = active
   await save('users')
@@ -254,10 +257,12 @@ export async function setUserRole(id: string, role: Role) {
   const db = await loadDb()
   const user = db.users.find((u) => u.id === id)
   if (!user) throw new ApiError(404, 'El usuario ya no existe')
+  if (user.role === 'admin') throw new ApiError(400, 'Al Admin no se le puede cambiar el rol.')
+  if (role === 'admin') throw new ApiError(400, 'El rol Admin no se puede asignar.')
   if (user.role === 'dueno' && role !== 'dueno' && activeOwners(db.users).length <= 1) throw new ApiError(400, 'Debe quedar al menos un dueño activo.')
   user.role = role
   await save('users')
-  await audit('Rol cambiado', `«${user.username}» ahora es ${role === 'dueno' ? 'Dueño' : 'Vendedor'}`)
+  await audit('Rol cambiado', `«${user.username}» ahora es ${ROLE_LABEL[role]}`)
 }
 
 export async function resetPassword(id: string, password: string) {
@@ -271,6 +276,7 @@ export async function resetPassword(id: string, password: string) {
   const db = await loadDb()
   const user = db.users.find((u) => u.id === id)
   if (!user) throw new ApiError(404, 'El usuario ya no existe')
+  if (user.role === 'admin' && me?.id !== id) throw new ApiError(403, 'La contraseña del Admin solo la puede cambiar el Admin.')
   const problem = validatePassword(password)
   if (problem) throw new ApiError(400, problem)
   user.salt = newSalt()
